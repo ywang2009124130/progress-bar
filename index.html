@@ -79,6 +79,11 @@
   .timefield input{width:64px;text-align:center}
   .timefield .sep{font-weight:700;color:var(--ink-soft)}
   .hint{font-size:11px;color:var(--ink-soft);line-height:1.5;margin-top:6px}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;font-family:"DM Sans";font-size:13px;font-weight:600;
+    padding:11px 20px;border-radius:11px;box-shadow:0 12px 34px -10px rgba(0,0,0,.5);
+    opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:9999;white-space:nowrap;max-width:90vw}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .usebox{margin-top:12px;display:flex;flex-direction:column;gap:10px}
   .userow{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line-soft);border-radius:12px;padding:11px 12px}
   .usetag{flex:none;font-family:"DM Sans";font-weight:700;font-size:11.5px;padding:5px 9px;border-radius:8px;white-space:nowrap;color:#fff}
@@ -2706,9 +2711,9 @@ $("dlPng").addEventListener("click",function(){const sc=S.scale,img=new Image(),
   img.onload=function(){const cv=document.createElement("canvas");cv.width=VW*sc;cv.height=VH*sc;const ctx=cv.getContext("2d");
     if(!S.transBg){ctx.fillStyle="#FBF8F0";ctx.fillRect(0,0,cv.width,cv.height);}ctx.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);
     cv.toBlob(function(b){dl(b,"progress.png");},"image/png");};
-  img.onerror=function(){alert("导出失败，请重试");URL.revokeObjectURL(url);};img.src=url;});
+  img.onerror=function(){toast("导出失败，请重试");URL.revokeObjectURL(url);};img.src=url;});
 
-$("openTimer").addEventListener("click",function(){const w=window.open();if(!w){alert("请允许弹窗后重试");return;}w.document.open();w.document.write(buildTimerHTML());w.document.close();});
+$("openTimer").addEventListener("click",function(){const w=window.open();if(!w){toast("浏览器拦截了弹窗，请允许后重试");return;}w.document.open();w.document.write(buildTimerHTML());w.document.close();});
 $("dlTimer").addEventListener("click",function(){
   dl(timerBlob(),"presentation-timer.html");
   var el=$("useTimer");el.style.display=(el.style.display==="none"?"flex":"none");
@@ -2718,18 +2723,37 @@ $("copyEmbed").addEventListener("click",function(){
   // Note: a deployed https URL is required for PowerPoint's Web Viewer; locally this is a file:// link.
   const url=buildEmbedURL(true);
   const fileMode=location.protocol==="file:";
-  // reveal the embed help panel (steps live there now); toggle on repeat clicks.
-  var el=$("useEmbed");el.style.display=(el.style.display==="none"?"flex":"none");
-  function done(){
-    const note=fileMode
-      ? "已复制嵌入链接。注意：当前是本地文件，PPT 的 Web Viewer 只接受已发布的 https 网址，请先部署到 Vercel 再复制。详见下方说明。"
-      : "已复制嵌入链接。在 PowerPoint 找到「加载项」（「插入」或「开发工具」选项卡）→ 应用商店 → 搜 Web Viewer → 添加后粘贴此链接。详见下方说明。";
-    alert(note);
-  }
+  // always reveal the embed help panel (steps live there) — open it (don't toggle closed on copy)
+  $("useEmbed").style.display="flex";
+  // put the link into a copyable field inside the help panel as a reliable fallback
+  showEmbedLink(url);
+  function ok(){ toast(fileMode? "已复制（本地文件仅供预览，请部署到 https 后再用）" : "已复制嵌入链接"); }
+  function fail(){ toast("已生成链接，请在下方手动复制"); }
   if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(url).then(done,function(){prompt("复制下面的嵌入链接：",url);});
-  } else { prompt("复制下面的嵌入链接：",url); }
+    navigator.clipboard.writeText(url).then(ok,fail);
+  } else { fail(); }
 });
+// Show the embed URL in a read-only, click-to-select field at the top of the help panel.
+function showEmbedLink(url){
+  var host=$("useEmbed"); if(!host) return;
+  var box=$("embedLinkBox");
+  if(!box){
+    box=document.createElement("input");box.type="text";box.id="embedLinkBox";box.readOnly=true;
+    box.style.cssText="width:100%;margin-top:8px;font-size:11px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink-soft)";
+    box.addEventListener("focus",function(){this.select();});
+    box.addEventListener("click",function(){this.select();});
+    var txt=host.querySelector(".usetxt"); (txt||host).appendChild(box);
+  }
+  box.value=url;
+}
+// Lightweight non-blocking toast (auto-dismiss), no browser dialog.
+var _toastT=null;
+function toast(msg){
+  var t=$("toast");
+  if(!t){ t=document.createElement("div");t.id="toast";document.body.appendChild(t); }
+  t.textContent=msg;t.classList.add("show");
+  clearTimeout(_toastT);_toastT=setTimeout(function(){t.classList.remove("show");},2600);
+}
 
 function svgToImage(svgStr){return new Promise(function(res,rej){const img=new Image(),url=URL.createObjectURL(new Blob([svgStr],{type:"image/svg+xml;charset=utf-8"}));
   img.onload=function(){res({img:img,url:url});};img.onerror=function(){URL.revokeObjectURL(url);rej(new Error("svg load"));};img.src=url;});}
@@ -2771,7 +2795,7 @@ async function exportGif(){
       enc.finish();
       dl(new Blob([new Uint8Array(enc.stream().bin)],{type:"image/gif"}),"progress.gif");
     }
-  }catch(e){if(!gifCancel)alert("GIF 生成失败："+e.message);}
+  }catch(e){if(!gifCancel)toast("GIF 生成失败："+e.message);}
   finally{gifCancel=false;S.prog=savedProg;$("prog").value=savedProg;$("pVal").textContent=Math.round(savedProg);render();$("busy").style.display="none";$("busyFill").style.width="0";}
 }
 $("dlGif").addEventListener("click",exportGif);
