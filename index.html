@@ -2806,7 +2806,10 @@ function launcherFileName(){
   return (base||"计时器")+"·小窗.bat";
 }
 $("dlLauncher").addEventListener("click",function(){
-  const url=buildEmbedURL(true);
+  // add a cache-busting marker so the browser "app mode" can't serve a stale cached
+  // copy of the deployed page (app-mode keeps its own cache, separate from normal tabs).
+  // The embed parser ignores unknown params, so this stays backward-compatible.
+  const url=buildEmbedURL(true)+"&v="+Date.now();
   const fileMode=location.protocol==="file:";
   if(fileMode){ toast("请先部署到 https（如 Vercel）再下载启动器"); }
   const fname=launcherFileName();
