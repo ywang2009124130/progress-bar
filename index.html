@@ -1,0 +1,2722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>进度条工坊 · Progress Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=DM+Sans:wght@400;500;700&family=Noto+Serif+SC:wght@500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFE9DC; --paper-2:#E6DFCD; --card:#FBF8F0;
+    --ink:#211C16; --ink-soft:#6B6353; --line:#CFC6AE; --line-soft:#DED6C0;
+    --accent:#E2682C; --accent-2:#1F6F63;
+    --shadow:0 1px 0 #fff8, 0 18px 40px -22px #2a230f55;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:"DM Sans",system-ui,sans-serif;background:var(--paper);color:var(--ink);
+    background-image:radial-gradient(circle at 12% 18%, #fff5 0, transparent 38%),radial-gradient(circle at 88% 90%, #c8bd9c33 0, transparent 45%);}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.5;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='80' height='80' filter='url(%23n)' opacity='0.035'/></svg>");}
+  .wrap{display:flex;min-height:100vh;position:relative;z-index:2}
+  .panel{width:392px;flex:none;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#F4EFE2,#EAE3D0);border-right:1px solid var(--line);padding:26px 24px 90px;}
+  .brand h1{font-family:"Noto Serif SC","Fraunces",serif;font-weight:900;font-size:32px;letter-spacing:2px;line-height:1.12;margin:0 0 9px;color:#E2682C}
+  .en{font-family:"Fraunces",serif;font-weight:500;font-size:11px;letter-spacing:4px;color:var(--ink-soft);opacity:.8;margin:0 0 4px}
+  .credit{font-family:"Fraunces",serif;font-size:10.5px;letter-spacing:.5px;color:var(--ink-soft);opacity:.7;text-align:right;margin:0 0 14px}
+  .tag{font-size:12.5px;color:var(--ink-soft);margin-bottom:20px;line-height:1.5}
+  .seg4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+  .seg4 button{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px 6px;font-family:"DM Sans";font-weight:700;font-size:13px;color:var(--ink-soft);cursor:pointer;transition:.16s}
+  .seg4 button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .group{background:var(--card);border:1px solid var(--line-soft);border-radius:15px;padding:15px 15px 17px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .group>h2{font-family:"Fraunces",serif;font-size:14px;font-weight:600;letter-spacing:.3px;display:flex;align-items:center;gap:8px;margin-bottom:13px;color:var(--ink)}
+  .group>h2 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .row{margin-bottom:13px}.row:last-child{margin-bottom:0}
+  label.lab{display:flex;justify-content:space-between;font-size:12px;font-weight:500;color:var(--ink-soft);margin-bottom:7px}
+  label.lab .val{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700}
+  input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:4px;background:var(--paper-2);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--ink);border:3px solid var(--card);box-shadow:0 1px 4px #0003;cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);border:3px solid var(--card);cursor:pointer}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:7px 11px;font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.16s}
+  .chip:hover{border-color:var(--ink-soft)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .colorrow{display:flex;align-items:center;gap:10px}
+  input[type=color]{width:42px;height:32px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:2px;cursor:pointer;flex:none}
+  .hex{font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink-soft);text-transform:uppercase}
+  .switch{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--ink);font-weight:500}
+  .toggle{position:relative;width:42px;height:23px;flex:none}
+  .toggle input{opacity:0;width:0;height:0}
+  .toggle span{position:absolute;inset:0;background:var(--paper-2);border:1px solid var(--line);border-radius:20px;transition:.2s;cursor:pointer}
+  .toggle span::after{content:"";position:absolute;width:17px;height:17px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px #0004}
+  .toggle input:checked + span{background:var(--accent-2);border-color:var(--accent-2)}
+  .toggle input:checked + span::after{transform:translateX(19px)}
+  textarea,input[type=text],input[type=number]{width:100%;font-family:"DM Sans";font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--paper);color:var(--ink);resize:vertical}
+  .seg-list .sec-item{display:flex;gap:7px;align-items:center;margin-bottom:7px}
+  .seg-list .idx{width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:10px;display:flex;align-items:center;justify-content:center;flex:none;font-weight:700}
+  .seg-list input[type=text]{flex:1}
+  .seg-list input[type=color]{width:30px;height:30px}
+  /* color-block palette picker (PowerPoint-style, collapsible): trigger + panel */
+  .seg-list .sec-item{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:10px}
+  .palette{display:flex;flex-direction:column;gap:6px;flex-basis:100%;margin-top:2px}
+  .pal-trigger{display:flex;align-items:center;gap:8px;align-self:flex-start;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:5px 9px;cursor:pointer;font-family:"DM Sans";font-size:12px;color:var(--ink)}
+  .pal-trigger:hover{border-color:var(--ink-soft)}
+  .pal-dot{width:18px;height:18px;border-radius:5px;box-shadow:0 0 0 1px rgba(0,0,0,0.18) inset;flex:none}
+  .pal-cap{font-weight:500;color:var(--ink-soft)}
+  .pal-caret{font-size:10px;color:var(--ink-soft);transition:transform .15s}
+  .pal-trigger.open .pal-caret{transform:rotate(180deg)}
+  .pal-panel{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:8px;display:flex;flex-direction:column;gap:5px}
+  .pal-grid{display:flex;gap:4px}
+  .pal-col{display:flex;flex-direction:column;gap:3px;flex:1}
+  .pal-std{display:flex;gap:4px;margin-top:3px}
+  .palette .sw{height:15px;border-radius:3px;cursor:pointer;border:2px solid transparent;box-shadow:0 0 0 1px rgba(0,0,0,0.14) inset;transition:transform .08s}
+  .pal-col .sw{width:100%}
+  .pal-std .sw{flex:1}
+  .palette .sw:hover{transform:scale(1.18);position:relative;z-index:2}
+  .palette .sw.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .timefield{display:flex;gap:8px;align-items:center}
+  .timefield input{width:64px;text-align:center}
+  .timefield .sep{font-weight:700;color:var(--ink-soft)}
+  .hint{font-size:11px;color:var(--ink-soft);line-height:1.5;margin-top:6px}
+  .usebox{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+  .userow{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line-soft);border-radius:12px;padding:11px 12px}
+  .usetag{flex:none;font-family:"DM Sans";font-weight:700;font-size:11.5px;padding:5px 9px;border-radius:8px;white-space:nowrap;color:#fff}
+  .usetag.tag-link{background:var(--accent)}
+  .usetag.tag-dl{background:var(--accent-2)}
+  .usetxt{font-size:11.5px;color:var(--ink-soft);line-height:1.65}
+  .usetxt b{color:var(--ink);font-weight:700}
+  .usenote{display:block;margin-top:5px;color:var(--ink-soft);opacity:.92}
+  .icongrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .icongrid .ic{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.14s}
+  .icongrid .ic svg{width:60%;height:60%}
+  .icongrid .ic.on{background:var(--accent);border-color:var(--accent)}
+  .icongrid .ic.on svg *{fill:#fff!important;stroke:#fff!important}
+  .stage-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:22px;min-width:0}
+  .stage-head{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+  .stage-head .t{font-family:"Fraunces",serif;font-size:18px;font-weight:600}
+  .stage-head .s{font-size:12px;color:var(--ink-soft);margin-top:3px;max-width:480px;line-height:1.4}
+  .stage{width:100%;max-width:900px;aspect-ratio:900/580;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+  .stage.checker{background-image:repeating-conic-gradient(#0000 0 25%, #00000008 0 50%);background-size:24px 24px}
+  #svgHost{width:100%;height:100%}#svgHost svg{width:100%;height:100%;display:block}
+  #svgHost.flash{animation:flashAlert .55s steps(1) infinite}
+  @keyframes flashAlert{0%,100%{opacity:1;filter:none}50%{opacity:.25;filter:drop-shadow(0 0 22px var(--accent))}}
+  .play-fab{display:flex;align-items:center;gap:9px}
+  .play-fab button{width:38px;height:38px;border-radius:11px;border:1px solid var(--ink);background:var(--card);cursor:pointer;font-size:14px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.15s}
+  .play-fab button:hover{background:var(--ink);color:var(--paper)}
+  .clock{font-variant-numeric:tabular-nums;font-family:"Fraunces",serif;font-size:20px;font-weight:600;min-width:78px}
+  .exportbar{width:100%;max-width:900px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .scale-seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--card)}
+  .scale-seg button{border:0;background:transparent;padding:8px 12px;font-family:"DM Sans";font-weight:700;font-size:12px;color:var(--ink-soft);cursor:pointer}
+  .scale-seg button.on{background:var(--ink);color:var(--paper)}
+  .btn{border:1px solid var(--ink);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 13px;font-family:"DM Sans";font-weight:700;font-size:12.5px;cursor:pointer;transition:.16s}
+  .btn:hover{background:var(--ink);color:var(--paper)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .grow{flex:1}
+  #busy{position:fixed;inset:0;background:#0e0c08cc;backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:30;color:#fff}
+  #busy .bar{width:240px;height:8px;border-radius:6px;background:#ffffff22;overflow:hidden}
+  #busy .barfill{height:100%;width:0;background:var(--accent);transition:width .1s}
+  @media(max-width:1080px){.wrap{flex-direction:column}.panel{width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line)}.stage-wrap{padding:24px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="panel">
+    <div class="brand"><h1>进度条工坊</h1></div>
+    <div class="en">PROGRESS STUDIO · FOR SLIDES</div>
+    <div class="credit">Designed by Yuanyuan Wang</div>
+    <p class="tag">为 PPT 定制的时间进度条 — 四种形态、装饰花边、点亮元素、到点闪烁提醒，可导出图片 / GIF 动图 / 实时计时器。</p>
+
+    <div class="seg4" id="shapeSeg" style="grid-template-columns:1fr 1fr;gap:7px">
+      <button data-shape="heart"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:4px" aria-hidden="true"><path d="M12 5.5 C10.6 2.7 7 2.4 4.8 4.6 C2.7 6.7 3 10 5.3 12.2 L12 18.6 L18.7 12.2 C21 10 21.3 6.7 19.2 4.6 C17 2.4 13.4 2.7 12 5.5 Z" fill="currentColor"/></svg>心形</button>
+      <button data-shape="clover"><svg viewBox="0 0 24 26" width="14" height="15" style="vertical-align:-3px;margin-right:4px" aria-hidden="true"><g fill="currentColor"><path d="M 12 11 C 15.63 16.28 14.97 22.22 12.33 23.87" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M 0 0 C -1.24 -2.06 -5.36 -2.47 -5.77 -5.36 C -6.19 -7.84 -3.71 -9.49 -1.24 -8.66 C -0.41 -8.25 0 -7.84 0 -7.22 C 0 -7.84 0.41 -8.25 1.24 -8.66 C 3.71 -9.49 6.19 -7.84 5.77 -5.36 C 5.36 -2.47 1.24 -2.06 0 0 Z" transform="translate(13.41 9.59) rotate(45)"/><path d="M 0 0 C -1.24 -2.06 -5.36 -2.47 -5.77 -5.36 C -6.19 -7.84 -3.71 -9.49 -1.24 -8.66 C -0.41 -8.25 0 -7.84 0 -7.22 C 0 -7.84 0.41 -8.25 1.24 -8.66 C 3.71 -9.49 6.19 -7.84 5.77 -5.36 C 5.36 -2.47 1.24 -2.06 0 0 Z" transform="translate(13.41 12.41) rotate(135)"/><path d="M 0 0 C -1.24 -2.06 -5.36 -2.47 -5.77 -5.36 C -6.19 -7.84 -3.71 -9.49 -1.24 -8.66 C -0.41 -8.25 0 -7.84 0 -7.22 C 0 -7.84 0.41 -8.25 1.24 -8.66 C 3.71 -9.49 6.19 -7.84 5.77 -5.36 C 5.36 -2.47 1.24 -2.06 0 0 Z" transform="translate(10.59 12.41) rotate(225)"/><path d="M 0 0 C -1.24 -2.06 -5.36 -2.47 -5.77 -5.36 C -6.19 -7.84 -3.71 -9.49 -1.24 -8.66 C -0.41 -8.25 0 -7.84 0 -7.22 C 0 -7.84 0.41 -8.25 1.24 -8.66 C 3.71 -9.49 6.19 -7.84 5.77 -5.36 C 5.36 -2.47 1.24 -2.06 0 0 Z" transform="translate(10.59 9.59) rotate(315)"/><circle cx="12" cy="11" r="1"/></g></svg>四叶草</button>
+      <button data-shape="pinwheel"><svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-3px;margin-right:3px" aria-hidden="true"><g fill="currentColor"><path d="M 0 0 C -0.33 -2.79 -0.41 -5.74 -0.49 -8.2 C 1.31 -8.2 4.26 -7.05 5.41 -5.41 C 4.92 -3.28 1.8 -0.82 0 0 Z" transform="translate(12 10.5) rotate(0)"/><path d="M 0 0 C -0.33 -2.79 -0.41 -5.74 -0.49 -8.2 C 1.31 -8.2 4.26 -7.05 5.41 -5.41 C 4.92 -3.28 1.8 -0.82 0 0 Z" opacity="0.6" transform="translate(12 10.5) rotate(72)"/><path d="M 0 0 C -0.33 -2.79 -0.41 -5.74 -0.49 -8.2 C 1.31 -8.2 4.26 -7.05 5.41 -5.41 C 4.92 -3.28 1.8 -0.82 0 0 Z" transform="translate(12 10.5) rotate(144)"/><path d="M 0 0 C -0.33 -2.79 -0.41 -5.74 -0.49 -8.2 C 1.31 -8.2 4.26 -7.05 5.41 -5.41 C 4.92 -3.28 1.8 -0.82 0 0 Z" opacity="0.6" transform="translate(12 10.5) rotate(216)"/><path d="M 0 0 C -0.33 -2.79 -0.41 -5.74 -0.49 -8.2 C 1.31 -8.2 4.26 -7.05 5.41 -5.41 C 4.92 -3.28 1.8 -0.82 0 0 Z" transform="translate(12 10.5) rotate(288)"/><rect x="11.4" y="10.5" width="1.2" height="12" rx="0.6"/><circle cx="12" cy="10.5" r="1.4"/></g></svg>风车</button>
+      <button data-shape="petal">✿ 花朵</button>
+      <button data-shape="bar" class="on">▭ 条状</button>
+      <button data-shape="ring">◍ 圆环/圆饼</button>
+    </div>
+
+    <div class="group">
+      <h2><span class="dot"></span>时间与进度</h2>
+      <div class="row">
+        <label class="lab">总时长 (分 : 秒)</label>
+        <div class="timefield">
+          <input type="number" id="tMin" value="2" min="0" max="999">
+          <span class="sep">:</span>
+          <input type="number" id="tSec" value="30" min="0" max="59">
+          <span style="font-size:11px;color:var(--ink-soft)">驱动计时</span>
+        </div>
+      </div>
+      <div class="row">
+        <label class="lab">当前进度 <span class="val"><span id="pVal">42</span>%</span></label>
+        <input type="range" id="prog" min="0" max="100" value="42">
+      </div>
+      <div class="row"><div class="switch">显示进度百分比<label class="toggle"><input type="checkbox" id="showPct" checked><span></span></label></div></div>
+      <div class="row">
+        <label class="lab">推进方式</label>
+        <div class="chips" id="growSeg">
+          <div class="chip on" data-grow="fill">由无到有</div>
+          <div class="chip" data-grow="deplete">由满退散</div>
+          <div class="chip" data-grow="glow">渐深点亮</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2><span class="dot"></span>颜色与质感</h2>
+      <div class="row"><label class="lab">填充色</label><div class="colorrow"><input type="color" id="fillColor" value="#E2682C"><span class="hex" id="fillHex">#E2682C</span></div></div>
+      <div class="row"><label class="lab">边框 / 线条色</label><div class="colorrow"><input type="color" id="strokeColor" value="#211C16"><span class="hex" id="strokeHex">#211C16</span></div></div>
+      <div class="row"><label class="lab">轨道底色（未完成）</label><div class="colorrow"><input type="color" id="trackColor" value="#E4DCC6"><span class="hex" id="trackHex">#E4DCC6</span></div></div>
+      <div class="row"><label class="lab">饱和度 <span class="val"><span id="satVal">100</span>%</span></label><input type="range" id="sat" min="0" max="180" value="100"></div>
+      <div class="row"><label class="lab">填充不透明度 <span class="val"><span id="opVal">100</span>%</span></label><input type="range" id="op" min="10" max="100" value="100"></div>
+      <div class="row"><label class="lab">边框粗细 <span class="val"><span id="bwVal">2</span>px</span></label><input type="range" id="bw" min="0" max="14" value="2"></div>
+    </div>
+
+    <div class="group" id="barGroup">
+      <h2><span class="dot"></span>条状形态</h2>
+      <p class="hint" style="margin-top:-4px">条的外轮廓即进度条本体，没有额外方框；边缘造型会直接改变这条进度条的边缘。</p>
+      <div class="row" style="margin-top:11px"><label class="lab">走向</label><div class="chips" id="orientSeg"><div class="chip on" data-or="h">水平</div><div class="chip" data-or="v">垂直</div></div></div>
+      <div class="row"><label class="lab">长度 <span class="val"><span id="lenVal">600</span>px</span></label><input type="range" id="len" min="160" max="800" value="600"></div>
+      <div class="row"><label class="lab">厚度 <span class="val"><span id="thkVal">60</span>px</span></label><input type="range" id="thk" min="14" max="240" value="60"></div>
+      <div class="row"><label class="lab">边角</label><div class="chips" id="cornerSeg"><div class="chip on" data-corner="round">圆角</div><div class="chip" data-corner="sharp">尖角(切角)</div><div class="chip" data-corner="square">直角</div></div></div>
+      <div class="row" id="radiusRow"><label class="lab">圆角弧度 <span class="val"><span id="radVal">28</span>px</span></label><input type="range" id="rad" min="0" max="120" value="28"></div>
+      <div class="row" id="chamferRow" style="display:none"><label class="lab">切角度数 <span class="val"><span id="chVal">22</span>°</span></label><input type="range" id="ch" min="5" max="45" value="22"></div>
+      <div class="row"><label class="lab">边缘造型</label><div class="chips" id="edgeSeg">
+        <div class="chip on" data-edge="solid">直线</div><div class="chip" data-edge="dashed">虚线</div><div class="chip" data-edge="dotted">点线</div>
+        <div class="chip" data-edge="wave">波浪</div><div class="chip" data-edge="zigzag">锯齿</div></div>
+        <p class="hint">「波浪 / 锯齿」会重塑进度条的上下边缘，填充也会跟随外形。</p>
+      </div>
+    </div>
+
+    <div class="group" id="ringGroup" style="display:none">
+      <h2><span class="dot"></span>圆环 / 圆饼分区</h2>
+      <div class="row"><label class="lab">外径 <span class="val"><span id="rOutVal">220</span>px</span></label><input type="range" id="rOut" min="120" max="270" value="220"></div>
+      <div class="row"><label class="lab">圆心孔径 <span class="val"><span id="rInVal">42</span>%</span></label><input type="range" id="rIn" min="0" max="85" value="42">
+        <p class="hint">拖到 <b>0</b> 即变成无孔的实心圆饼（圆形分区）；有孔即为圆环。</p></div>
+      <div class="row"><div class="switch">实心圆饼时中心显示百分比<label class="toggle"><input type="checkbox" id="pieCenterNum" checked><span></span></label></div></div>
+      <div class="row"><label class="lab">圆心 / 中心文字</label><input type="text" id="centerText" value="进行中"></div>
+      <div class="row commonseg"></div>
+    </div>
+
+    <div class="group" id="petalGroup" style="display:none">
+      <h2><span class="dot"></span>花瓣分区</h2>
+      <p class="hint" style="margin-top:-4px">一朵比例固定的花，整体等比缩放即可，花瓣不会变形。</p>
+      <div class="row" style="margin-top:11px"><label class="lab">整体大小 <span class="val"><span id="petalSizeVal">230</span>px</span></label><input type="range" id="petalSize" min="120" max="270" value="230"></div>
+      <div class="row"><label class="lab">花心文字</label><input type="text" id="coreText" value="绽放"></div>
+      <div class="row commonseg"></div>
+    </div>
+
+    <div class="group" id="pinwheelGroup" style="display:none">
+      <h2><span class="dot"></span>风车分区</h2>
+      <p class="hint" style="margin-top:-4px">固定 5 片扇叶，比例固定、整体等比缩放。每片颜色与文字可自定义。</p>
+      <div class="row" style="margin-top:11px"><label class="lab">整体大小 <span class="val"><span id="pwSizeVal">200</span>px</span></label><input type="range" id="pwSize" min="120" max="270" value="200"></div>
+      <div class="row"><label class="lab">中心文字</label><input type="text" id="pwCoreText" value="进行中"></div>
+      <div class="row commonseg"></div>
+    </div>
+
+    <div class="group" id="heartGroup" style="display:none">
+      <h2><span class="dot"></span>心形分区</h2>
+      <p class="hint" style="margin-top:-4px">固定 2 片（左 / 右），比例固定、整体等比缩放。每片颜色与文字可自定义。</p>
+      <div class="row" style="margin-top:11px"><label class="lab">整体大小 <span class="val"><span id="heartSizeVal">200</span>px</span></label><input type="range" id="heartSize" min="120" max="280" value="200"></div>
+      <div class="row commonseg"></div>
+    </div>
+
+    <div class="group" id="cloverGroup" style="display:none">
+      <h2><span class="dot"></span>四叶草分区</h2>
+      <p class="hint" style="margin-top:-4px">固定 4 片叶，比例固定、整体等比缩放。每片颜色与文字可自定义。</p>
+      <div class="row" style="margin-top:11px"><label class="lab">整体大小 <span class="val"><span id="cloverSizeVal">155</span>px</span></label><input type="range" id="cloverSize" min="120" max="270" value="155"></div>
+      <div class="row commonseg"></div>
+    </div>
+
+    <div class="group">
+      <h2><span class="dot"></span>点亮小元素 (里程碑)</h2>
+      <div class="row"><div class="switch">启用元素里程碑<label class="toggle"><input type="checkbox" id="elemOn" checked><span></span></label></div></div>
+      <div id="elemBlock">
+        <div class="row"><label class="lab">图形（共 <span id="iconCount">0</span> 款）</label><div class="icongrid" id="iconGrid"></div></div>
+        <div class="row"><label class="lab">元素颜色</label>
+          <div class="switch" style="margin-bottom:8px">跟随填充色<label class="toggle"><input type="checkbox" id="elemFollow" checked><span></span></label></div>
+          <div id="elemColorRow" style="opacity:.45;pointer-events:none"><div id="elemPalette"></div></div>
+        </div>
+        <div class="row" id="elemCntRow"><label class="lab">数量 <span class="val"><span id="elemCntVal">5</span></span></label><input type="range" id="elemCnt" min="2" max="12" value="5"></div>
+        <p class="hint" id="elemCntNote" style="display:none;margin-top:-4px">当前形态里程碑数量自动与分区数量一致（风车固定 5 个）。</p>
+        <div class="row"><label class="lab">大小 <span class="val"><span id="elemSzVal">32</span>px</span></label><input type="range" id="elemSz" min="14" max="72" value="32"></div>
+        <div class="row"><div class="switch">未激活里程碑变暗<label class="toggle"><input type="checkbox" id="dimOff" checked><span></span></label></div></div>
+        <p class="hint" style="margin-top:-4px">里程碑始终会随进度点亮；此开关仅决定<strong>未经过</strong>的节点是否显示为暗态。</p>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2><span class="dot"></span>到点提醒</h2>
+      <div class="row"><div class="switch">完成时闪烁警示<label class="toggle"><input type="checkbox" id="alertOn" checked><span></span></label></div></div>
+      <div class="row"><label class="lab">闪烁持续 <span class="val"><span id="alertDurVal">60</span>秒</span></label><input type="range" id="alertDur" min="5" max="120" value="60"></div>
+      <p class="hint">进度到 100% / 时间归零后整张图闪烁提醒，持续设定秒数。点 ⏿ 预览。</p>
+    </div>
+  </aside>
+
+  <main class="stage-wrap">
+    <div class="stage-head">
+      <div>
+        <div class="t">实时预览</div>
+        <div class="s">画布 900 × 580 · 透明 PNG/SVG 贴入 PPT；GIF 循环播放；「实时演示」按真实时间运行不受翻页影响</div>
+      </div>
+      <div class="play-fab">
+        <div class="clock" id="clock">02:30</div>
+        <button id="alertPrev" title="预览闪烁提醒">⏿</button>
+        <button id="playBtn" title="按总时长自动推进">▶</button>
+        <button id="resetBtn" title="重置进度">↺</button>
+      </div>
+    </div>
+    <div class="stage checker" id="stage"><div id="svgHost"></div></div>
+    <div class="exportbar">
+      <div class="switch" style="gap:8px">透明背景<label class="toggle"><input type="checkbox" id="transBg" checked><span></span></label></div>
+      <span style="font-size:12px;color:var(--ink-soft)">倍率</span>
+      <div class="scale-seg" id="scaleSeg"><button data-s="1">1×</button><button data-s="2" class="on">2×</button><button data-s="3">3×</button></div>
+      <div class="grow"></div>
+      <button class="btn" id="dlSvg">SVG</button>
+      <button class="btn" id="dlPng">PNG</button>
+      <button class="btn" id="dlGif">⬇ GIF 动图</button>
+      <button class="btn" id="openTimer">▶ 实时演示</button>
+      <button class="btn primary" id="dlTimer">⬇ 计时器</button>
+      <button class="btn primary" id="copyEmbed">🔗 复制嵌入链接</button>
+    </div>
+    <div class="exportbar" style="margin-top:-8px">
+      <span style="font-size:11.5px;color:var(--ink-soft)">GIF ·</span>
+      <span style="font-size:11.5px;color:var(--ink-soft)">时长</span>
+      <input type="range" id="gifDur" min="2" max="30" value="8" style="width:110px">
+      <span style="font-size:11.5px;color:var(--ink);font-weight:700" id="gifDurVal">8s</span>
+      <span style="font-size:11.5px;color:var(--ink-soft)">帧率</span>
+      <div class="scale-seg" id="fpsSeg"><button data-f="10">10</button><button data-f="15" class="on">15</button><button data-f="20">20</button></div>
+      <span style="font-size:11.5px;color:var(--ink-soft)">GIF 底色</span>
+      <input type="color" id="gifBg" value="#FFFFFF" style="width:34px;height:28px">
+      <span class="switch" style="gap:6px;font-size:11.5px">含完成闪烁<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifFlash" checked><span></span></label></span>
+    </div>
+    <p class="hint" style="margin-top:6px">GIF 不支持透明背景，请将「GIF 底色」选成与幻灯片接近的颜色；需要真正透明请改用 PNG 导出。</p>
+    <div class="usebox">
+      <div class="userow" id="useEmbed" style="display:none">
+        <span class="usetag tag-link">🔗 复制嵌入链接</span>
+        <div class="usetxt">
+          <b>嵌进 PPT 某一页里（翻到即显示、自动计时，背景透明）。</b>
+          ① 在本工具调好样式后点「复制嵌入链接」。② PowerPoint → 插入 → 获取加载项 → 搜 <b>Web Viewer</b> → 添加 → 在幻灯片上拖出一个框 → 粘贴链接。③ 拖动 / 缩放该框即可调位置和大小（框比例尽量贴合形态：横条拉扁长、圆环/四叶草拉近正方）。
+          <span class="usenote">需要先把本工具部署到 https 网址（如 Vercel）；放映时须联网。<b>Windows 桌面版 PowerPoint 支持最好；Mac 版 / 网页版的 Web Viewer 常不可用——Mac 用户请改用下方「下载计时器」。</b></span>
+        </div>
+      </div>
+      <div class="userow" id="useTimer" style="display:none">
+        <span class="usetag tag-dl">⬇ 计时器</span>
+        <div class="usetxt">
+          <b>下载一个独立计时器网页，全屏单独播放（跨系统通用、无需联网、无需加载项）。</b>
+          ① 点「计时器」下载 HTML。② 双击用浏览器打开 → 按 <b>F11</b>（Mac 用浏览器全屏）进入全屏 → 点「开始计时」。③ 演讲到该环节时，从 PPT 切出来全屏播放，结束会闪烁提醒；之后用 <b>Alt+Tab</b>（Mac 用 <b>⌘+Tab</b>）切回 PPT。也可放副屏供自己控场。
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="busy"><div style="font-family:Fraunces,serif;font-size:18px">正在编码 GIF…</div><div class="bar"><div class="barfill" id="busyFill"></div></div><div style="font-size:12px;opacity:.7" id="busyTxt">0%</div><button id="busyCancel" style="margin-top:14px;font-family:'DM Sans';font-size:13px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:#fff;border-radius:8px;padding:7px 18px;cursor:pointer">✕ 取消</button></div>
+
+<script>/*
+ * NeuQuant Neural-Net Quantization Algorithm
+ * ------------------------------------------
+ *
+ * Copyright (c) 1994 Anthony Dekker
+ *
+ * NEUQUANT Neural-Net quantization algorithm by Anthony Dekker, 1994. See
+ * "Kohonen neural networks for optimal colour quantization" in "Network:
+ * Computation in Neural Systems" Vol. 5 (1994) pp 351-367. for a discussion of
+ * the algorithm.
+ *
+ * Any party obtaining a copy of these files from the author, directly or
+ * indirectly, is granted, free of charge, a full and unrestricted irrevocable,
+ * world-wide, paid up, royalty-free, nonexclusive right and license to deal in
+ * this software and documentation files (the "Software"), including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons who
+ * receive copies from any such party to do so, with the only requirement being
+ * that this copyright notice remain intact.
+ */
+
+/*
+ * This class handles Neural-Net quantization algorithm
+ * @author Kevin Weiner (original Java version - kweiner@fmsware.com)
+ * @author Thibault Imbert (AS3 version - bytearray.org)
+ * @author Kevin Kwok (JavaScript version - https://github.com/antimatter15/jsgif)
+ * @version 0.1 AS3 implementation
+ */
+
+NeuQuant = function() {
+
+	var exports = {};
+	var netsize = 256; /* number of colours used */
+
+	/* four primes near 500 - assume no image has a length so large */
+	/* that it is divisible by all four primes */
+
+	var prime1 = 499;
+	var prime2 = 491;
+	var prime3 = 487;
+	var prime4 = 503;
+	var minpicturebytes = (3 * prime4); /* minimum size for input image */
+
+	/*
+	 * Program Skeleton ---------------- [select samplefac in range 1..30] [read
+	 * image from input file] pic = (unsigned char*) malloc(3*width*height);
+	 * initnet(pic,3*width*height,samplefac); learn(); unbiasnet(); [write output
+	 * image header, using writecolourmap(f)] inxbuild(); write output image using
+	 * inxsearch(b,g,r)
+	 */
+
+	/*
+	 * Network Definitions -------------------
+	 */
+
+	var maxnetpos = (netsize - 1);
+	var netbiasshift = 4; /* bias for colour values */
+	var ncycles = 100; /* no. of learning cycles */
+
+	/* defs for freq and bias */
+	var intbiasshift = 16; /* bias for fractions */
+	var intbias = (1 << intbiasshift);
+	var gammashift = 10; /* gamma = 1024 */
+	var gamma = (1 << gammashift);
+	var betashift = 10;
+	var beta = (intbias >> betashift); /* beta = 1/1024 */
+	var betagamma = (intbias << (gammashift - betashift));
+
+	/* defs for decreasing radius factor */
+	var initrad = (netsize >> 3); /* for 256 cols, radius starts */
+	var radiusbiasshift = 6; /* at 32.0 biased by 6 bits */
+	var radiusbias = (1 << radiusbiasshift);
+	var initradius = (initrad * radiusbias); /* and decreases by a */
+	var radiusdec = 30; /* factor of 1/30 each cycle */
+
+	/* defs for decreasing alpha factor */
+	var alphabiasshift = 10; /* alpha starts at 1.0 */
+	var initalpha = (1 << alphabiasshift);
+	var alphadec; /* biased by 10 bits */
+
+	/* radbias and alpharadbias used for radpower calculation */
+	var radbiasshift = 8;
+	var radbias = (1 << radbiasshift);
+	var alpharadbshift = (alphabiasshift + radbiasshift);
+	var alpharadbias = (1 << alpharadbshift);
+
+	/*
+	 * Types and Global Variables --------------------------
+	 */
+
+	var thepicture; /* the input image itself */
+	var lengthcount; /* lengthcount = H*W*3 */
+	var samplefac; /* sampling factor 1..30 */
+
+	// typedef int pixel[4]; /* BGRc */
+	var network; /* the network itself - [netsize][4] */
+	var netindex = [];
+
+	/* for network lookup - really 256 */
+	var bias = [];
+
+	/* bias and freq arrays for learning */
+	var freq = [];
+	var radpower = [];
+
+	var NeuQuant = exports.NeuQuant = function NeuQuant(thepic, len, sample) {
+
+		var i;
+		var p;
+
+		thepicture = thepic;
+		lengthcount = len;
+		samplefac = sample;
+
+		network = new Array(netsize);
+
+		for (i = 0; i < netsize; i++) {
+
+			network[i] = new Array(4);
+			p = network[i];
+			p[0] = p[1] = p[2] = (i << (netbiasshift + 8)) / netsize;
+			freq[i] = intbias / netsize; /* 1/netsize */
+			bias[i] = 0;
+		}
+	};
+
+	var colorMap = function colorMap() {
+
+		var map = [];
+		var index = new Array(netsize);
+
+		for (var i = 0; i < netsize; i++)
+			index[network[i][3]] = i;
+
+		var k = 0;
+		for (var l = 0; l < netsize; l++) {
+			var j = index[l];
+			map[k++] = (network[j][0]);
+			map[k++] = (network[j][1]);
+			map[k++] = (network[j][2]);
+		}
+
+		return map;
+	};
+
+	/*
+	 * Insertion sort of network and building of netindex[0..255] (to do after
+	 * unbias)
+	 * -------------------------------------------------------------------------------
+	 */
+
+	var inxbuild = function inxbuild() {
+
+		var i;
+		var j;
+		var smallpos;
+		var smallval;
+		var p;
+		var q;
+		var previouscol;
+		var startpos;
+
+		previouscol = 0;
+		startpos = 0;
+		for (i = 0; i < netsize; i++) {
+
+			p = network[i];
+			smallpos = i;
+			smallval = p[1]; /* index on g */
+
+			/* find smallest in i..netsize-1 */
+			for (j = i + 1; j < netsize; j++) {
+
+				q = network[j];
+				if (q[1] < smallval) { /* index on g */
+					smallpos = j;
+					smallval = q[1]; /* index on g */
+				}
+			}
+			q = network[smallpos];
+
+			/* swap p (i) and q (smallpos) entries */
+			if (i != smallpos) {
+				j = q[0];
+				q[0] = p[0];
+				p[0] = j;
+				j = q[1];
+				q[1] = p[1];
+				p[1] = j;
+				j = q[2];
+				q[2] = p[2];
+				p[2] = j;
+				j = q[3];
+				q[3] = p[3];
+				p[3] = j;
+			}
+
+			/* smallval entry is now in position i */
+
+			if (smallval != previouscol) {
+
+				netindex[previouscol] = (startpos + i) >> 1;
+
+				for (j = previouscol + 1; j < smallval; j++) netindex[j] = i;
+
+				previouscol = smallval;
+				startpos = i;
+			}
+		}
+
+		netindex[previouscol] = (startpos + maxnetpos) >> 1;
+		for (j = previouscol + 1; j < 256; j++) netindex[j] = maxnetpos; /* really 256 */
+	};
+
+	/*
+	 * Main Learning Loop ------------------
+	 */
+
+	var learn = function learn() {
+
+		var i;
+		var j;
+		var b;
+		var g;
+		var r;
+		var radius;
+		var rad;
+		var alpha;
+		var step;
+		var delta;
+		var samplepixels;
+		var p;
+		var pix;
+		var lim;
+
+		if (lengthcount < minpicturebytes) samplefac = 1;
+
+		alphadec = 30 + ((samplefac - 1) / 3);
+		p = thepicture;
+		pix = 0;
+		lim = lengthcount;
+		samplepixels = lengthcount / (3 * samplefac);
+		delta = (samplepixels / ncycles) | 0;
+		alpha = initalpha;
+		radius = initradius;
+
+		rad = radius >> radiusbiasshift;
+		if (rad <= 1) rad = 0;
+
+		for (i = 0; i < rad; i++) radpower[i] = alpha * (((rad * rad - i * i) * radbias) / (rad * rad));
+
+		if (lengthcount < minpicturebytes) step = 3;
+
+		else if ((lengthcount % prime1) !== 0) step = 3 * prime1;
+
+		else {
+
+			if ((lengthcount % prime2) !== 0) step = 3 * prime2;
+			else {
+				if ((lengthcount % prime3) !== 0) step = 3 * prime3;
+				else step = 3 * prime4;
+			}
+		}
+
+		i = 0;
+		while (i < samplepixels) {
+
+			b = (p[pix + 0] & 0xff) << netbiasshift;
+			g = (p[pix + 1] & 0xff) << netbiasshift;
+			r = (p[pix + 2] & 0xff) << netbiasshift;
+			j = contest(b, g, r);
+
+			altersingle(alpha, j, b, g, r);
+			if (rad !== 0) alterneigh(rad, j, b, g, r); /* alter neighbours */
+
+			pix += step;
+			if (pix >= lim) pix -= lengthcount;
+
+			i++;
+
+			if (delta === 0) delta = 1;
+
+			if (i % delta === 0) {
+				alpha -= alpha / alphadec;
+				radius -= radius / radiusdec;
+				rad = radius >> radiusbiasshift;
+
+				if (rad <= 1) rad = 0;
+
+				for (j = 0; j < rad; j++) radpower[j] = alpha * (((rad * rad - j * j) * radbias) / (rad * rad));
+			}
+		}
+	};
+
+	/*
+	 ** Search for BGR values 0..255 (after net is unbiased) and return colour
+	 * index
+	 * ----------------------------------------------------------------------------
+	 */
+
+	var map = exports.map = function map(b, g, r) {
+
+		var i;
+		var j;
+		var dist;
+		var a;
+		var bestd;
+		var p;
+		var best;
+
+		bestd = 1000; /* biggest possible dist is 256*3 */
+		best = -1;
+		i = netindex[g]; /* index on g */
+		j = i - 1; /* start at netindex[g] and work outwards */
+
+		while ((i < netsize) || (j >= 0)) {
+
+			if (i < netsize) {
+				p = network[i];
+				dist = p[1] - g; /* inx key */
+
+				if (dist >= bestd) i = netsize; /* stop iter */
+
+				else {
+
+					i++;
+					if (dist < 0) dist = -dist;
+					a = p[0] - b;
+					if (a < 0) a = -a;
+					dist += a;
+
+					if (dist < bestd) {
+						a = p[2] - r;
+						if (a < 0) a = -a;
+						dist += a;
+
+						if (dist < bestd) {
+							bestd = dist;
+							best = p[3];
+						}
+					}
+				}
+			}
+
+			if (j >= 0) {
+
+				p = network[j];
+				dist = g - p[1]; /* inx key - reverse dif */
+
+				if (dist >= bestd) j = -1; /* stop iter */
+
+				else {
+
+					j--;
+					if (dist < 0) dist = -dist;
+					a = p[0] - b;
+					if (a < 0) a = -a;
+					dist += a;
+
+					if (dist < bestd) {
+						a = p[2] - r;
+						if (a < 0) a = -a;
+						dist += a;
+						if (dist < bestd) {
+							bestd = dist;
+							best = p[3];
+						}
+					}
+				}
+			}
+		}
+
+		return (best);
+	};
+
+	var process = exports.process = function process() {
+		learn();
+		unbiasnet();
+		inxbuild();
+		return colorMap();
+	};
+
+	/*
+	 * Unbias network to give byte values 0..255 and record position i to prepare
+	 * for sort
+	 * -----------------------------------------------------------------------------------
+	 */
+
+	var unbiasnet = function unbiasnet() {
+
+		var i;
+		var j;
+
+		for (i = 0; i < netsize; i++) {
+			network[i][0] >>= netbiasshift;
+			network[i][1] >>= netbiasshift;
+			network[i][2] >>= netbiasshift;
+			network[i][3] = i; /* record colour no */
+		}
+	};
+
+	/*
+	 * Move adjacent neurons by precomputed alpha*(1-((i-j)^2/[r]^2)) in
+	 * radpower[|i-j|]
+	 * ---------------------------------------------------------------------------------
+	 */
+
+	var alterneigh = function alterneigh(rad, i, b, g, r) {
+
+		var j;
+		var k;
+		var lo;
+		var hi;
+		var a;
+		var m;
+		var p;
+
+		lo = i - rad;
+		if (lo < -1) lo = -1;
+
+		hi = i + rad;
+		if (hi > netsize) hi = netsize;
+
+		j = i + 1;
+		k = i - 1;
+		m = 1;
+
+		while ((j < hi) || (k > lo)) {
+			a = radpower[m++];
+
+			if (j < hi) {
+				p = network[j++];
+
+				try {
+					p[0] -= (a * (p[0] - b)) / alpharadbias;
+					p[1] -= (a * (p[1] - g)) / alpharadbias;
+					p[2] -= (a * (p[2] - r)) / alpharadbias;
+				} catch (e) {} // prevents 1.3 miscompilation
+			}
+
+			if (k > lo) {
+				p = network[k--];
+
+				try {
+					p[0] -= (a * (p[0] - b)) / alpharadbias;
+					p[1] -= (a * (p[1] - g)) / alpharadbias;
+					p[2] -= (a * (p[2] - r)) / alpharadbias;
+				} catch (e) {}
+			}
+		}
+	};
+
+	/*
+	 * Move neuron i towards biased (b,g,r) by factor alpha
+	 * ----------------------------------------------------
+	 */
+
+	var altersingle = function altersingle(alpha, i, b, g, r) {
+
+		/* alter hit neuron */
+		var n = network[i];
+		n[0] -= (alpha * (n[0] - b)) / initalpha;
+		n[1] -= (alpha * (n[1] - g)) / initalpha;
+		n[2] -= (alpha * (n[2] - r)) / initalpha;
+	};
+
+	/*
+	 * Search for biased BGR values ----------------------------
+	 */
+
+	var contest = function contest(b, g, r) {
+
+		/* finds closest neuron (min dist) and updates freq */
+		/* finds best neuron (min dist-bias) and returns position */
+		/* for frequently chosen neurons, freq[i] is high and bias[i] is negative */
+		/* bias[i] = gamma*((1/netsize)-freq[i]) */
+
+		var i;
+		var dist;
+		var a;
+		var biasdist;
+		var betafreq;
+		var bestpos;
+		var bestbiaspos;
+		var bestd;
+		var bestbiasd;
+		var n;
+
+		bestd = ~ (1 << 31);
+		bestbiasd = bestd;
+		bestpos = -1;
+		bestbiaspos = bestpos;
+
+		for (i = 0; i < netsize; i++) {
+			n = network[i];
+			dist = n[0] - b;
+			if (dist < 0) dist = -dist;
+			a = n[1] - g;
+			if (a < 0) a = -a;
+			dist += a;
+			a = n[2] - r;
+			if (a < 0) a = -a;
+			dist += a;
+
+			if (dist < bestd) {
+				bestd = dist;
+				bestpos = i;
+			}
+
+			biasdist = dist - ((bias[i]) >> (intbiasshift - netbiasshift));
+
+			if (biasdist < bestbiasd) {
+				bestbiasd = biasdist;
+				bestbiaspos = i;
+			}
+
+			betafreq = (freq[i] >> betashift);
+			freq[i] -= betafreq;
+			bias[i] += (betafreq << gammashift);
+		}
+
+		freq[bestpos] += beta;
+		bias[bestpos] -= betagamma;
+		return (bestbiaspos);
+	};
+
+	NeuQuant.apply(this, arguments);
+	return exports;
+};
+/**
+ * This class handles LZW encoding
+ * Adapted from Jef Poskanzer's Java port by way of J. M. G. Elliott.
+ * @author Kevin Weiner (original Java version - kweiner@fmsware.com)
+ * @author Thibault Imbert (AS3 version - bytearray.org)
+ * @author Kevin Kwok (JavaScript version - https://github.com/antimatter15/jsgif)
+ * @version 0.1 AS3 implementation
+ */
+
+LZWEncoder = function() {
+
+	var exports = {};
+	var EOF = -1;
+	var imgW;
+	var imgH;
+	var pixAry;
+	var initCodeSize;
+	var remaining;
+	var curPixel;
+
+	// GIFCOMPR.C - GIF Image compression routines
+	// Lempel-Ziv compression based on 'compress'. GIF modifications by
+	// David Rowley (mgardi@watdcsu.waterloo.edu)
+	// General DEFINEs
+
+	var BITS = 12;
+	var HSIZE = 5003; // 80% occupancy
+
+	// GIF Image compression - modified 'compress'
+	// Based on: compress.c - File compression ala IEEE Computer, June 1984.
+	// By Authors: Spencer W. Thomas (decvax!harpo!utah-cs!utah-gr!thomas)
+	// Jim McKie (decvax!mcvax!jim)
+	// Steve Davies (decvax!vax135!petsd!peora!srd)
+	// Ken Turkowski (decvax!decwrl!turtlevax!ken)
+	// James A. Woods (decvax!ihnp4!ames!jaw)
+	// Joe Orost (decvax!vax135!petsd!joe)
+
+	var n_bits; // number of bits/code
+	var maxbits = BITS; // user settable max # bits/code
+	var maxcode; // maximum code, given n_bits
+	var maxmaxcode = 1 << BITS; // should NEVER generate this code
+	var htab = [];
+	var codetab = [];
+	var hsize = HSIZE; // for dynamic table sizing
+	var free_ent = 0; // first unused entry
+
+	// block compression parameters -- after all codes are used up,
+	// and compression rate changes, start over.
+
+	var clear_flg = false;
+
+	// Algorithm: use open addressing double hashing (no chaining) on the
+	// prefix code / next character combination. We do a variant of Knuth's
+	// algorithm D (vol. 3, sec. 6.4) along with G. Knott's relatively-prime
+	// secondary probe. Here, the modular division first probe is gives way
+	// to a faster exclusive-or manipulation. Also do block compression with
+	// an adaptive reset, whereby the code table is cleared when the compression
+	// ratio decreases, but after the table fills. The variable-length output
+	// codes are re-sized at this point, and a special CLEAR code is generated
+	// for the decompressor. Late addition: construct the table according to
+	// file size for noticeable speed improvement on small files. Please direct
+	// questions about this implementation to ames!jaw.
+
+	var g_init_bits;
+	var ClearCode;
+	var EOFCode;
+
+	// output
+	// Output the given code.
+	// Inputs:
+	// code: A n_bits-bit integer. If == -1, then EOF. This assumes
+	// that n_bits =< wordsize - 1.
+	// Outputs:
+	// Outputs code to the file.
+	// Assumptions:
+	// Chars are 8 bits long.
+	// Algorithm:
+	// Maintain a BITS character long buffer (so that 8 codes will
+	// fit in it exactly). Use the VAX insv instruction to insert each
+	// code in turn. When the buffer fills up empty it and start over.
+
+	var cur_accum = 0;
+	var cur_bits = 0;
+	var masks = [0x0000, 0x0001, 0x0003, 0x0007, 0x000F, 0x001F, 0x003F, 0x007F, 0x00FF, 0x01FF, 0x03FF, 0x07FF, 0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF];
+
+	// Number of characters so far in this 'packet'
+	var a_count;
+
+	// Define the storage for the packet accumulator
+	var accum = [];
+
+	var LZWEncoder = exports.LZWEncoder = function LZWEncoder(width, height, pixels, color_depth) {
+		imgW = width;
+		imgH = height;
+		pixAry = pixels;
+		initCodeSize = Math.max(2, color_depth);
+	};
+
+	// Add a character to the end of the current packet, and if it is 254
+	// characters, flush the packet to disk.
+	var char_out = function char_out(c, outs) {
+		accum[a_count++] = c;
+		if (a_count >= 254) flush_char(outs);
+	};
+
+	// Clear out the hash table
+	// table clear for block compress
+
+	var cl_block = function cl_block(outs) {
+		cl_hash(hsize);
+		free_ent = ClearCode + 2;
+		clear_flg = true;
+		output(ClearCode, outs);
+	};
+
+	// reset code table
+	var cl_hash = function cl_hash(hsize) {
+		for (var i = 0; i < hsize; ++i) htab[i] = -1;
+	};
+
+	var compress = exports.compress = function compress(init_bits, outs) {
+
+		var fcode;
+		var i; /* = 0 */
+		var c;
+		var ent;
+		var disp;
+		var hsize_reg;
+		var hshift;
+
+		// Set up the globals: g_init_bits - initial number of bits
+		g_init_bits = init_bits;
+
+		// Set up the necessary values
+		clear_flg = false;
+		n_bits = g_init_bits;
+		maxcode = MAXCODE(n_bits);
+
+		ClearCode = 1 << (init_bits - 1);
+		EOFCode = ClearCode + 1;
+		free_ent = ClearCode + 2;
+
+		a_count = 0; // clear packet
+
+		ent = nextPixel();
+
+		hshift = 0;
+		for (fcode = hsize; fcode < 65536; fcode *= 2)
+			++hshift;
+		hshift = 8 - hshift; // set hash code range bound
+
+		hsize_reg = hsize;
+		cl_hash(hsize_reg); // clear hash table
+
+		output(ClearCode, outs);
+
+		outer_loop: while ((c = nextPixel()) != EOF) {
+			fcode = (c << maxbits) + ent;
+			i = (c << hshift) ^ ent; // xor hashing
+
+			if (htab[i] == fcode) {
+				ent = codetab[i];
+				continue;
+			}
+
+			else if (htab[i] >= 0) { // non-empty slot
+
+				disp = hsize_reg - i; // secondary hash (after G. Knott)
+				if (i === 0) disp = 1;
+
+				do {
+					if ((i -= disp) < 0)
+						i += hsize_reg;
+
+					if (htab[i] == fcode) {
+						ent = codetab[i];
+						continue outer_loop;
+					}
+				} while (htab[i] >= 0);
+			}
+
+			output(ent, outs);
+			ent = c;
+			if (free_ent < maxmaxcode) {
+				codetab[i] = free_ent++; // code -> hashtable
+				htab[i] = fcode;
+			}
+			else cl_block(outs);
+		}
+
+		// Put out the final code.
+		output(ent, outs);
+		output(EOFCode, outs);
+	};
+
+	// ----------------------------------------------------------------------------
+	var encode = exports.encode = function encode(os) {
+		os.writeByte(initCodeSize); // write "initial code size" byte
+		remaining = imgW * imgH; // reset navigation variables
+		curPixel = 0;
+		compress(initCodeSize + 1, os); // compress and write the pixel data
+		os.writeByte(0); // write block terminator
+	};
+
+	// Flush the packet to disk, and reset the accumulator
+	var flush_char = function flush_char(outs) {
+		if (a_count > 0) {
+			outs.writeByte(a_count);
+			outs.writeBytes(accum, 0, a_count);
+			a_count = 0;
+		}
+	};
+
+	var MAXCODE = function MAXCODE(n_bits) {
+		return (1 << n_bits) - 1;
+	};
+
+	// ----------------------------------------------------------------------------
+	// Return the next pixel from the image
+	// ----------------------------------------------------------------------------
+
+	var nextPixel = function nextPixel() {
+		if (remaining === 0) return EOF;
+		--remaining;
+		var pix = pixAry[curPixel++];
+		return pix & 0xff;
+	};
+
+	var output = function output(code, outs) {
+
+		cur_accum &= masks[cur_bits];
+
+		if (cur_bits > 0) cur_accum |= (code << cur_bits);
+		else cur_accum = code;
+
+		cur_bits += n_bits;
+
+		while (cur_bits >= 8) {
+			char_out((cur_accum & 0xff), outs);
+			cur_accum >>= 8;
+			cur_bits -= 8;
+		}
+
+		// If the next entry is going to be too big for the code size,
+		// then increase it, if possible.
+
+		if (free_ent > maxcode || clear_flg) {
+
+			if (clear_flg) {
+
+				maxcode = MAXCODE(n_bits = g_init_bits);
+				clear_flg = false;
+
+			} else {
+
+				++n_bits;
+				if (n_bits == maxbits) maxcode = maxmaxcode;
+				else maxcode = MAXCODE(n_bits);
+			}
+		}
+
+		if (code == EOFCode) {
+
+			// At EOF, write the rest of the buffer.
+			while (cur_bits > 0) {
+				char_out((cur_accum & 0xff), outs);
+				cur_accum >>= 8;
+				cur_bits -= 8;
+			}
+
+			flush_char(outs);
+		}
+	};
+
+	LZWEncoder.apply(this, arguments);
+	return exports;
+};
+/**
+ * This class lets you encode animated GIF files
+ * Base class :  http://www.java2s.com/Code/Java/2D-Graphics-GUI/AnimatedGifEncoder.htm
+ * @author Kevin Weiner (original Java version - kweiner@fmsware.com)
+ * @author Thibault Imbert (AS3 version - bytearray.org)
+ * @author Kevin Kwok (JavaScript version - https://github.com/antimatter15/jsgif)
+ * @version 0.1 AS3 implementation
+ */
+
+GIFEncoder = function() {
+
+	for (var i = 0, chr = {}; i < 256; i++)
+		chr[i] = String.fromCharCode(i);
+
+	function ByteArray() {
+		this.bin = [];
+	}
+
+	ByteArray.prototype.getData = function() {
+		for (var v = '', l = this.bin.length, i = 0; i < l; i++)
+			v += chr[this.bin[i]];
+		return v;
+	};
+
+	ByteArray.prototype.writeByte = function(val) {
+		this.bin.push(val);
+	};
+
+	ByteArray.prototype.writeUTFBytes = function(string) {
+		for (var l = string.length, i = 0; i < l; i++)
+			this.writeByte(string.charCodeAt(i));
+	};
+
+	ByteArray.prototype.writeBytes = function(array, offset, length) {
+		for (var l = length || array.length, i = offset || 0; i < l; i++)
+			this.writeByte(array[i]);
+	};
+
+	var exports = {};
+	var width; // image size
+	var height;
+	var transparent = null; // transparent color if given
+	var transIndex; // transparent index in color table
+	var repeat = -1; // no repeat
+	var delay = 0; // frame delay (hundredths)
+	var started = false; // ready to output frames
+	var out;
+	var image; // current frame
+	var pixels; // BGR byte array from frame
+	var indexedPixels; // converted frame indexed to palette
+	var colorDepth; // number of bit planes
+	var colorTab; // RGB palette
+	var usedEntry = []; // active palette entries
+	var palSize = 7; // color table size (bits-1)
+	var dispose = -1; // disposal code (-1 = use default)
+	var closeStream = false; // close stream when finished
+	var firstFrame = true;
+	var sizeSet = false; // if false, get size from first frame
+	var sample = 10; // default sample interval for quantizer
+	var comment = "Generated by jsgif (https://github.com/antimatter15/jsgif/)"; // default comment for generated gif
+
+	/**
+	 * Sets the delay time between each frame, or changes it for subsequent frames
+	 * (applies to last frame added)
+	 * int delay time in milliseconds
+	 * @param ms
+	 */
+
+	var setDelay = exports.setDelay = function setDelay(ms) {
+		delay = Math.round(ms / 10);
+	};
+
+	/**
+	 * Sets the GIF frame disposal code for the last added frame and any
+	 *
+	 * subsequent frames. Default is 0 if no transparent color has been set,
+	 * otherwise 2.
+	 * @param code
+	 * int disposal code.
+	 */
+
+	var setDispose = exports.setDispose = function setDispose(code) {
+		if (code >= 0) dispose = code;
+	};
+
+	/**
+	 * Sets the number of times the set of GIF frames should be played. Default is
+	 * 1; 0 means play indefinitely. Must be invoked before the first image is
+	 * added.
+	 *
+	 * @param iter
+	 * int number of iterations.
+	 * @return
+	 */
+
+	var setRepeat = exports.setRepeat = function setRepeat(iter) {
+		if (iter >= 0) repeat = iter;
+	};
+
+	/**
+	 * Sets the transparent color for the last added frame and any subsequent
+	 * frames. Since all colors are subject to modification in the quantization
+	 * process, the color in the final palette for each frame closest to the given
+	 * color becomes the transparent color for that frame. May be set to null to
+	 * indicate no transparent color.
+	 * @param
+	 * Color to be treated as transparent on display.
+	 */
+
+	var setTransparent = exports.setTransparent = function setTransparent(c) {
+		transparent = c;
+	};
+
+
+	/**
+	 * Sets the comment for the block comment
+	 * @param
+	 * string to be insterted as comment
+	 */
+
+	var setComment = exports.setComment = function setComment(c) {
+		comment = c;
+	};
+
+
+
+	/**
+	 * The addFrame method takes an incoming BitmapData object to create each frames
+	 * @param
+	 * BitmapData object to be treated as a GIF's frame
+	 */
+
+	var addFrame = exports.addFrame = function addFrame(im, is_imageData) {
+
+		if ((im === null) || !started || out === null) {
+			throw new Error("Please call start method before calling addFrame");
+		}
+
+		var ok = true;
+
+		try {
+			if (!is_imageData) {
+				image = im.getImageData(0, 0, im.canvas.width, im.canvas.height).data;
+				if (!sizeSet) setSize(im.canvas.width, im.canvas.height);
+			} else {
+				if(im instanceof ImageData) {
+					image = im.data;
+					if(!sizeset || width!=im.width || height!=im.height) {
+						setSize(im.width,im.height);
+					} else {
+						
+					}
+				} else if(im instanceof Uint8ClampedArray) {
+					if(im.length==(width*height*4)) {
+						image=im;
+					} else {
+						console.log("Please set the correct size: ImageData length mismatch");
+						ok=false;
+					}
+				} else {
+					console.log("Please provide correct input");
+					ok=false;
+				}
+			}
+			getImagePixels(); // convert to correct format if necessary
+			analyzePixels(); // build color table & map pixels
+
+			if (firstFrame) {
+				writeLSD(); // logical screen descriptior
+				writePalette(); // global color table
+				if (repeat >= 0) {
+					// use NS app extension to indicate reps
+					writeNetscapeExt();
+				}
+			}
+
+			writeGraphicCtrlExt(); // write graphic control extension
+			if (comment !== '') {
+				writeCommentExt(); // write comment extension
+			}
+			writeImageDesc(); // image descriptor
+			if (!firstFrame) writePalette(); // local color table
+			writePixels(); // encode and write pixel data
+			firstFrame = false;
+		} catch (e) {
+			ok = false;
+		}
+
+		return ok;
+	};
+	
+	/**
+	* @description: Downloads the encoded gif with the given name
+	* No need of any conversion from the stream data (out) to base64
+	* Solves the issue of large file sizes when there are more frames
+	* and does not involve in creation of any temporary data in the process
+	* so no wastage of memory, and speeds up the process of downloading
+	* to just calling this function.
+	* @parameter {String} filename filename used for downloading the gif
+	*/
+	
+	var download = exports.download = function download(filename) {
+		if(out===null || closeStream==false) {
+			console.log("Please call start method and add frames and call finish method before calling download"); 
+		} else {
+			filename= filename !== undefined ? ( filename.endsWith(".gif")? filename: filename+".gif" ): "download.gif";
+			var templink = document.createElement("a");
+			templink.download=filename;
+			templink.href= URL.createObjectURL(new Blob([new Uint8Array(out.bin)], {type : "image/gif" } ));
+			templink.click();
+		}
+	}
+
+	/**
+	 * Adds final trailer to the GIF stream, if you don't call the finish method
+	 * the GIF stream will not be valid.
+	 */
+
+	var finish = exports.finish = function finish() {
+
+		if (!started) return false;
+
+		var ok = true;
+		started = false;
+
+		try {
+			out.writeByte(0x3b); // gif trailer
+			closeStream=true;
+		} catch (e) {
+			ok = false;
+		}
+
+		return ok;
+	};
+
+	/**
+	 * Resets some members so that a new stream can be started.
+	 * This method is actually called by the start method
+	 */
+
+	var reset = function reset() {
+
+		// reset for subsequent use
+		transIndex = 0;
+		image = null;
+		pixels = null;
+		indexedPixels = null;
+		colorTab = null;
+		closeStream = false;
+		firstFrame = true;
+	};
+
+	/**
+	 * * Sets frame rate in frames per second. Equivalent to
+	 * <code>setDelay(1000/fps)</code>.
+	 * @param fps
+	 * float frame rate (frames per second)
+	 */
+
+	var setFrameRate = exports.setFrameRate = function setFrameRate(fps) {
+		if (fps != 0xf) delay = Math.round(100 / fps);
+	};
+
+	/**
+	 * Sets quality of color quantization (conversion of images to the maximum 256
+	 * colors allowed by the GIF specification). Lower values (minimum = 1)
+	 * produce better colors, but slow processing significantly. 10 is the
+	 * default, and produces good color mapping at reasonable speeds. Values
+	 * greater than 20 do not yield significant improvements in speed.
+	 * @param quality
+	 * int greater than 0.
+	 * @return
+	 */
+
+	var setQuality = exports.setQuality = function setQuality(quality) {
+		if (quality < 1) quality = 1;
+		sample = quality;
+	};
+
+	/**
+	 * Sets the GIF frame size. The default size is the size of the first frame
+	 * added if this method is not invoked.
+	 * @param w
+	 * int frame width.
+	 * @param h
+	 * int frame width.
+	 */
+
+	var setSize = exports.setSize = function setSize(w, h) {
+
+		if (started && !firstFrame) return;
+		width = w;
+		height = h;
+		if (width < 1) width = 320;
+		if (height < 1) height = 240;
+		sizeSet = true;
+	};
+
+	/**
+	 * Initiates GIF file creation on the given stream.
+	 * @param os
+	 * OutputStream on which GIF images are written.
+	 * @return false if initial write failed.
+	 */
+
+	var start = exports.start = function start() {
+
+		reset();
+		var ok = true;
+		closeStream = false;
+		out = new ByteArray();
+		try {
+			out.writeUTFBytes("GIF89a"); // header
+		} catch (e) {
+			ok = false;
+		}
+
+		return started = ok;
+	};
+
+	var cont = exports.cont = function cont() {
+
+		reset();
+		var ok = true;
+		closeStream = false;
+		out = new ByteArray();
+
+		return started = ok;
+	};
+
+	/**
+	 * Analyzes image colors and creates color map.
+	 */
+
+	var analyzePixels = function analyzePixels() {
+
+		var len = pixels.length;
+		var nPix = len / 3;
+		indexedPixels = [];
+		var nq = new NeuQuant(pixels, len, sample);
+
+		// initialize quantizer
+		colorTab = nq.process(); // create reduced palette
+
+		// map image pixels to new palette
+		var k = 0;
+		for (var j = 0; j < nPix; j++) {
+			var index = nq.map(pixels[k++] & 0xff, pixels[k++] & 0xff, pixels[k++] & 0xff);
+			usedEntry[index] = true;
+			indexedPixels[j] = index;
+		}
+
+		pixels = null;
+		colorDepth = 8;
+		palSize = 7;
+
+		// get closest match to transparent color if specified
+		if (transparent !== null) {
+			transIndex = findClosest(transparent);
+		}
+	};
+
+	/**
+	 * Returns index of palette color closest to c
+	 */
+
+	var findClosest = function findClosest(c) {
+
+		if (colorTab === null) return -1;
+		var r = (c & 0xFF0000) >> 16;
+		var g = (c & 0x00FF00) >> 8;
+		var b = (c & 0x0000FF);
+		var minpos = 0;
+		var dmin = 256 * 256 * 256;
+		var len = colorTab.length;
+
+		for (var i = 0; i < len;) {
+			var dr = r - (colorTab[i++] & 0xff);
+			var dg = g - (colorTab[i++] & 0xff);
+			var db = b - (colorTab[i] & 0xff);
+			var d = dr * dr + dg * dg + db * db;
+			var index = i / 3;
+			if (usedEntry[index] && (d < dmin)) {
+				dmin = d;
+				minpos = index;
+			}
+			i++;
+		}
+		return minpos;
+	};
+
+	/**
+	 * Extracts image pixels into byte array "pixels
+	 */
+
+	var getImagePixels = function getImagePixels() {
+		var w = width;
+		var h = height;
+		pixels = [];
+		var data = image;
+		var count = 0;
+
+		for (var i = 0; i < h; i++) {
+
+			for (var j = 0; j < w; j++) {
+
+				var b = (i * w * 4) + j * 4;
+				pixels[count++] = data[b];
+				pixels[count++] = data[b + 1];
+				pixels[count++] = data[b + 2];
+
+			}
+
+		}
+	};
+
+	/**
+	 * Writes Graphic Control Extension
+	 */
+
+	var writeGraphicCtrlExt = function writeGraphicCtrlExt() {
+		out.writeByte(0x21); // extension introducer
+		out.writeByte(0xf9); // GCE label
+		out.writeByte(4); // data block size
+		var transp;
+		var disp;
+		if (transparent === null) {
+			transp = 0;
+			disp = 0; // dispose = no action
+		} else {
+			transp = 1;
+			disp = 2; // force clear if using transparent color
+		}
+		if (dispose >= 0) {
+			disp = dispose & 7; // user override
+		}
+		disp <<= 2;
+		// packed fields
+		out.writeByte(0 | // 1:3 reserved
+			disp | // 4:6 disposal
+			0 | // 7 user input - 0 = none
+			transp); // 8 transparency flag
+
+		WriteShort(delay); // delay x 1/100 sec
+		out.writeByte(transIndex); // transparent color index
+		out.writeByte(0); // block terminator
+	};
+
+	/**
+	 * Writes Comment Extention
+	 */
+
+	var writeCommentExt = function writeCommentExt() {
+		out.writeByte(0x21); // extension introducer
+		out.writeByte(0xfe); // comment label
+		out.writeByte(comment.length); // Block Size (s)
+		out.writeUTFBytes(comment);
+		out.writeByte(0); // block terminator
+	};
+
+
+	/**
+	 * Writes Image Descriptor
+	 */
+
+	var writeImageDesc = function writeImageDesc() {
+
+		out.writeByte(0x2c); // image separator
+		WriteShort(0); // image position x,y = 0,0
+		WriteShort(0);
+		WriteShort(width); // image size
+		WriteShort(height);
+
+		// packed fields
+		if (firstFrame) {
+			// no LCT - GCT is used for first (or only) frame
+			out.writeByte(0);
+		} else {
+			// specify normal LCT
+			out.writeByte(0x80 | // 1 local color table 1=yes
+				0 | // 2 interlace - 0=no
+				0 | // 3 sorted - 0=no
+				0 | // 4-5 reserved
+				palSize); // 6-8 size of color table
+		}
+	};
+
+	/**
+	 * Writes Logical Screen Descriptor
+	 */
+
+	var writeLSD = function writeLSD() {
+
+		// logical screen size
+		WriteShort(width);
+		WriteShort(height);
+		// packed fields
+		out.writeByte((0x80 | // 1 : global color table flag = 1 (gct used)
+			0x70 | // 2-4 : color resolution = 7
+			0x00 | // 5 : gct sort flag = 0
+			palSize)); // 6-8 : gct size
+
+		out.writeByte(0); // background color index
+		out.writeByte(0); // pixel aspect ratio - assume 1:1
+	};
+
+	/**
+	 * Writes Netscape application extension to define repeat count.
+	 */
+
+	var writeNetscapeExt = function writeNetscapeExt() {
+		out.writeByte(0x21); // extension introducer
+		out.writeByte(0xff); // app extension label
+		out.writeByte(11); // block size
+		out.writeUTFBytes("NETSCAPE" + "2.0"); // app id + auth code
+		out.writeByte(3); // sub-block size
+		out.writeByte(1); // loop sub-block id
+		WriteShort(repeat); // loop count (extra iterations, 0=repeat forever)
+		out.writeByte(0); // block terminator
+	};
+
+	/**
+	 * Writes color table
+	 */
+
+	var writePalette = function writePalette() {
+		out.writeBytes(colorTab);
+		var n = (3 * 256) - colorTab.length;
+		for (var i = 0; i < n; i++) out.writeByte(0);
+	};
+
+	var WriteShort = function WriteShort(pValue) {
+		out.writeByte(pValue & 0xFF);
+		out.writeByte((pValue >> 8) & 0xFF);
+	};
+
+	/**
+	 * Encodes and writes pixel data
+	 */
+
+	var writePixels = function writePixels() {
+		var myencoder = new LZWEncoder(width, height, indexedPixels, colorDepth);
+		myencoder.encode(out);
+	};
+
+	/**
+	 * Retrieves the GIF stream
+	 */
+
+	var stream = exports.stream = function stream() {
+		return out;
+	};
+
+	var setProperties = exports.setProperties = function setProperties(has_start, is_first) {
+		started = has_start;
+		firstFrame = is_first;
+	};
+
+	return exports;
+
+};
+</script>
+<script>
+"use strict";
+const S = {
+  shape:"bar", prog:42, totalSec:150, grow:"fill",
+  fill:"#E2682C", stroke:"#211C16", track:"#E4DCC6", sat:100, op:100, bw:2,
+  orient:"h", len:600, thk:60, corner:"round", rad:28, ch:22, edge:"solid",
+  rOut:220, rIn:42, centerText:"进行中", pieCenterNum:true,
+  petalSize:230, coreText:"绽放",
+  pwSize:200, pwCoreText:"进行中", pwSegments:[],
+  heartSize:200, heartCoreText:"进行中", heartSegments:[],
+  cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true,
+  segCnt:6, gap:3, segments:[],
+  elemOn:true, icon:"heart", elemCnt:5, elemSz:32, dimOff:true, elemFollow:true, elemColor:"#E2682C",
+  alertOn:true, alertDur:60,
+  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true
+};
+const VW=900, VH=580, CX=VW/2, CY=VH/2;
+const $=id=>document.getElementById(id);
+
+function hexToRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
+function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h,s,l=(mx+mn)/2;if(mx===mn){h=s=0;}else{const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);switch(mx){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4;}h/=6;}return [h*360,s*100,l*100];}
+function hslToCss(h,s,l,a){return "hsla("+h.toFixed(1)+","+Math.max(0,Math.min(100,s)).toFixed(1)+"%,"+l.toFixed(1)+"%,"+a+")";}
+function tint(hex,opacity){const c=hexToRgb(hex);let q=rgbToHsl(c[0],c[1],c[2]);return hslToCss(q[0],q[1]*(S.sat/100),q[2],opacity);}
+function tintC(hex,opacity){const c=hexToRgb(hex);let q=rgbToHsl(c[0],c[1],c[2]);return hslToCss(q[0],q[1]*(S.sat/100),q[2],opacity);}
+function autoHue(i,n){const c=hexToRgb(S.fill);let q=rgbToHsl(c[0],c[1],c[2]);const hh=(q[0]+(360/n)*i)%360;return hslToCss(hh,Math.max(35,q[1]*(S.sat/100)),Math.min(62,Math.max(42,q[2])),1);}
+function lum(hex){const c=hexToRgb(hex);return (0.299*c[0]+0.587*c[1]+0.114*c[2])/255;}
+function textOn(hex){return lum(hex)>0.6?"#211C16":"#ffffff";}
+function polar(cx,cy,r,deg){const a=(deg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function escapeXml(s){return (s||'').replace(/[<>&'"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c];});}
+
+const ICONS={
+  heart:{p:"M12 21S3.5 14.8 3.5 8.8A4.8 4.8 0 0 1 12 6a4.8 4.8 0 0 1 8.5 2.8C20.5 14.8 12 21 12 21Z"},
+  star:{p:"M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.4 5.9 20.4l1.5-6.8L2.2 9l6.9-.7z"},
+  bulb:{p:"M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2v.3h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2Zm-3 17h6v1.5a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 20.5V19Z"},
+  bloom:{p:"M12 9.6a2.4 2.4 0 1 1 0 4.8 2.4 2.4 0 0 1 0-4.8Zm0-7.6c1.7 0 3 1.6 3 3.5 0 1.4-.7 2.6-1.7 3.2A2.4 2.4 0 0 0 12 8.2a2.4 2.4 0 0 0-1.3-.4C9.7 7.2 9 6 9 4.6 9 2.6 10.3 2 12 2Zm9 6.5c.5 1.6-.2 3.4-1.9 4-1.3.4-2.7 0-3.6-.9a2.4 2.4 0 0 0 .8-2.3 2.4 2.4 0 0 0-.5-1.3c.8-1 2.2-1.5 3.5-1.1 1.1.3 1.5 1 1.7 1.6ZM17.6 19.6c-1.4 1-3.3.7-4.3-.9-.8-1.2-.7-2.6 0-3.7a2.4 2.4 0 0 0 2.4-.2 2.4 2.4 0 0 0 .9-1.1c1.3.2 2.4 1.2 2.6 2.6.2 1.1-.4 2.5-1.6 3.3ZM6.4 19.6c-1.2-.8-1.8-2.2-1.6-3.3.2-1.4 1.3-2.4 2.6-2.6a2.4 2.4 0 0 0 .9 1.1 2.4 2.4 0 0 0 2.4.2c.7 1.1.8 2.5 0 3.7-1 1.6-2.9 1.9-4.3.9ZM3 8.5c.2-.6.6-1.3 1.7-1.6 1.3-.4 2.7.1 3.5 1.1a2.4 2.4 0 0 0-.5 1.3 2.4 2.4 0 0 0 .8 2.3c-.9.9-2.3 1.3-3.6.9-1.7-.6-2.4-2.4-1.9-4Z"},
+  leaf:{p:"M5 20C5 9 12 4 21 4c0 11-7 16-13 16-1 0-2 0-3-.4Z",veins:"M5.5 19.8Q11 11 20.5 4.5M9 15.4 6.6 17M9 15.4 11.4 16.6M11.6 12.4 9.4 14M11.6 12.4 14 13.4M14.4 9.4 12.4 11M14.4 9.4 16.6 10.2"},
+  sun:{p:"M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM12 1l1.6 3.2L11 4.2zm0 22-1.6-3.2 2.6.2zM1 12l3.2-1.6L4.2 13zm22 0-3.2 1.6.2-2.6zM4 4l3 1.4L5.4 7zm16 16-3-1.4 1.6-1.6zM4 20l1.4-3L7 18.6zM20 4l-1.4 3L17 5.4z"},
+  moon:{p:"M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5Z"},
+  cloud:{p:"M7 18.5a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.6 9.3 4.2 4.2 0 0 1 17 18.5H7Z"},
+  crayon:{p:"M16.5 2.9 21.1 7.5a1.6 1.6 0 0 1 0 2.3L10.3 20.6a1 1 0 0 1-.5.3l-6.1 1.6a.7.7 0 0 1-.9-.9l1.6-6.1a1 1 0 0 1 .3-.5L15.5 4.2l-1.3-1.3a1.6 1.6 0 0 1 2.3 0ZM5.7 15.4l-1 3.9 3.9-1-2.9-2.9Z"},
+  flame:{p:"M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-1-.5-2-1-2.5C15 11 16 13 16 15a4 4 0 0 1-8 0c0-4 4-6 4-13Z"},
+  diamond:{p:"M7 3h10l4 6-9 12L3 9z"},
+  crown:{p:"M2.5 8 7 11.5 12 4l5 7.5L21.5 8 19 20H5L2.5 8Z"},
+  gift:{p:"M11 8H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h7V8Zm2 0v4h7a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-7ZM11 13H5v7a1 1 0 0 0 1 1h5v-8Zm2 0v8h5a1 1 0 0 0 1-1v-7h-6ZM8.5 2.5A2.5 2.5 0 0 1 11 5v1H8.5a1.75 1.75 0 0 1 0-3.5Zm7 0a1.75 1.75 0 0 1 0 3.5H13V5a2.5 2.5 0 0 1 2.5-2.5Z"},
+  trophy:{p:"M6 3h12v2h3v3a4 4 0 0 1-4 4h-.5A6 6 0 0 1 13 15.7V18h3v3H8v-3h3v-2.3A6 6 0 0 1 7.5 12H7a4 4 0 0 1-4-4V5h3V3Zm0 4H5v1a2 2 0 0 0 1 1.7V7Zm12 0v2.7A2 2 0 0 0 19 8V7h-1Z"},
+  bell:{p:"M12 2a2 2 0 0 0-2 2v.3A6 6 0 0 0 6 10v4l-2 3h16l-2-3v-4a6 6 0 0 0-4-5.7V4a2 2 0 0 0-2-2Zm-2.5 16a2.5 2.5 0 0 0 5 0Z"},
+  balloon:{p:"M12 2a6 6 0 0 1 6 6c0 4-3.5 8-6 8s-6-4-6-8a6 6 0 0 1 6-6Zm-1 14.5 1-.5 1 .5-.3 1.2c.7.3 1.3.8 1.3 1.8h-4c0-1 .6-1.5 1.3-1.8z"},
+  paw:{p:"M12 13.5c-2.5 0-4.5 1.8-4.5 3.8A1.7 1.7 0 0 0 9.2 19c1 0 1.8-.5 2.8-.5s1.8.5 2.8.5a1.7 1.7 0 0 0 1.7-1.7c0-2-2-3.8-4.5-3.8ZM6.5 8.5a1.8 2.2 0 1 0 0 4.4 1.8 2.2 0 0 0 0-4.4Zm11 0a1.8 2.2 0 1 0 0 4.4 1.8 2.2 0 0 0 0-4.4ZM9.7 4.5a1.7 2.1 0 1 0 0 4.2 1.7 2.1 0 0 0 0-4.2Zm4.6 0a1.7 2.1 0 1 0 0 4.2 1.7 2.1 0 0 0 0-4.2Z"},
+  apple:{p:"M12 6.8c-1.1-.9-2.5-1.3-3.9-1C5.1 6.4 3 9 3 12.2c0 3.5 1.5 6.7 3.4 8.4 1 .9 1.9 1.2 2.7 1.2.8 0 1.4-.4 2.2-.4s1.4.4 2.2.4c.8 0 1.7-.3 2.7-1.2 1.9-1.7 3.4-4.9 3.4-8.4 0-3.2-2.1-5.8-5.1-6.4-1.4-.3-2.8.1-3.9 1Zm.5-1.6C12.6 3.3 14.1 2 16 2c0 1.9-1.5 3.2-3.5 3.2Z"},
+  smile:{p:"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM8.7 9.3a1.4 1.4 0 1 1-2.8 0 1.4 1.4 0 0 1 2.8 0Zm9.4 0a1.4 1.4 0 1 1-2.8 0 1.4 1.4 0 0 1 2.8 0ZM6.6 13.4a6 6 0 0 0 10.8 0 .9.9 0 0 1 1.5 1 7.8 7.8 0 0 1-13.8 0 .9.9 0 0 1 1.5-1Z"},
+  fish:{p:"M2 12c3-2.5 6.4-3.8 9.6-3.8 4 0 7.4 1.5 9 3.4l2.4-2.4c.4-.4 1-.1.9.5l-.7 2.3.7 2.3c.1.6-.5.9-.9.5l-2.4-2.4c-1.6 1.9-5 3.4-9 3.4C8.4 15.8 5 14.5 2 12Zm13.2-1.1a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"},
+};
+function iconList(){return Object.keys(ICONS);}
+// Fixed color-block palette for segment fills (replaces the continuous hue-wheel).
+// Two rows: warm/bright + cool/neutral. Different segments may freely pick the same block.
+// PowerPoint-style color-block palette: a row of THEME base colors, each with a vertical
+// ramp of tints (lighter) and shades (darker) below it, plus a row of STANDARD colors.
+// Picking is by clicking a block; any two segments may pick the same block.
+const PALETTE_THEME=["#211C16","#2E3A48","#1F57D6","#C0561E","#7C8794","#E8A93A","#5B9BD5","#6FA644"];
+// tint/shade multipliers applied to each theme base to form the column under it.
+const PALETTE_STEPS=[0.62,0.40,0.20,-0.18,-0.36];   // + = lighter (tint), - = darker (shade)
+const PALETTE_STD=["#9E1B1B","#E03131","#E8A019","#EAE029","#7CC23B","#36A93B","#2BB3D6","#1D6FD0","#1B2A8E","#7B33C9"];
+function mixHex(hex,t){ // t>0 toward white, t<0 toward black
+  const c=hexToRgb(hex); const to=t>=0?255:0; const k=Math.abs(t);
+  const r=Math.round(c[0]+(to-c[0])*k), g=Math.round(c[1]+(to-c[1])*k), b=Math.round(c[2]+(to-c[2])*k);
+  const h=v=>("0"+v.toString(16)).slice(-2); return "#"+h(r)+h(g)+h(b);}
+// Flat list kept for any code that still indexes a single ramp of defaults.
+const PALETTE=PALETTE_THEME.concat(PALETTE_STD);
+
+function elemFill(){return S.elemFollow? S.fill : S.elemColor;}
+function iconSVG(cx,cy,size,lit,rot){
+  const sc=size/24, ic=ICONS[S.icon];
+  // Three clearly distinct states:
+  //   active            -> activation colour + glow + full opacity (always, ignores switch)
+  //   inactive + dim ON -> faint washed grey, low opacity (clearly "not reached")
+  //   inactive + dim OFF-> normal visible grey, higher opacity (NEVER darker than dim ON)
+  let col, grpOp, glow="";
+  if(lit){
+    col=tint(elemFill(),Math.min(1,S.op/100+.15));
+    grpOp=1;
+    glow='filter="url(#glow)"';
+  } else if(S.dimOff){
+    col="#8A8270"; grpOp=0.26;            // dim ON: darker/fainter
+  } else {
+    col="#6E6656"; grpOp=0.72;            // dim OFF: clearer + more opaque than dim ON
+  }
+  const attr= ic.stroke? 'fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"' : 'fill="'+col+'"';
+  let veins="";
+  if(ic.veins){ const vc = lit? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.4)";
+    veins='<path d="'+ic.veins+'" fill="none" stroke="'+vc+'" stroke-width="1.1" stroke-linecap="round"/>'; }
+  // Optional rotation about the icon's own center (cx,cy). rot is in degrees; the
+  // icon's natural "up" is preserved at rot=0. Used by ring/flower so each element's
+  // bottom points toward the center.
+  const rotWrap = rot ? ' transform="rotate('+rot.toFixed(1)+' '+cx+' '+cy+')"' : '';
+  const opAttr = (grpOp<1) ? ' opacity="'+grpOp+'"' : '';
+  return '<g'+rotWrap+opAttr+'><g transform="translate('+(cx-size/2)+' '+(cy-size/2)+') scale('+sc+')" '+glow+'><path d="'+ic.p+'" '+attr+'/>'+veins+'</g></g>';
+}
+function defs(){
+  return '<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="'+tint(elemFill(),0.85)+'"/></filter>'+
+    '<filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="rgba(40,32,12,0.16)"/></filter></defs>';
+}
+// Soft feathered fill: blurs the filled shape's own edges so the colour fades
+// out gradually (gradient-like, no hard line) AND leaves a faint coloured halo.
+// `r` scales the feather radius to the shape size.
+function fillGlowDef(id,color,r){
+  const b=r||6;
+  return '<filter id="'+id+'" x="-35%" y="-35%" width="170%" height="170%">'+
+    '<feGaussianBlur in="SourceGraphic" stdDeviation="'+b+'"/>'+
+    '</filter>';
+}
+function roundRectPath(x,y,w,h){
+  if(S.corner==="round"){const r=clamp(S.rad,0,Math.min(w,h)/2);
+    return "M "+(x+r)+" "+y+" H "+(x+w-r)+" A "+r+" "+r+" 0 0 1 "+(x+w)+" "+(y+r)+" V "+(y+h-r)+" A "+r+" "+r+" 0 0 1 "+(x+w-r)+" "+(y+h)+" H "+(x+r)+" A "+r+" "+r+" 0 0 1 "+x+" "+(y+h-r)+" V "+(y+r)+" A "+r+" "+r+" 0 0 1 "+(x+r)+" "+y+" Z";}
+  if(S.corner==="sharp"){const c=clamp(Math.tan(S.ch*Math.PI/180)*Math.min(w,h)*0.55,4,Math.min(w,h)/2);
+    return "M "+(x+c)+" "+y+" L "+(x+w-c)+" "+y+" L "+(x+w)+" "+(y+c)+" L "+(x+w)+" "+(y+h-c)+" L "+(x+w-c)+" "+(y+h)+" L "+(x+c)+" "+(y+h)+" L "+x+" "+(y+h-c)+" L "+x+" "+(y+c)+" Z";}
+  return "M "+x+" "+y+" H "+(x+w)+" V "+(y+h)+" H "+x+" Z";
+}
+function fancyBarPath(x,y,w,h,horiz,kind){
+  const amp=Math.min(horiz? h*0.22 : w*0.22, 16);
+  const period=Math.min(horiz?w:h, 70);
+  const L=horiz?w:h;
+  const cycles=Math.max(2, Math.round(L/period));
+  const steps=cycles*16;
+  function off(t){
+    if(kind==="wave") return amp*Math.sin(t*cycles*2*Math.PI);
+    if(kind==="zigzag"){const ph=(t*cycles)%1; return amp*(ph<0.5? (4*ph-1) : (3-4*ph));}
+    return 0;
+  }
+  let pts=[];
+  if(horiz){
+    for(let i=0;i<=steps;i++){const t=i/steps; pts.push([x+t*w, y+off(t)]);}
+    for(let i=0;i<=steps;i++){const t=1-i/steps; pts.push([x+t*w, y+h+off(t)]);}
+  } else {
+    for(let i=0;i<=steps;i++){const t=i/steps; pts.push([x+off(t), y+t*h]);}
+    for(let i=0;i<=steps;i++){const t=1-i/steps; pts.push([x+w+off(t), y+t*h]);}
+  }
+  return "M "+pts.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join(" L ")+" Z";
+}
+function renderBar(){
+  const horiz=S.orient==="h";
+  const w=horiz?S.len:S.thk, h=horiz?S.thk:S.len;
+  const x=CX-w/2, y=CY-h/2;
+  const p=S.prog/100;
+  const fancy=(S.edge==="wave"||S.edge==="zigzag");
+  const shape= fancy? fancyBarPath(x,y,w,h,horiz,S.edge) : roundRectPath(x,y,w,h);
+  const amp = fancy? Math.min(horiz? h*0.22 : w*0.22, 16) : 0;  // wave/zigzag envelope
+  const frac=(S.grow==="deplete")?(1-p):p;
+  let fx=x-amp,fy=y-amp,fw=w+2*amp,fh=h+2*amp;   // start from full envelope, then cut by progress
+  if(S.grow!=="glow"){
+    if(horiz){ fw=w*frac+amp; }                  // fill from left edge through progress + bleed for the wave
+    else { fh=h*frac+amp; fy=y+h-h*frac-amp; }
+  }
+  let fillOp=S.op/100; if(S.grow==="glow") fillOp=(0.12+0.88*p)*(S.op/100);
+  const fillCol=tint(S.fill,fillOp), trackCol=tint(S.track,0.9);
+  let dash=""; if(S.edge==="dashed")dash='stroke-dasharray="14 9"'; if(S.edge==="dotted")dash='stroke-dasharray="1 8" stroke-linecap="round"';
+  let outline="";
+  if(fancy) outline='<path d="'+shape+'" fill="none" stroke="'+tint(S.stroke,1)+'" stroke-width="'+(S.bw||2)+'" stroke-linejoin="round"/>';
+  else if(S.bw>0) outline='<path d="'+shape+'" fill="none" stroke="'+tint(S.stroke,1)+'" stroke-width="'+S.bw+'" '+dash+'/>';
+  let elems="";
+  if(S.elemOn){
+    elems=renderMilestones(getBarMilestonePositions(x,y,w,h,horiz,amp));
+  }
+  const pct=Math.round(S.prog)+"%";
+  let label=!S.showPct? '' : (horiz? '<text x="'+(x+w+16+amp)+'" y="'+CY+'" font-family="Fraunces,serif" font-size="26" font-weight="600" fill="'+tint(S.stroke,1)+'" dominant-baseline="central">'+pct+'</text>'
+                 : '<text x="'+CX+'" y="'+(y-22-amp)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="26" font-weight="600" fill="'+tint(S.stroke,1)+'">'+pct+'</text>');
+  const barGid="barg";
+  const barFeather=Math.max(4, (horiz?h:w)*0.10);
+  return defs()+ fillGlowDef(barGid, fillCol, barFeather)+
+    '<clipPath id="bclip"><path d="'+shape+'"/></clipPath>'+
+    '<path d="'+shape+'" fill="'+trackCol+'" filter="url(#soft)"/>'+
+    '<g clip-path="url(#bclip)"><rect x="'+fx+'" y="'+fy+'" width="'+Math.max(0,fw)+'" height="'+Math.max(0,fh)+'" fill="'+fillCol+'" filter="url(#'+barGid+')"/></g>'+
+    outline+elems+label;
+}
+function sectorPath(cx,cy,rO,rI,a0,a1){
+  const A=polar(cx,cy,rO,a0),B=polar(cx,cy,rO,a1);
+  const large=(a1-a0)>180?1:0;
+  if(rI<=0.5){return "M "+cx+" "+cy+" L "+A[0]+" "+A[1]+" A "+rO+" "+rO+" 0 "+large+" 1 "+B[0]+" "+B[1]+" Z";}
+  const C=polar(cx,cy,rI,a1),D=polar(cx,cy,rI,a0);
+  return "M "+A[0]+" "+A[1]+" A "+rO+" "+rO+" 0 "+large+" 1 "+B[0]+" "+B[1]+" L "+C[0]+" "+C[1]+" A "+rI+" "+rI+" 0 "+large+" 0 "+D[0]+" "+D[1]+" Z";
+}
+function segColor(i){const s=S.segments[i]; return (s&&s.color)?s.color:autoHue(i,S.segCnt);}
+function segText(i){const s=S.segments[i]; return s?s.text:"";}
+function renderRing(){
+  const rO=S.rOut, rI=rO*(S.rIn/100), n=S.segCnt, gap=S.gap, p=S.prog/100;
+  const solid = rI < 1;                       // hole collapsed -> solid pie mode
+  const active=(S.grow==="deplete")?(1-p):p, litCount=active*n;
+  const cx=CX, cy=CY-(S.elemOn?14:0);
+  let out=defs();
+  for(let i=0;i<n;i++){
+    const a0=i*(360/n)+gap/2, a1=(i+1)*(360/n)-gap/2;
+    const frac=clamp(litCount-i,0,1);
+    const base=segColor(i);
+    out+='<path d="'+sectorPath(cx,cy,rO,rI,a0,a1)+'" fill="'+tint(S.track,0.85)+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+S.bw+'" stroke-linejoin="round"/>';
+    let segOp=S.op/100; if(S.grow==="glow")segOp=(0.15+0.85*p)*(S.op/100);
+    if(frac>0){const aMid=a0+(a1-a0)*frac;
+      const gid="rg"+i;
+      const feather=Math.max(4,(rO-rI<1?rO:rO-rI)*0.05);
+      out+=fillGlowDef(gid,tintC(base,1),feather);
+      if(frac>=1){
+        // blurred colour fill (soft edges) + crisp outline drawn separately on top
+        out+='<path d="'+sectorPath(cx,cy,rO,rI,a0,a1)+'" fill="'+tintC(base,segOp)+'" stroke="none" filter="url(#'+gid+')"/>';
+        out+='<path d="'+sectorPath(cx,cy,rO,rI,a0,a1)+'" fill="none" stroke="'+tint(S.stroke,1)+'" stroke-width="'+S.bw+'" stroke-linejoin="round"/>';
+      } else {
+        // partial fill: blurred so the progress front fades softly (no hard line)
+        out+='<path d="'+sectorPath(cx,cy,rO,rI,a0,aMid)+'" fill="'+tintC(base,segOp)+'" stroke="none" filter="url(#'+gid+')"/>';
+      }
+    }
+    const txt=segText(i).trim();
+    if(txt){const aMid=(a0+a1)/2, rMid=solid? rO*0.62 : (rO+rI)/2; const L=polar(cx,cy,rMid,aMid);
+      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="15" font-weight="700" fill="'+(frac>=1? textOn(base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';}
+  }
+  const ct=(S.centerText||"").trim();
+  if(!solid){
+    // donut: hub fills the hole, shows label + %
+    out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(rI-2)+'" fill="'+tint(S.track,0.5)+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
+    if(ct){out+='<text x="'+cx+'" y="'+(S.showPct?(cy-8):cy)+'" text-anchor="middle" '+(S.showPct?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(14,rI*0.26)+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+escapeXml(ct)+'</text>';
+      if(S.showPct) out+='<text x="'+cx+'" y="'+(cy+rI*0.34)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(18,rI*0.38)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+Math.round(S.prog)+'%</text>';}
+    else if(S.showPct) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,rI*0.5)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+Math.round(S.prog)+'%</text>';
+  } else if(S.pieCenterNum && S.showPct){
+    // solid pie: NO center circle — the % (and optional label) float directly
+    // on the pie so 孔径=0 truly means "no center circle".
+    const tc="#ffffff";
+    if(ct){out+='<text x="'+cx+'" y="'+(cy-rO*0.06)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+Math.max(13,rO*0.11)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.6" paint-order="stroke">'+escapeXml(ct)+'</text>';
+      out+='<text x="'+cx+'" y="'+(cy+rO*0.10)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(16,rO*0.16)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.8" paint-order="stroke">'+Math.round(S.prog)+'%</text>';}
+    else out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(18,rO*0.2)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.9" paint-order="stroke">'+Math.round(S.prog)+'%</text>';
+  }
+  if(S.elemOn) out+=renderMilestones(getRingMilestonePositions(cx,cy,rO));
+  return out;
+}
+function petalPath(cx,cy,aStart,aEnd,rBase,rTip){
+  // A petal is ONE arc segment of a continuous wave: it starts at the heart-edge
+  // point at aStart, bulges out to a ROUND dome at the tip, and returns to the
+  // heart-edge point at aEnd. Adjacent petals share these end points.
+  const f=(r,d)=>polar(cx,cy,r,d);
+  const aMid=(aStart+aEnd)/2;
+  const half=(aEnd-aStart)/2;            // angular half-span of this petal
+  const span=rTip-rBase;
+  const S0=f(rBase,aStart);              // start point on the heart edge
+  const E0=f(rBase,aEnd);                // end point on the heart edge (shared w/ next)
+  // Two tip shoulders + a gently domed top -> a smooth rounded tip (no flat cut, no sharp point).
+  const tipW = half*0.38;                // angular half-width of the rounded tip
+  const Ltip=f(rTip*0.992, aMid - tipW); // left tip shoulder
+  const Rtip=f(rTip*0.992, aMid + tipW); // right tip shoulder
+  const wOut = half*1.0;                 // bow past the radial line -> plump but slim petal
+  const cS1=f(rBase+span*0.32, aStart - wOut*0.10);
+  const cS2=f(rBase+span*0.80, aMid   - wOut);
+  const cTL=f(rTip+span*0.10,  aMid - tipW*0.55);  // gentle dome -> smooth continuous arc
+  const cTR=f(rTip+span*0.10,  aMid + tipW*0.55);
+  const cE2=f(rBase+span*0.80, aMid   + wOut);
+  const cE1=f(rBase+span*0.32, aEnd   + wOut*0.10);
+  const P=p=>p[0].toFixed(1)+" "+p[1].toFixed(1);
+  return "M "+P(S0)+
+    " C "+P(cS1)+" "+P(cS2)+" "+P(Ltip)+   // start point up to the left tip shoulder
+    " C "+P(cTL)+" "+P(cTR)+" "+P(Rtip)+   // rounded dome across the top
+    " C "+P(cE2)+" "+P(cE1)+" "+P(E0)+     // right shoulder down to the end point
+    " Z";
+}
+function renderPetal(){
+  const n=S.segCnt, p=S.prog/100;
+  const rTip = S.petalSize;            // petal length (outer radius)
+  const core = rTip*0.34;              // flower-heart radius
+  const rBase = core*0.96;             // petals attach right at the heart edge
+  const step = 360/n;                  // angular span per petal
+  // each petal's outer reach can stick out a touch past the heart so the bases
+  // overlap the heart slightly and tuck under it (no gaps, no visible seams)
+  const active=(S.grow==="deplete")?(1-p):p, litCount=active*n;
+  const cx=CX, cy=CY-(S.elemOn?12:0);
+  let out=defs();
+  for(let i=0;i<n;i++){
+    // petal i spans from connection point i*step to (i+1)*step; adjacent petals
+    // SHARE these points, so the outline is a continuous wave with no overlap.
+    const aStart=i*step, aEnd=(i+1)*step, aMid=aStart+step/2;
+    const frac=clamp(litCount-i,0,1); const base=segColor(i);
+    const path=petalPath(cx,cy,aStart,aEnd,rBase,rTip);
+    out+='<path d="'+path+'" fill="'+tint(S.track,0.85)+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+S.bw+'" stroke-linejoin="round"/>';
+    let segOp=S.op/100; if(S.grow==="glow")segOp=(0.15+0.85*p)*(S.op/100);
+    // The petal SHAPE itself is the hard clip boundary: no fill or glow may ever
+    // render outside the petal outline. We always wrap filled paths in this clip.
+    const petalCid="petalclip"+i;
+    out+='<clipPath id="'+petalCid+'"><path d="'+path+'"/></clipPath>';
+    if(frac>=1){
+      const pgid="pg"+i, feather=Math.max(4,(rTip-rBase)*0.06);
+      out+=fillGlowDef(pgid,tintC(base,1),feather);
+      out+='<g clip-path="url(#'+petalCid+')">'+
+           '<path d="'+path+'" fill="'+tintC(base,segOp)+'" stroke="none" filter="url(#'+pgid+')"/>'+
+           '</g>';
+      out+='<path d="'+path+'" fill="none" stroke="'+tint(S.stroke,1)+'" stroke-width="'+S.bw+'" stroke-linejoin="round"/>';
+    } else if(frac>0){
+      // radial-wedge clip so the fill grows from the heart outward along the petal,
+      // nested INSIDE the petal-shape clip so the blurred glow can't spill outside.
+      const cid="pclip"+i, pgid="pg"+i, feather=Math.max(4,(rTip-rBase)*0.06);
+      const fillR=rBase+(rTip-rBase)*frac + core*0.4;
+      out+=fillGlowDef(pgid,tintC(base,1),feather);
+      out+='<clipPath id="'+cid+'"><path d="'+sectorPath(cx,cy,fillR,rBase*0.3,aStart-2,aEnd+2)+'"/></clipPath>';
+      out+='<g clip-path="url(#'+petalCid+')">'+
+             '<g clip-path="url(#'+cid+')">'+
+               '<path d="'+path+'" fill="'+tintC(base,segOp)+'" stroke="none" filter="url(#'+pgid+')"/>'+
+             '</g>'+
+           '</g>';
+    }
+    const txt=segText(i).trim();
+    if(txt){const L=polar(cx,cy,(rBase+rTip)*0.52,aMid);
+      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(12,rTip*0.075)+'" font-weight="700" fill="'+(frac>=0.5? textOn(base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';}
+  }
+  out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+core+'" fill="'+tint(S.fill,Math.min(1,S.op/100))+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
+  const ct=(S.coreText||"").trim();
+  if(ct){out+='<text x="'+cx+'" y="'+(S.showPct?(cy-core*0.18):cy)+'" text-anchor="middle" '+(S.showPct?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(13,core*0.34)+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
+    if(S.showPct) out+='<text x="'+cx+'" y="'+(cy+core*0.32)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(15,core*0.42)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+Math.round(S.prog)+'%</text>';}
+  else if(S.showPct) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(18,core*0.6)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+Math.round(S.prog)+'%</text>';
+  if(S.elemOn) out+=renderMilestones(getFlowerMilestonePositions(cx,cy,core,step));
+  return out;
+}
+// ---- Milestone placement: separate rules per shape ----
+// Each returns an array of {x,y,rot,lit}. rot=0 means upright (bar). For ring/flower
+// rot makes the element's bottom point toward the center.
+// Active progress (0..1): for deplete mode the wheel empties, so the "reached" amount
+// is 1-p. Each milestone stores a threshold; it is active once active >= threshold.
+function activeProg(){const p=S.prog/100; return (S.grow==="deplete")?(1-p):p;}
+function isActiveAt(threshold){return activeProg() >= threshold-1e-6;}
+// BAR: along the top edge, close to the frame, upright. Count UNRESTRICTED (S.elemCnt).
+// A milestone lights when the fill front passes its position along the bar.
+function getBarMilestonePositions(x,y,w,h,horiz,amp){
+  const n=S.elemCnt, sz=S.elemSz, pad=sz*0.7, out=[];
+  for(let i=0;i<n;i++){
+    const t=(n===1)?0.5:i/(n-1);          // 0..1 along the bar length = its threshold
+    let ex,ey;
+    if(horiz){ ex=x+pad+t*(w-2*pad); ey=y-sz*0.62-amp; }
+    else { ey=y+h-pad-t*(h-2*pad); ex=x-sz*0.62-amp; }
+    out.push({x:ex,y:ey,rot:0,threshold:t,lit:isActiveAt(t)});
+  }
+  return out;
+}
+// RING/PIE: on the OUTER circle, at each segment BOUNDARY, bottom-to-center. Count =
+// segment count. Boundary i lights when progress sweeps past angle i (threshold i/n).
+function getRingMilestonePositions(cx,cy,rO){
+  const n=S.segCnt, sz=S.elemSz, out=[];
+  const rE=rO + sz*0.62;
+  for(let i=0;i<n;i++){
+    const ang=(360/n)*i, thr=(i+1)/n;   // node lit once segment i has been passed
+    const E=polar(cx,cy,rE,ang);
+    out.push({x:E[0],y:E[1],rot:ang,threshold:thr,lit:isActiveAt(thr)});
+  }
+  return out;
+}
+// FLOWER: on the HEART circle, in the gaps BETWEEN petals, bottom-to-center. Count =
+// petal count. Boundary i lights when progress passes it (threshold i/n).
+function getFlowerMilestonePositions(cx,cy,core,petalStep){
+  const n=S.segCnt, sz=S.elemSz, out=[];
+  const rE=core + sz*0.5;
+  const stp=petalStep||(360/n);
+  for(let i=0;i<n;i++){
+    const ang=stp*i, thr=(i+1)/n;        // node lit once petal i has been passed
+    const E=polar(cx,cy,rE,ang);
+    out.push({x:E[0],y:E[1],rot:ang,threshold:thr,lit:isActiveAt(thr)});
+  }
+  return out;
+}
+function renderMilestones(list){
+  let out=""; const sz=S.elemSz;
+  for(const m of list) out+=iconSVG(m.x,m.y,sz,m.lit,m.rot);
+  return out;
+}
+// ---- PINWHEEL (风车): fixed 5 sail-shaped blades, fixed proportions, scalable ----
+function pwColor(i){const s=S.pwSegments[i]; return (s&&s.color)?s.color:autoHue(i,5);}
+function pwText(i){const s=S.pwSegments[i]; return s?s.text:"";}
+// One blade in LOCAL coords (hub at origin, swept around -Y). Built once, stamped via
+// rotate so all 5 blades are identical -> stable, clean export. R = blade length.
+// Classic pinwheel WING: a straight leading spar from hub to tip, a wide rounded outer
+// edge, and a long concave trailing sail back to the hub. One clean closed contour
+// (no interior line), asymmetric so the 5 copies read as spinning the same way.
+function bladeLocal(R,twist){
+  const P=p=>p[0].toFixed(2)+" "+p[1].toFixed(2);
+  const hub=[0,0];
+  const tip=[ -R*0.06, -R*1.0 ];
+  const endW=[ R*0.66, -R*0.66 ];
+  const l1=[ -R*0.04, -R*0.34 ], l2=[ -R*0.05, -R*0.70 ];   // leading spar (near straight)
+  const e1=[ R*0.16, -R*1.0 ], e2=[ R*0.52, -R*0.86 ];       // rounded outer end
+  const t1=[ R*0.60, -R*0.40 ], t2=[ R*0.22, -R*0.10 ];      // concave trailing sail
+  return "M "+P(hub)+
+    " C "+P(l1)+" "+P(l2)+" "+P(tip)+
+    " C "+P(e1)+" "+P(e2)+" "+P(endW)+
+    " C "+P(t1)+" "+P(t2)+" "+P(hub)+" Z";
+}
+function renderPinwheel(){
+  const n=5, p=S.prog/100;
+  const R=S.pwSize, hub=R*0.16, step=360/n;
+  const active=(S.grow==="deplete")?(1-p):p, litCount=active*n;
+  // Lift the wheel up so the pole has room below it within the canvas.
+  const poleLen=R*1.15;
+  const cx=CX, cy=CY - R*0.42;
+  const localD=bladeLocal(R);
+  let out=defs();
+  let segOp=S.op/100; if(S.grow==="glow")segOp=(0.15+0.85*p)*(S.op/100);
+
+  // ---- POLE (stick): ONE single, solid, rounded rod. Wider + solid fill so it reads
+  // as a single stick (never two thin parallel lines). Drawn before the hub so the
+  // hub pin caps its top. A small flat base sits under it as a separate little stand. ----
+  const poleTop=cy, poleBot=cy+poleLen;
+  const poleW2=Math.max(7,R*0.06);                 // a touch wider
+  const poleFill=tint(S.stroke,0.42);              // solid mid-tone rod, not light/hollow
+  const poleEdge=tint(S.stroke,1);
+  out+='<rect x="'+(cx-poleW2/2)+'" y="'+poleTop+'" width="'+poleW2+'" height="'+poleLen+'" rx="'+(poleW2/2)+'" fill="'+poleFill+'" stroke="'+poleEdge+'" stroke-width="'+Math.max(1,S.bw*0.7)+'"/>';
+  // small flat base (separate little stand)
+  out+='<ellipse cx="'+cx+'" cy="'+poleBot+'" rx="'+(poleW2*1.7)+'" ry="'+(poleW2*0.6)+'" fill="'+poleFill+'" stroke="'+poleEdge+'" stroke-width="'+Math.max(1,S.bw*0.7)+'"/>';
+
+  const B=[];
+  for(let i=0;i<n;i++){
+    const ang=step*i;
+    B.push({i,ang,frac:clamp(litCount-i,0,1),base:pwColor(i),
+            tf:'translate('+cx+' '+cy+') rotate('+ang+')'});
+  }
+
+  // PASS 1: track (unlit) blade fills, no stroke.
+  for(const b of B)
+    out+='<path d="'+localD+'" transform="'+b.tf+'" fill="'+tint(S.track,0.85)+'" stroke="none"/>';
+
+  // PASS 2: progress fills, clipped to the blade; per-blade lighting (one blade = one
+  // stage), partial radial sweep for the in-progress blade.
+  for(const b of B){ if(b.frac<=0) continue;
+    const feather=Math.max(4,R*0.05);
+    const bcid="pwclip"+b.i, pgid="pwg"+b.i;
+    out+='<clipPath id="'+bcid+'"><path d="'+localD+'" transform="'+b.tf+'"/></clipPath>';
+    out+=fillGlowDef(pgid,tintC(b.base,1),feather);
+    if(b.frac>=1){
+      out+='<g clip-path="url(#'+bcid+')"><path d="'+localD+'" transform="'+b.tf+'" fill="'+tintC(b.base,segOp)+'" stroke="none" filter="url(#'+pgid+')"/></g>';
+    } else {
+      const rcid="pwr"+b.i;
+      const fillR=R*b.frac+hub;
+      out+='<clipPath id="'+rcid+'"><path d="'+sectorPath(cx,cy,fillR,0.0001,b.ang-step/2-6,b.ang+step/2+6)+'"/></clipPath>';
+      out+='<g clip-path="url(#'+bcid+')"><g clip-path="url(#'+rcid+')"><path d="'+localD+'" transform="'+b.tf+'" fill="'+tintC(b.base,segOp)+'" stroke="none" filter="url(#'+pgid+')"/></g></g>';
+    }
+  }
+
+  // PASS 3: blade outlines, one stroke each.
+  for(const b of B)
+    out+='<path d="'+localD+'" transform="'+b.tf+'" fill="none" stroke="'+tint(S.stroke,1)+'" stroke-width="'+S.bw+'" stroke-linejoin="round" stroke-linecap="round"/>';
+
+  // PASS 4: labels — placed in each blade's body, drawn UPRIGHT (never rotated) so
+  // they're always readable horizontally.
+  for(const b of B){
+    const txt=pwText(b.i).trim(); if(!txt) continue;
+    const L=polar(cx,cy,R*0.58,b.ang + 20);
+    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.08)+'" font-weight="700" fill="'+(b.frac>=0.5? textOn(b.base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';
+  }
+
+  // CENTER hub pin, drawn last over the blade roots and the pole top.
+  out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+hub+'" fill="'+tint(S.fill,Math.min(1,S.op/100))+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
+  // status text + percent sit on/near the hub, centered, not covering blade labels.
+  const ct=(S.pwCoreText||"").trim();
+  const pctTxt=Math.round(S.prog)+"%";
+  if(ct){
+    out+='<text x="'+cx+'" y="'+(S.showPct?(cy-hub*0.10):cy)+'" text-anchor="middle" '+(S.showPct?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(10,hub*0.5)+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
+    if(S.showPct) out+='<text x="'+cx+'" y="'+(cy+hub*0.55)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(11,hub*0.62)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+pctTxt+'</text>';
+  } else if(S.showPct) {
+    out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(12,hub*0.8)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+pctTxt+'</text>';
+  }
+
+  if(S.elemOn) out+=renderMilestones(getPinwheelMilestonePositions(cx,cy,hub,R,step));
+  return out;
+}
+// Pinwheel milestones: on the inner circle (just outside the hub), in the gaps between
+// wings, bottom-to-center. LOCKED to 5. Node i lights when progress passes it (i/5).
+function getPinwheelMilestonePositions(cx,cy,hub,R,step){
+  const n=5, sz=S.elemSz, out=[];
+  const rE=hub + sz*0.7;
+  for(let i=0;i<n;i++){
+    const ang=step*i + step/2, thr=(i+1)/n;   // node lit once wing i has been passed
+    const E=polar(cx,cy,rE,ang);
+    out.push({x:E[0],y:E[1],rot:ang,threshold:thr,lit:isActiveAt(thr)});
+  }
+  return out;
+}
+function buildInner(){
+  if(S.shape==="bar")return renderBar();
+  if(S.shape==="ring")return renderRing();
+  if(S.shape==="pinwheel")return renderPinwheel();
+  if(S.shape==="heart")return renderHeart();
+  if(S.shape==="clover")return renderClover();
+  return renderPetal();
+}
+// ===== HEART (2 parts: left / right) =====
+function heartColor(i){const s=S.heartSegments[i]; return (s&&s.color)?s.color:autoHue(i,2);}
+function heartText(i){const s=S.heartSegments[i]; return s?s.text:"";}
+// Full heart path centered at origin, spanning ~R (style A, classic plump).
+function heartLocal(R){const s=R/16;const f=p=>(p[0]*s).toFixed(2)+" "+(p[1]*s).toFixed(2);
+  return "M "+f([0,-6])+
+    " C "+f([-4,-12])+" "+f([-14,-10])+" "+f([-14,-2])+
+    " C "+f([-14,6])+" "+f([-4,9])+" "+f([0,14])+
+    " C "+f([4,9])+" "+f([14,6])+" "+f([14,-2])+
+    " C "+f([14,-10])+" "+f([4,-12])+" "+f([0,-6])+" Z";}
+function renderHeart(){
+  const n=2, p=S.prog/100;
+  const R=S.heartSize, half=R*1.0;
+  const active=(S.grow==="deplete")?(1-p):p, litCount=active*n;
+  const cx=CX, cy=CY - R*0.08;
+  const d=heartLocal(R);
+  const tf='translate('+cx+' '+cy+')';
+  let out=defs();
+  let segOp=S.op/100; if(S.grow==="glow")segOp=(0.15+0.85*p)*(S.op/100);
+  // halves: left = part 0, right = part 1
+  const parts=[
+    {i:0,frac:clamp(litCount-0,0,1),base:heartColor(0),x0:-half,x1:0},
+    {i:1,frac:clamp(litCount-1,0,1),base:heartColor(1),x0:0,x1:half}
+  ];
+  // PASS 1: track fill (whole heart)
+  out+='<path d="'+d+'" transform="'+tf+'" fill="'+tint(S.track,0.85)+'" stroke="none"/>';
+  // PASS 2: progress fills. Each half is the FULL heart fill, revealed through a soft
+  // horizontal GRADIENT MASK that cross-fades across the centre band — so the left/right
+  // colours blend into a misty seam (朦胧渐变) with no hard divider line.
+  const band=Math.max(4,R*0.05);               // narrow centre feather (matches other shapes' blur)
+  const x0=cx-R*1.4, totalW=R*2.8;
+  // gradient mask offsets (0..1 across the heart bbox) for the centre band edges
+  const offL=((cx-band)-x0)/totalW, offR=((cx+band)-x0)/totalW;
+  for(const q of parts){ if(q.frac<=0) continue;
+    const feather=Math.max(4,R*0.05);
+    const hcid="hcl"+q.i, pgid="hg"+q.i, mid="hmask"+q.i, gid="hmg"+q.i;
+    out+='<clipPath id="'+hcid+'"><path d="'+d+'" transform="'+tf+'"/></clipPath>';
+    out+=fillGlowDef(pgid,tintC(q.base,1),feather);
+    // soft side mask: left half opaque->transparent across the band; right half mirrored.
+    if(q.i===0){
+      out+='<linearGradient id="'+gid+'" x1="'+x0+'" y1="0" x2="'+(x0+totalW)+'" y2="0" gradientUnits="userSpaceOnUse">'+
+           '<stop offset="'+offL.toFixed(4)+'" stop-color="#fff"/>'+
+           '<stop offset="'+offR.toFixed(4)+'" stop-color="#000"/></linearGradient>';
+    } else {
+      out+='<linearGradient id="'+gid+'" x1="'+x0+'" y1="0" x2="'+(x0+totalW)+'" y2="0" gradientUnits="userSpaceOnUse">'+
+           '<stop offset="'+offL.toFixed(4)+'" stop-color="#000"/>'+
+           '<stop offset="'+offR.toFixed(4)+'" stop-color="#fff"/></linearGradient>';
+    }
+    out+='<mask id="'+mid+'"><rect x="'+x0+'" y="'+(cy-R*1.4)+'" width="'+totalW+'" height="'+(R*2.8)+'" fill="url(#'+gid+')"/></mask>';
+    let inner='<path d="'+d+'" transform="'+tf+'" fill="'+tintC(q.base,segOp)+'" stroke="none" filter="url(#'+pgid+')"/>';
+    if(q.frac<1){
+      // vertical fill front: bottom (cy+R*0.9) up to top by frac
+      const yTop=(cy+R*0.9) - (R*1.8)*q.frac;
+      const vcid="hv"+q.i;
+      out+='<clipPath id="'+vcid+'"><rect x="'+(cx-R*1.4)+'" y="'+yTop+'" width="'+(R*2.8)+'" height="'+(R*1.8)+'"/></clipPath>';
+      inner='<g clip-path="url(#'+vcid+')">'+inner+'</g>';
+    }
+    out+='<g clip-path="url(#'+hcid+')"><g mask="url(#'+mid+')">'+inner+'</g></g>';
+  }
+  // PASS 3: outline only (no center divider — the two halves meet via their feathered fills)
+  out+='<path d="'+d+'" transform="'+tf+'" fill="none" stroke="'+tint(S.stroke,1)+'" stroke-width="'+S.bw+'" stroke-linejoin="round"/>';
+  // PASS 4: labels (left/right), upright
+  for(const q of parts){
+    const txt=heartText(q.i).trim(); if(!txt) continue;
+    const lx=cx + (q.i===0? -R*0.42 : R*0.42), ly=cy-R*0.05;
+    out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.085)+'" font-weight="700" fill="'+(q.frac>=0.5? textOn(q.base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';
+  }
+  // center percentage only — NO circle, NO status text. A thin stroke keeps the number
+  // legible across the two-colour halves.
+  const pctTxt=Math.round(S.prog)+"%";
+  const dcy=cy+R*0.04;
+  if(S.showPct) out+='<text x="'+cx+'" y="'+dcy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(16,R*0.24)+'" font-weight="700" fill="#ffffff" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(2,R*0.018)+'" paint-order="stroke">'+pctTxt+'</text>';
+  if(S.elemOn) out+=renderMilestones(getHeartMilestonePositions(cx,cy,R));
+  return out;
+}
+// Heart milestones: 2, each sitting just BELOW its half's label text (left label / right
+// label), so they line up under "左 / 右". Node i lights once half i is passed.
+function getHeartMilestonePositions(cx,cy,R){
+  const n=2, out=[];
+  const lyBelow=cy-R*0.05 + R*0.155;   // ~one character-height below the 左/右 label
+  const xs=[cx - R*0.42, cx + R*0.42]; // same x as the 左 / 右 labels -> directly below
+  for(let i=0;i<n;i++){
+    const thr=(i+1)/n;
+    out.push({x:xs[i],y:lyBelow,rot:0,threshold:thr,lit:isActiveAt(thr)});
+  }
+  return out;
+}
+// ===== CLOVER (4 heart leaves + black center dot + stem) =====
+function cloverColor(i){const s=S.cloverSegments[i]; return (s&&s.color)?s.color:autoHue(i,4);}
+function cloverText(i){const s=S.cloverSegments[i]; return s?s.text:"";}
+// One heart leaf, point/root at origin (0,0), lobes outward (up). Built once, rotated 4×.
+// Flat + wide rounded lobes; the sides ride along ~44° of the root axis so adjacent hearts
+// touch along a real diagonal EDGE (snug clover) yet never cross the 45° boundary.
+function cloverLeaf(R){const s=R/16;const f=p=>(p[0]*s).toFixed(2)+" "+(p[1]*s).toFixed(2);
+  return "M "+f([0,0])+
+    " C "+f([-1.5,-2.4])+" "+f([-5.4,-5.0])+" "+f([-7.3,-7.7])+
+    " C "+f([-8.3,-10.0])+" "+f([-5.6,-11.6])+" "+f([-3.0,-11.1])+
+    " C "+f([-1.6,-10.7])+" "+f([0,-9.9])+" "+f([0,-8.5])+
+    " C "+f([0,-9.9])+" "+f([1.6,-10.7])+" "+f([3.0,-11.1])+
+    " C "+f([5.6,-11.6])+" "+f([8.3,-10.0])+" "+f([7.3,-7.7])+
+    " C "+f([5.4,-5.0])+" "+f([1.5,-2.4])+" "+f([0,0])+" Z";}
+function renderClover(){
+  const n=4, p=S.prog/100;
+  const R=S.cloverSize, step=90, angs=[45,135,225,315];
+  const active=(S.grow==="deplete")?(1-p):p, litCount=active*n;
+  const cx=CX, cy=CY - R*0.12;
+  const d=cloverLeaf(R);
+  let out=defs();
+  let segOp=S.op/100; if(S.grow==="glow")segOp=(0.15+0.85*p)*(S.op/100);
+  // stem (behind)
+  out+='<path d="M '+cx+' '+(cy+R*0.05)+' C '+(cx+R*0.5)+' '+(cy+R*0.7)+' '+(cx+R*0.4)+' '+(cy+R*1.5)+' '+(cx+R*0.02)+' '+(cy+R*1.7)+'" fill="none" stroke="'+tint(S.stroke,0.55)+'" stroke-width="'+Math.max(3,R*0.05)+'" stroke-linecap="round"/>';
+  const B=[];
+  for(let i=0;i<n;i++){ B.push({i,ang:angs[i],frac:clamp(litCount-i,0,1),base:cloverColor(i),tf:'translate('+cx+' '+cy+') rotate('+angs[i]+')'}); }
+  // PASS 1: track fills
+  for(const b of B) out+='<path d="'+d+'" transform="'+b.tf+'" fill="'+tint(S.track,0.85)+'" stroke="none"/>';
+  // PASS 2: progress fills follow each LEAF's own shape — the fill front sweeps along
+  // the leaf's local axis (root -> tip), clipped to the leaf outline (no pie wedge).
+  for(const b of B){ if(b.frac<=0) continue;
+    const feather=Math.max(4,R*0.05);
+    const lcid="ccl"+b.i, pgid="cg"+b.i;
+    out+='<clipPath id="'+lcid+'"><path d="'+d+'" transform="'+b.tf+'"/></clipPath>';
+    out+=fillGlowDef(pgid,tintC(b.base,1),feather);
+    let inner='<path d="'+d+'" transform="'+b.tf+'" fill="'+tintC(b.base,segOp)+'" stroke="none" filter="url(#'+pgid+')"/>';
+    if(b.frac<1){
+      // leaf body spans local y from 0 (root) up to about -1.5R (tip). Reveal from the
+      // root outward by frac. Clip rect is defined in LOCAL space and carried by the
+      // same transform, so the front is perpendicular to the leaf axis -> leaf-shaped.
+      const tipY=-R*0.76, frontY=tipY*b.frac;   // 0 -> tipY as frac 0 -> 1
+      const fcid="ccf"+b.i;
+      const rectH=(R*0.6 - frontY);              // from the front down past the root (y=0)
+      out+='<clipPath id="'+fcid+'"><rect x="'+(-R*1.2)+'" y="'+frontY+'" width="'+(R*2.4)+'" height="'+rectH+'" transform="'+b.tf+'"/></clipPath>';
+      inner='<g clip-path="url(#'+fcid+')">'+inner+'</g>';
+    }
+    out+='<g clip-path="url(#'+lcid+')">'+inner+'</g>';
+  }
+  // PASS 3: leaf outlines
+  for(const b of B) out+='<path d="'+d+'" transform="'+b.tf+'" fill="none" stroke="'+tint(S.stroke,1)+'" stroke-width="'+S.bw+'" stroke-linejoin="round"/>';
+  // PASS 4: labels, upright, in each leaf body
+  for(const b of B){
+    const txt=cloverText(b.i).trim(); if(!txt) continue;
+    const L=polar(cx,cy,R*0.50,b.ang);
+    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.08)+'" font-weight="700" fill="'+(b.frac>=0.5? textOn(b.base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';
+  }
+  // center small dark dot (caps the four roots; the finalized "medium dot")
+  out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*0.12)+'" fill="'+tint(S.stroke,1)+'"/>';
+  // progress percentage — below the petals, beside the stem
+  if(S.showPct){
+    const pctTxt=Math.round(S.prog)+"%";
+    const px=cx + R*0.42, py=cy + R*1.02;
+    out+='<text x="'+px+'" y="'+py+'" text-anchor="start" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,R*0.22)+'" font-weight="700" fill="'+tint(S.stroke,1)+'">'+pctTxt+'</text>';
+  }
+  if(S.elemOn) out+=renderMilestones(getCloverMilestonePositions(cx,cy,R));
+  return out;
+}
+// Clover milestones: 4, each sitting just BELOW its leaf's label text (between the label
+// and the centre dot, on the leaf axis 45/135/225/315°). Node i lights once leaf i passed.
+function getCloverMilestonePositions(cx,cy,R){
+  const n=4, out=[], angs=[45,135,225,315];
+  const rE=R*0.30;   // below the label (label sits at ~R*0.50), toward the centre
+  for(let i=0;i<n;i++){
+    const thr=(i+1)/n, E=polar(cx,cy,rE,angs[i]);
+    out.push({x:E[0],y:E[1],rot:angs[i],threshold:thr,lit:isActiveAt(thr)});
+  }
+  return out;
+}
+let lastSVG="";
+let gifCancel=false;
+function render(){
+  lastSVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+VW+' '+VH+'">'+buildInner()+'</svg>';
+  $("svgHost").innerHTML=lastSVG;
+}
+
+function buildTimerHTML(opts){
+  opts=opts||{};
+  const embed=!!opts.embed, auto=!!opts.auto;
+  const fns=[hexToRgb,rgbToHsl,hslToCss,tint,tintC,autoHue,lum,textOn,polar,clamp,escapeXml,
+             iconSVG,elemFill,defs,fillGlowDef,roundRectPath,fancyBarPath,renderBar,
+             sectorPath,segColor,segText,renderRing,petalPath,renderPetal,
+             activeProg,isActiveAt,getBarMilestonePositions,getRingMilestonePositions,getFlowerMilestonePositions,renderMilestones,
+             pwColor,pwText,bladeLocal,renderPinwheel,getPinwheelMilestonePositions,
+             heartColor,heartText,heartLocal,renderHeart,getHeartMilestonePositions,
+             cloverColor,cloverText,cloverLeaf,renderClover,getCloverMilestonePositions,
+             buildInner]
+             .map(function(f){return f.toString();}).join("\n");
+  const engine="let S;const VW="+VW+",VH="+VH+",CX="+CX+",CY="+CY+";const ICONS="+JSON.stringify(ICONS)+";"+fns+
+    'function buildSVG(st){S=st;return \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 \'+VW+\' \'+VH+\'">\'+buildInner()+\'</svg>\';}';
+  const snap=JSON.stringify(S), total=Math.max(1,S.totalSec||600), aDur=S.alertOn?S.alertDur:0, ct="<\/script>";
+  // embed default: transparent background + no top HUD/keyboard-hint chrome (clean overlay for PPT)
+  const bodyClass=embed?' class="clear"':'';
+  const startBlock=auto?'':('<div id="start"><h1>'+(embed?'演示计时器':'实时演示计时器')+'</h1><button class="go">▶ 开始计时</button>'+(embed?'':'<p>从点击此刻起按真实时间持续运行，<b style="color:#fff">不受 PPT 翻页影响</b>。建议放副屏，或让窗口「置顶 / 画中画」浮在幻灯片上。到点后闪烁提醒。</p>')+'</div>');
+  const hudBlock=embed?'':('<div class="hud"><div><div class="num" id="pct">0%</div><div class="cap">进度</div></div><div><div class="num" id="cd">'+fmtTime(total)+'</div><div class="cap">剩余</div></div></div>');
+  const hintBlock=embed?'':'<div id="hint">空格 暂停/继续 · R 重置 · F 全屏 · B 背景(深/浅/透明) · H 提示</div>';
+  return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+(embed?'演示计时器':'实时演示计时器')+'</title>'+
+'<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=DM+Sans:wght@500;700&display=swap" rel="stylesheet">'+
+'<style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;font-family:"DM Sans",system-ui,sans-serif}'+
+'body{background:'+(embed?'transparent':'#0f0d0a')+';display:flex;align-items:center;justify-content:center;overflow:hidden;transition:background .25s}'+
+'body.lite{background:#F4EFE2}body.clear{background:transparent}'+
+'#svg{width:min(92vw,1150px);max-height:'+(embed?'94vh':'80vh')+'}#svg svg{width:100%;height:100%;display:block}'+
+'.hud{position:fixed;top:22px;left:0;right:0;display:flex;justify-content:center;gap:34px;color:#fff;mix-blend-mode:difference;font-variant-numeric:tabular-nums;pointer-events:none}'+
+'.hud .num{font-family:"Fraunces",serif;font-weight:900;font-size:42px;line-height:1;text-align:center}.hud .cap{font-size:11px;letter-spacing:3px;opacity:.7;margin-top:4px;text-transform:uppercase;text-align:center}'+
+'#start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(8,7,5,'+(embed?'.45':'.8')+');backdrop-filter:blur(3px);z-index:9;cursor:pointer}'+
+'#start h1{color:#fff;font-family:"Fraunces",serif;font-weight:900;font-size:34px}#start .go{border:0;background:#E2682C;color:#fff;font-weight:700;font-size:19px;padding:18px 46px;border-radius:16px;cursor:pointer;box-shadow:0 14px 40px -12px #e2682c}#start p{color:#cbbfa6;font-size:13px;max-width:460px;text-align:center;line-height:1.7}'+
+'#hint{position:fixed;bottom:20px;left:0;right:0;text-align:center;color:#9b9988;font-size:12px;transition:opacity .5s}'+
+'#svg.flash{animation:fl .5s steps(1) infinite}@keyframes fl{50%{opacity:.2;filter:drop-shadow(0 0 26px #E2682C)}}'+
+'</style></head><body'+bodyClass+'>'+
+startBlock+
+hudBlock+
+'<div id="svg"></div>'+hintBlock+
+'<script>'+engine+
+'var STATE='+snap+',TOTAL='+total+',ALERTDUR='+aDur+',AUTO='+(auto?'true':'false')+',EMBED='+(embed?'true':'false')+';'+
+'var host=document.getElementById("svg"),pctEl=document.getElementById("pct"),cdEl=document.getElementById("cd");'+
+'var running=false,paused=false,startTs=0,pausedMs=0,pauseStart=0,done=false,doneTs=0;'+
+'function fmt(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),x=s%60;return (""+m).padStart(2,"0")+":"+(""+x).padStart(2,"0");}'+
+'function draw(p){STATE.prog=p;host.innerHTML=buildSVG(STATE);if(pctEl)pctEl.textContent=Math.round(p)+"%";if(cdEl)cdEl.textContent=fmt(TOTAL*(1-p/100));}'+
+'draw(0);'+
+'function loop(){if(running&&!paused){var el=(Date.now()-startTs-pausedMs)/1000;var p=Math.min(100,el/TOTAL*100);draw(p);'+
+'if(p>=100&&!done){done=true;doneTs=Date.now();if(ALERTDUR>0)host.classList.add("flash");}'+
+'if(done&&ALERTDUR>0&&Date.now()-doneTs>ALERTDUR*1000)host.classList.remove("flash");}'+
+'requestAnimationFrame(loop);}requestAnimationFrame(loop);'+
+'function begin(){running=true;startTs=Date.now();pausedMs=0;paused=false;done=false;host.classList.remove("flash");}'+
+'var st=document.getElementById("start");if(st){st.addEventListener("click",function(){this.style.display="none";begin();});}'+
+'if(AUTO){begin();}'+
+'var hint=document.getElementById("hint");if(hint)setTimeout(function(){if(running)hint.style.opacity=0;},6500);'+
+'document.addEventListener("keydown",function(e){var k=e.key.toLowerCase();'+
+'if(k===" "||e.code==="Space"){e.preventDefault();if(!running)return;paused=!paused;if(paused)pauseStart=Date.now();else pausedMs+=Date.now()-pauseStart;}'+
+'else if(k==="r"){begin();draw(0);}'+
+'else if(k==="f"){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}'+
+'else if(k==="b"){if(document.body.classList.contains("lite")){document.body.classList.remove("lite");document.body.classList.add("clear");}else if(document.body.classList.contains("clear")){document.body.classList.remove("clear");}else document.body.classList.add("lite");}'+
+'else if(k==="h"){if(hint)hint.style.opacity=(hint.style.opacity==="0"?1:0);}});'+ct+
+'</body></html>';
+}
+function timerBlob(){return new Blob([buildTimerHTML()],{type:"text/html;charset=utf-8"});}
+
+// ---- Embed link: encode the full config S into a URL so a pure timer page can render it ----
+function encodeConfig(st){
+  try{ return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(st))))); }
+  catch(e){ return ""; }
+}
+function decodeConfig(str){
+  try{ return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(str))))); }
+  catch(e){ return null; }
+}
+// Build the embeddable timer URL for the current settings.
+// auto=1 -> starts counting as soon as the page loads (good for PPT slideshow);
+// auto omitted -> shows a centered "开始" button.
+function buildEmbedURL(auto){
+  const base=location.origin+location.pathname;
+  return base+"?embed=1"+(auto?"&auto=1":"")+"&c="+encodeConfig(S);
+}
+
+
+function bindRange(id,key,fmtId){const el=$(id);el.addEventListener("input",function(){S[key]=+el.value;if(fmtId)$(fmtId).textContent=el.value;sync();render();});}
+function bindColor(id,key,hexId){const el=$(id);el.addEventListener("input",function(){S[key]=el.value;if(hexId)$(hexId).textContent=el.value.toUpperCase();render();});}
+function chipGroup(wrapId,attr,key,after){$(wrapId).querySelectorAll(".chip,button").forEach(function(c){c.addEventListener("click",function(){$(wrapId).querySelectorAll(".chip,button").forEach(function(x){x.classList.remove("on");});c.classList.add("on");S[key]=c.dataset[attr];if(after)after();sync();render();});});}
+
+bindRange("sat","sat","satVal");bindRange("op","op","opVal");bindRange("bw","bw","bwVal");
+// progress slider: while the timer preview is auto-advancing, grabbing the slider should
+// take over — pause the auto-run so the preview follows the slider smoothly (no fight).
+$("prog").addEventListener("input",function(){
+  if(timer){clearInterval(timer);timer=null;$("playBtn").textContent="▶";}
+  S.prog=+$("prog").value;$("pVal").textContent=Math.round(S.prog);sync();render();
+});
+bindRange("len","len","lenVal");bindRange("thk","thk","thkVal");bindRange("rad","rad","radVal");bindRange("ch","ch","chVal");
+bindRange("rOut","rOut","rOutVal");
+bindRange("petalSize","petalSize","petalSizeVal");
+bindRange("pwSize","pwSize","pwSizeVal");
+bindRange("heartSize","heartSize","heartSizeVal");
+bindRange("cloverSize","cloverSize","cloverSizeVal");
+bindRange("elemCnt","elemCnt","elemCntVal");bindRange("elemSz","elemSz","elemSzVal");
+bindRange("alertDur","alertDur","alertDurVal");
+$("rIn").addEventListener("input",function(e){S.rIn=+e.target.value;$("rInVal").textContent=e.target.value;render();});
+
+bindColor("fillColor","fill","fillHex");bindColor("strokeColor","stroke","strokeHex");bindColor("trackColor","track","trackHex");
+bindColor("gifBg","gifBg",null);
+// milestone element color uses the same color-block palette as the segments
+(function(){var host=$("elemPalette");if(host){host.appendChild(buildPalette(S.elemColor,function(col){S.elemColor=col;render();}));}})();
+
+chipGroup("growSeg","grow","grow");chipGroup("orientSeg","or","orient");chipGroup("edgeSeg","edge","edge");
+chipGroup("cornerSeg","corner","corner",function(){$("radiusRow").style.display=S.corner==="round"?"":"none";$("chamferRow").style.display=S.corner==="sharp"?"":"none";});
+chipGroup("shapeSeg","shape","shape",function(){
+  $("barGroup").style.display=S.shape==="bar"?"":"none";
+  $("ringGroup").style.display=S.shape==="ring"?"":"none";
+  $("petalGroup").style.display=S.shape==="petal"?"":"none";
+  $("pinwheelGroup").style.display=S.shape==="pinwheel"?"":"none";
+  $("heartGroup").style.display=S.shape==="heart"?"":"none";
+  $("cloverGroup").style.display=S.shape==="clover"?"":"none";
+  updateElemCntUI();
+  mountSegEditor();
+});
+// Milestone count is free only for the bar; ring/flower follow the segment count and
+// pinwheel is fixed at 5, so hide the count slider and show a note for those.
+function updateElemCntUI(){
+  const free=(S.shape==="bar");
+  $("elemCntRow").style.display=free?"":"none";
+  $("elemCntNote").style.display=free?"none":"";
+}
+$("elemOn").addEventListener("change",function(e){S.elemOn=e.target.checked;$("elemBlock").style.display=e.target.checked?"":"none";render();});
+$("dimOff").addEventListener("change",function(e){S.dimOff=e.target.checked;render();});
+$("elemFollow").addEventListener("change",function(e){S.elemFollow=e.target.checked;$("elemColorRow").style.opacity=e.target.checked?.45:1;$("elemColorRow").style.pointerEvents=e.target.checked?"none":"auto";render();});
+$("pieCenterNum").addEventListener("change",function(e){S.pieCenterNum=e.target.checked;render();});
+$("showPct").addEventListener("change",function(e){S.showPct=e.target.checked;render();});
+$("centerText").addEventListener("input",function(e){S.centerText=e.target.value;render();});
+$("coreText").addEventListener("input",function(e){S.coreText=e.target.value;render();});
+$("pwCoreText").addEventListener("input",function(e){S.pwCoreText=e.target.value;render();});
+$("alertOn").addEventListener("change",function(e){S.alertOn=e.target.checked;});
+$("transBg").addEventListener("change",function(e){S.transBg=e.target.checked;$("stage").classList.toggle("checker",e.target.checked);});
+$("gifFlash").addEventListener("change",function(e){S.gifFlash=e.target.checked;});
+$("gifDur").addEventListener("input",function(e){S.gifDur=+e.target.value;$("gifDurVal").textContent=e.target.value+"s";});
+$("fpsSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("fpsSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.gifFps=+b.dataset.f;});});
+
+function buildIconGrid(){
+  const host=$("iconGrid"); host.innerHTML=""; const keys=iconList(); $("iconCount").textContent=keys.length;
+  keys.forEach(function(k){const d=document.createElement("div");d.className="ic"+(k===S.icon?" on":"");
+    const ic=ICONS[k]; const attr=ic.stroke?'fill="none" stroke="#6B6353" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"':'fill="#6B6353"';
+    d.innerHTML='<svg viewBox="0 0 24 24"><path d="'+ic.p+'" '+attr+'/></svg>';
+    d.addEventListener("click",function(){S.icon=k;host.querySelectorAll(".ic").forEach(function(x){x.classList.remove("on");});d.classList.add("on");render();});
+    host.appendChild(d);});
+}
+function hueHex(i,n){const c=hexToRgb(S.fill);let q=rgbToHsl(c[0],c[1],c[2]);let hh=(q[0]+(360/n)*i)%360;
+  let s=Math.max(40,Math.min(70,q[1]))/100,l=Math.max(45,Math.min(58,q[2]))/100;
+  const cc=(1-Math.abs(2*l-1))*s,x=cc*(1-Math.abs((hh/60)%2-1)),m=l-cc/2;let rr,gg,bb;
+  if(hh<60){rr=cc;gg=x;bb=0;}else if(hh<120){rr=x;gg=cc;bb=0;}else if(hh<180){rr=0;gg=cc;bb=x;}else if(hh<240){rr=0;gg=x;bb=cc;}else if(hh<300){rr=x;gg=0;bb=cc;}else{rr=cc;gg=0;bb=x;}
+  const to=function(v){return ("0"+Math.round((v+m)*255).toString(16)).slice(-2);};return "#"+to(rr)+to(gg)+to(bb);}
+// Curated default sequence (mid-tone, visually distinct) drawn from the palette blocks.
+const PALETTE_DEFAULTS=["#C0561E","#6FA644","#5B9BD5","#E8A93A","#1F57D6","#E03131","#36A93B","#7B33C9","#2E3A48","#7C8794","#9E1B1B","#2BB3D6"];
+function palAt(i){return PALETTE_DEFAULTS[i%PALETTE_DEFAULTS.length];}
+function defaultSegments(n){const arr=[];const labels=["调研","设计","开发","测试","上线","复盘","推广","迭代","阶段","环节","目标","总结"];
+  for(let i=0;i<n;i++)arr.push({text:(S.segments[i]?S.segments[i].text:(labels[i]||("分区"+(i+1)))), color:(S.segments[i]&&S.segments[i].color)?S.segments[i].color:palAt(i)});return arr;}
+function defaultPwSegments(){const arr=[];const labels=["调研","设计","开发","测试","上线"];
+  for(let i=0;i<5;i++)arr.push({text:(S.pwSegments[i]?S.pwSegments[i].text:labels[i]), color:(S.pwSegments[i]&&S.pwSegments[i].color)?S.pwSegments[i].color:palAt(i)});return arr;}
+function defaultHeartSegments(){const arr=[];const labels=["左","右"];
+  for(let i=0;i<2;i++)arr.push({text:(S.heartSegments[i]?S.heartSegments[i].text:labels[i]), color:(S.heartSegments[i]&&S.heartSegments[i].color)?S.heartSegments[i].color:palAt(i)});return arr;}
+function defaultCloverSegments(){const arr=[];const labels=["调研","设计","开发","测试"];
+  for(let i=0;i<4;i++)arr.push({text:(S.cloverSegments[i]?S.cloverSegments[i].text:labels[i]), color:(S.cloverSegments[i]&&S.cloverSegments[i].color)?S.cloverSegments[i].color:palAt(i)});return arr;}
+// Reusable fixed-count per-part editor (no count/gap sliders). segs is the live array.
+function mountFixedSegEditor(hostSel,segs,labelText,placeholder){
+  const host=document.querySelector(hostSel);
+  host.innerHTML='<label class="lab">'+labelText+'</label><div class="seg-list" id="fxSegList"></div>';
+  const list=$("fxSegList");
+  segs.forEach(function(sg,i){const row=document.createElement("div");row.className="sec-item";
+    row.innerHTML='<span class="idx">'+(i+1)+'</span>';
+    const t=document.createElement("input");t.type="text";t.value=sg.text;t.placeholder=placeholder+(i+1);
+    t.addEventListener("input",function(){segs[i].text=t.value;render();});
+    const pal=buildPalette(sg.color,function(col){segs[i].color=col;render();});
+    row.appendChild(t);row.appendChild(pal);list.appendChild(row);});
+}
+// Build a COLLAPSIBLE PowerPoint-style color picker: a small trigger showing the current
+// color; clicking it opens a panel with the theme grid (base + tint/shade ramp) and a
+// standard-color row. Picking a block updates the trigger and closes the panel.
+function buildPalette(current,onPick){
+  let cur=String(current).toLowerCase();
+  const wrap=document.createElement("div");wrap.className="palette";
+  // trigger button (always visible)
+  const trig=document.createElement("button");trig.type="button";trig.className="pal-trigger";
+  const dot=document.createElement("span");dot.className="pal-dot";dot.style.background=cur;
+  const cap=document.createElement("span");cap.className="pal-cap";cap.textContent="颜色";
+  const car=document.createElement("span");car.className="pal-caret";car.textContent="▾";
+  trig.appendChild(dot);trig.appendChild(cap);trig.appendChild(car);
+  // collapsible panel (hidden by default)
+  const panel=document.createElement("div");panel.className="pal-panel";panel.style.display="none";
+  const mark=function(sw,col){
+    panel.querySelectorAll(".sw").forEach(function(x){x.classList.remove("on");});
+    sw.classList.add("on");cur=col.toLowerCase();dot.style.background=col;
+    onPick(col);
+    panel.style.display="none";trig.classList.remove("open");   // close after pick
+  };
+  const addSw=function(parent,col){
+    const sw=document.createElement("div");sw.className="sw"+(col.toLowerCase()===cur?" on":"");
+    sw.style.background=col;sw.title=col;
+    sw.addEventListener("click",function(){mark(sw,col);});
+    parent.appendChild(sw);return sw;
+  };
+  const grid=document.createElement("div");grid.className="pal-grid";
+  PALETTE_THEME.forEach(function(base){
+    const colEl=document.createElement("div");colEl.className="pal-col";
+    addSw(colEl,base);
+    PALETTE_STEPS.forEach(function(t){addSw(colEl,mixHex(base,t));});
+    grid.appendChild(colEl);
+  });
+  panel.appendChild(grid);
+  const std=document.createElement("div");std.className="pal-std";
+  PALETTE_STD.forEach(function(col){addSw(std,col);});
+  panel.appendChild(std);
+  trig.addEventListener("click",function(){
+    const open=panel.style.display==="none";
+    panel.style.display=open?"":"none";trig.classList.toggle("open",open);
+  });
+  wrap.appendChild(trig);wrap.appendChild(panel);
+  return wrap;
+}
+function mountSegEditor(){
+  document.querySelectorAll(".commonseg").forEach(function(c){c.innerHTML="";});
+  if(S.shape==="bar")return;
+  if(S.shape==="pinwheel"){
+    S.pwSegments=defaultPwSegments();
+    mountFixedSegEditor("#pinwheelGroup .commonseg",S.pwSegments,"5 片扇叶 文字 · 颜色","扇叶");
+    return;
+  }
+  if(S.shape==="heart"){
+    S.heartSegments=defaultHeartSegments();
+    mountFixedSegEditor("#heartGroup .commonseg",S.heartSegments,"2 片分区 文字 · 颜色","分区");
+    return;
+  }
+  if(S.shape==="clover"){
+    S.cloverSegments=defaultCloverSegments();
+    mountFixedSegEditor("#cloverGroup .commonseg",S.cloverSegments,"4 片叶 文字 · 颜色","叶");
+    return;
+  }
+  const isPetal=(S.shape==="petal");
+  const cntMin=isPetal?5:2, cntMax=12;
+  if(S.segCnt<cntMin) S.segCnt=cntMin;
+  if(S.segCnt>cntMax) S.segCnt=cntMax;
+  S.segments=defaultSegments(S.segCnt);
+  const gid=S.shape==="ring"?"ringGroup":"petalGroup";
+  const host=document.querySelector("#"+gid+" .commonseg");
+  host.innerHTML='<label class="lab">分区数量 <span class="val">'+S.segCnt+'</span></label><input type="range" min="'+cntMin+'" max="'+cntMax+'" value="'+S.segCnt+'" id="segCntR">'+
+    '<label class="lab" style="margin-top:11px">分区间隙 <span class="val">'+S.gap+'°</span></label><input type="range" min="0" max="10" value="'+S.gap+'" id="gapR">'+
+    '<label class="lab" style="margin-top:11px">各分区 文字 · 颜色</label><div class="seg-list" id="segList"></div>';
+  $("segCntR").addEventListener("input",function(e){S.segCnt=+e.target.value;mountSegEditor();render();});
+  $("gapR").addEventListener("input",function(e){S.gap=+e.target.value;e.target.previousElementSibling.querySelector(".val").textContent=e.target.value+"°";render();});
+  const list=$("segList");
+  S.segments.forEach(function(sg,i){const row=document.createElement("div");row.className="sec-item";
+    row.innerHTML='<span class="idx">'+(i+1)+'</span>';
+    const t=document.createElement("input");t.type="text";t.value=sg.text;t.placeholder="分区"+(i+1);
+    t.addEventListener("input",function(){S.segments[i].text=t.value;render();});
+    const pal=buildPalette(sg.color,function(col){S.segments[i].color=col;render();});
+    row.appendChild(t);row.appendChild(pal);list.appendChild(row);});
+}
+
+function readTime(){const m=clamp(+$("tMin").value||0,0,999),s=clamp(+$("tSec").value||0,0,59);S.totalSec=m*60+s;updateClock();}
+$("tMin").addEventListener("input",readTime);$("tSec").addEventListener("input",readTime);
+function fmtTime(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');}
+function updateClock(){$("clock").textContent=fmtTime(S.totalSec*(1-S.prog/100));}
+function sync(){updateClock();}
+
+let flashTimer=null;
+function startFlash(){$("svgHost").classList.add("flash");clearTimeout(flashTimer);
+  flashTimer=setTimeout(function(){$("svgHost").classList.remove("flash");}, (S.alertOn?S.alertDur:5)*1000);}
+$("alertPrev").addEventListener("click",function(){ if($("svgHost").classList.contains("flash")){$("svgHost").classList.remove("flash");clearTimeout(flashTimer);} else startFlash(); });
+
+let timer=null,t0=0,startProg=0;
+$("playBtn").addEventListener("click",function(){
+  if(timer){clearInterval(timer);timer=null;$("playBtn").textContent="▶";return;}
+  if(S.totalSec<=0)return;
+  $("playBtn").textContent="❚❚";t0=performance.now();startProg=S.prog;$("svgHost").classList.remove("flash");
+  timer=setInterval(function(){const el=(performance.now()-t0)/1000;let np=startProg+(el/S.totalSec)*100;
+    if(np>=100){np=100;clearInterval(timer);timer=null;$("playBtn").textContent="▶";if(S.alertOn)startFlash();}
+    S.prog=np;$("prog").value=np;$("pVal").textContent=Math.round(np);updateClock();render();},1000/30);
+});
+$("resetBtn").addEventListener("click",function(){if(timer){clearInterval(timer);timer=null;$("playBtn").textContent="▶";}
+  $("svgHost").classList.remove("flash");clearTimeout(flashTimer);S.prog=0;$("prog").value=0;$("pVal").textContent="0";updateClock();render();});
+
+$("scaleSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("scaleSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.scale=+b.dataset.s;});});
+function svgBlob(){return new Blob([lastSVG],{type:"image/svg+xml;charset=utf-8"});}
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
+$("dlSvg").addEventListener("click",function(){dl(svgBlob(),"progress.svg");});
+$("dlPng").addEventListener("click",function(){const sc=S.scale,img=new Image(),url=URL.createObjectURL(svgBlob());
+  img.onload=function(){const cv=document.createElement("canvas");cv.width=VW*sc;cv.height=VH*sc;const ctx=cv.getContext("2d");
+    if(!S.transBg){ctx.fillStyle="#FBF8F0";ctx.fillRect(0,0,cv.width,cv.height);}ctx.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);
+    cv.toBlob(function(b){dl(b,"progress.png");},"image/png");};
+  img.onerror=function(){alert("导出失败，请重试");URL.revokeObjectURL(url);};img.src=url;});
+
+$("openTimer").addEventListener("click",function(){const w=window.open();if(!w){alert("请允许弹窗后重试");return;}w.document.open();w.document.write(buildTimerHTML());w.document.close();});
+$("dlTimer").addEventListener("click",function(){
+  dl(timerBlob(),"presentation-timer.html");
+  var el=$("useTimer");el.style.display=(el.style.display==="none"?"flex":"none");
+});
+$("copyEmbed").addEventListener("click",function(){
+  // auto=1: starts counting the moment the slide shows it (best for PPT slideshow).
+  // Note: a deployed https URL is required for PowerPoint's Web Viewer; locally this is a file:// link.
+  const url=buildEmbedURL(true);
+  const fileMode=location.protocol==="file:";
+  // reveal the embed help panel (steps live there now); toggle on repeat clicks.
+  var el=$("useEmbed");el.style.display=(el.style.display==="none"?"flex":"none");
+  function done(){
+    const note=fileMode
+      ? "已复制嵌入链接。注意：当前是本地文件，PPT 的 Web Viewer 只接受已发布的 https 网址，请先部署到 Vercel 再复制。详见下方说明。"
+      : "已复制嵌入链接。粘贴到 PowerPoint 的 Web Viewer 即可，详见下方说明。";
+    alert(note);
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done,function(){prompt("复制下面的嵌入链接：",url);});
+  } else { prompt("复制下面的嵌入链接：",url); }
+});
+
+function svgToImage(svgStr){return new Promise(function(res,rej){const img=new Image(),url=URL.createObjectURL(new Blob([svgStr],{type:"image/svg+xml;charset=utf-8"}));
+  img.onload=function(){res({img:img,url:url});};img.onerror=function(){URL.revokeObjectURL(url);rej(new Error("svg load"));};img.src=url;});}
+async function exportGif(){
+  const fps=S.gifFps, dur=S.gifDur, total=Math.max(2,Math.round(fps*dur));
+  const sc = S.scale>=2?2:1; const W=VW*sc, H=VH*sc;
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
+  const enc=new GIFEncoder();enc.setRepeat(0);enc.setDelay(Math.round(1000/fps));enc.setSize(W,H);enc.setQuality(10);enc.start();
+  gifCancel=false;
+  $("busy").style.display="flex";
+  const savedProg=S.prog;
+  const flashFrames=(S.gifFlash && S.alertOn)? Math.min(total, fps*2) : 0;
+  const totalAll=total+flashFrames;
+  let cancelled=false;
+  try{
+    for(let f=0; f<total; f++){
+      if(gifCancel){cancelled=true;break;}
+      S.prog=(f/(total-1))*100; render();
+      const r=await svgToImage(lastSVG);
+      ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
+      ctx.drawImage(r.img,0,0,W,H);URL.revokeObjectURL(r.url);
+      enc.addFrame(ctx.getImageData(0,0,W,H).data,true);
+      $("busyFill").style.width=Math.round((f/totalAll)*100)+"%";$("busyTxt").textContent=Math.round((f/totalAll)*100)+"%";
+      await new Promise(function(r){setTimeout(r,0);});
+    }
+    if(!cancelled && flashFrames>0){
+      S.prog=100; render(); const r=await svgToImage(lastSVG);
+      for(let f=0;f<flashFrames;f++){
+        if(gifCancel){cancelled=true;break;}
+        ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
+        ctx.globalAlpha=(f%2===0)?1:0.18; ctx.drawImage(r.img,0,0,W,H); ctx.globalAlpha=1;
+        enc.addFrame(ctx.getImageData(0,0,W,H).data,true);
+        $("busyFill").style.width=Math.round(((total+f)/totalAll)*100)+"%";$("busyTxt").textContent=Math.round(((total+f)/totalAll)*100)+"%";
+        await new Promise(function(r){setTimeout(r,0);});
+      }
+      URL.revokeObjectURL(r.url);
+    }
+    if(!cancelled){
+      enc.finish();
+      dl(new Blob([new Uint8Array(enc.stream().bin)],{type:"image/gif"}),"progress.gif");
+    }
+  }catch(e){if(!gifCancel)alert("GIF 生成失败："+e.message);}
+  finally{gifCancel=false;S.prog=savedProg;$("prog").value=savedProg;$("pVal").textContent=Math.round(savedProg);render();$("busy").style.display="none";$("busyFill").style.width="0";}
+}
+$("dlGif").addEventListener("click",exportGif);
+$("busyCancel").addEventListener("click",function(){gifCancel=true;});
+
+// ---- EMBED MODE: when opened as ?embed=1&c=<config>, render a pure full-screen timer
+// (transparent bg) instead of the editor. Used to embed in PowerPoint via Web Viewer. ----
+(function(){
+  var qs=new URLSearchParams(location.search);
+  if(qs.get("embed")!=="1") return false;
+  var cfg=qs.get("c")? decodeConfig(qs.get("c")) : null;
+  if(cfg && typeof cfg==="object"){ for(var k in cfg){ if(Object.prototype.hasOwnProperty.call(cfg,k)) S[k]=cfg[k]; } }
+  var auto=qs.get("auto")==="1";
+  var html=buildTimerHTML({embed:true,auto:auto});
+  // Replace the whole page with the timer document via a blob URL so the editor's script
+  // context (and its `const S`) is fully discarded — avoids any redeclare collisions.
+  var blob=new Blob([html],{type:"text/html;charset=utf-8"});
+  location.replace(URL.createObjectURL(blob));
+  return true;
+})() ||
+(function(){
+  // normal editor init
+  buildIconGrid();
+  S.segments=defaultSegments(6);
+  updateElemCntUI();
+  readTime();render();
+})();
+
+</script>
+</body>
+</html>
