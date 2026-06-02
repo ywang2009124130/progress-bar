@@ -2819,6 +2819,18 @@ $("dlLauncher").addEventListener("click",function(){
   if(S.shape==="bar"){ WW=560; HH=130; }
   else { WW=420; HH=380; }
   const NL="\r\n";  // Windows line endings
+  // PowerShell single-quoted strings need '' for a literal single quote.
+  const psUrl=url.replace(/'/g,"''");
+  // Build the PowerShell command as ONE line (no ^ continuation, which is fragile).
+  // URL lives inside a single-quoted PS string, so & needs no escaping and can never
+  // be treated as a cmd command separator. Start-Process passes the whole URL as a
+  // single argument, so embed=1 & the full config always arrive intact -> pure timer.
+  const ps =
+    "$u='"+psUrl+"';"+
+    "$a='--app='+$u+' --window-size="+WW+","+HH+"';"+
+    "$p=@(\\\"${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe\\\",\\\"${env:ProgramFiles}\\Microsoft\\Edge\\Application\\msedge.exe\\\",\\\"${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe\\\",\\\"${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe\\\");"+
+    "$b=$null; foreach($x in $p){ if(Test-Path $x){ $b=$x; break } }"+
+    "if($b){ Start-Process $b -ArgumentList $a } else { Write-Host 'no browser'; pause }";
   const lines=[
     "@echo off",
     "chcp 65001 >nul",
@@ -2826,28 +2838,14 @@ $("dlLauncher").addEventListener("click",function(){
     "",
     "REM ============================================================",
     "REM  进度条工坊 · 计时器小窗启动器（链接已自动填好，双击即用）",
-    "REM  以浏览器「应用模式」打开，无地址栏/书签栏，得到干净小窗；",
-    "REM  可拖动、缩放，再用 PowerToys 快捷键钉在最前、浮于 PPT 之上。",
+    "REM  以浏览器「应用模式」打开，得到无地址栏的纯计时器小窗。",
+    "REM  用 PowerShell 启动，整条网址作为单一参数传入，",
+    "REM  彻底避免网址里的 & 被批处理截断（截断会导致配置丢失、跑得飞快）。",
+    "REM  要让小窗浮在 PPT 放映之上：装 PowerToys，开 Always-On-Top，",
+    "REM  点中小窗后按 Win+Ctrl+T 钉在最顶层。",
     "REM ============================================================",
     "",
-    'set "URL='+url.replace(/&/g,"^&")+'"',
-    "",
-    "REM 小窗初始尺寸（像素）；已按形态预设，可自行修改，打开后也能拖角缩放",
-    'set "W='+WW+'"',
-    'set "H='+HH+'"',
-    "",
-    'set "EDGE=%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe"',
-    'set "EDGE2=%ProgramFiles%\\Microsoft\\Edge\\Application\\msedge.exe"',
-    'set "CHROME=%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"',
-    'set "CHROME2=%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"',
-    "",
-    'if exist "%EDGE%"    start "" "%EDGE%"    --app="%URL%" --window-size=%W%,%H% & goto :eof',
-    'if exist "%EDGE2%"   start "" "%EDGE2%"   --app="%URL%" --window-size=%W%,%H% & goto :eof',
-    'if exist "%CHROME%"  start "" "%CHROME%"  --app="%URL%" --window-size=%W%,%H% & goto :eof',
-    'if exist "%CHROME2%" start "" "%CHROME2%" --app="%URL%" --window-size=%W%,%H% & goto :eof',
-    "",
-    "echo 未找到 Edge 或 Chrome 浏览器，请确认已安装其中之一。",
-    "pause"
+    'powershell -NoProfile -ExecutionPolicy Bypass -Command "'+ps+'"'
   ];
   // UTF-8 BOM so the Chinese comments render correctly in the .bat
   const bom="\ufeff";
