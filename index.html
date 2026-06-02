@@ -2427,7 +2427,7 @@ function buildTimerHTML(opts){
 startBlock+
 hudBlock+
 '<div id="svg"></div>'+hintBlock+
-'<script>'+engine+
+'<script>(function(){'+engine+
 'var STATE='+snap+',TOTAL='+total+',ALERTDUR='+aDur+',AUTO='+(auto?'true':'false')+',EMBED='+(embed?'true':'false')+';'+
 'var SOUND_ON='+(S.soundOn?'true':'false')+',SOUND_TYPE="'+(S.soundType||"4")+'",SOUND_REPEAT='+(S.soundRepeat?'true':'false')+',SOUND_GAP='+(S.soundGap||2)+',SOUND_DUR='+(S.alertDur||60)+';'+
 'var host=document.getElementById("svg"),pctEl=document.getElementById("pct"),cdEl=document.getElementById("cd");'+
@@ -2460,7 +2460,7 @@ hudBlock+
 'else if(k==="r"){begin();draw(0);}'+
 'else if(k==="f"){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}'+
 'else if(k==="b"){if(document.body.classList.contains("lite")){document.body.classList.remove("lite");document.body.classList.add("clear");}else if(document.body.classList.contains("clear")){document.body.classList.remove("clear");}else document.body.classList.add("lite");}'+
-'else if(k==="h"){if(hint)hint.style.opacity=(hint.style.opacity==="0"?1:0);}});'+ct+
+'else if(k==="h"){if(hint)hint.style.opacity=(hint.style.opacity==="0"?1:0);}});})();'+ct+
 '</body></html>';
 }
 function timerBlob(){return new Blob([buildTimerHTML()],{type:"text/html;charset=utf-8"});}
@@ -2937,10 +2937,15 @@ $("busyCancel").addEventListener("click",function(){gifCancel=true;});
   if(cfg && typeof cfg==="object"){ for(var k in cfg){ if(Object.prototype.hasOwnProperty.call(cfg,k)) S[k]=cfg[k]; } }
   var auto=qs.get("auto")==="1";
   var html=buildTimerHTML({embed:true,auto:auto});
-  // Replace the whole page with the timer document via a blob URL so the editor's script
-  // context (and its `const S`) is fully discarded — avoids any redeclare collisions.
-  var blob=new Blob([html],{type:"text/html;charset=utf-8"});
-  location.replace(URL.createObjectURL(blob));
+  // Render the timer in-place (no blob: URL, so the address stays the normal
+  // https://…?embed=1… — keeps "install as app" available and avoids app-mode cache quirks).
+  // document.open() resets the current document; the timer's own script is wrapped in an IIFE
+  // so re-writing into the same realm won't collide with the editor's `let S`.
+  setTimeout(function(){
+    document.open("text/html","replace");
+    document.write(html);
+    document.close();
+  },0);
   return true;
 })() ||
 (function(){
