@@ -2414,9 +2414,9 @@ function buildTimerHTML(opts){
   return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+(embed?'演示计时器':'实时演示计时器')+'</title>'+
 '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=DM+Sans:wght@500;700&display=swap" rel="stylesheet">'+
 '<style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;font-family:"DM Sans",system-ui,sans-serif}'+
-'body{background:'+(embed?'transparent':'#0f0d0a')+';display:flex;align-items:center;justify-content:center;overflow:hidden;transition:background .25s}'+
+'body{background:'+(embed?'transparent':'#0f0d0a')+';display:flex;align-items:'+(embed?'flex-start':'center')+';justify-content:center;overflow:hidden;transition:background .25s}'+
 'body.lite{background:#F4EFE2}body.clear{background:transparent}'+
-'#svg{width:min(92vw,1150px);max-height:'+(embed?'94vh':'80vh')+'}#svg svg{width:100%;height:100%;display:block}'+
+'#svg{width:min(92vw,1150px);max-height:'+(embed?'100vh':'80vh')+';'+(embed?'margin-top:0':'')+'}#svg svg{width:100%;height:100%;display:block}'+
 '.hud{position:fixed;top:22px;left:0;right:0;display:flex;justify-content:center;gap:34px;color:#fff;mix-blend-mode:difference;font-variant-numeric:tabular-nums;pointer-events:none}'+
 '.hud .num{font-family:"Fraunces",serif;font-weight:900;font-size:42px;line-height:1;text-align:center}.hud .cap{font-size:11px;letter-spacing:3px;opacity:.7;margin-top:4px;text-transform:uppercase;text-align:center}'+
 '#start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(8,7,5,'+(embed?'.45':'.8')+');backdrop-filter:blur(3px);z-index:9;cursor:pointer}'+
@@ -2439,8 +2439,14 @@ hudBlock+
 '_chl=setInterval(function(){var xx=axc();if(xx)chimePlay(xx,SOUND_TYPE,xx.currentTime+0.02);},per*1000);'+
 'setTimeout(chimeStop,SOUND_DUR*1000);}'+
 'function fmt(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),x=s%60;return (""+m).padStart(2,"0")+":"+(""+x).padStart(2,"0");}'+
-'function draw(p){STATE.prog=p;host.innerHTML=buildSVG(STATE);if(pctEl)pctEl.textContent=Math.round(p)+"%";if(cdEl)cdEl.textContent=fmt(TOTAL*(1-p/100));}'+
+'var FITVB=null;'+
+'function draw(p){STATE.prog=p;host.innerHTML=buildSVG(STATE);if(FITVB){var s=host.querySelector("svg");if(s){s.setAttribute("viewBox",FITVB);s.setAttribute("preserveAspectRatio",EMBED?"xMidYMin meet":"xMidYMid meet");}}if(pctEl)pctEl.textContent=Math.round(p)+"%";if(cdEl)cdEl.textContent=fmt(TOTAL*(1-p/100));}'+
 'draw(0);'+
+// In embed mode, tighten the SVG viewBox to the actual content bounds so the window
+// hugs the shape (minimal white border). Measure at full extent (100%) to include every
+// element, then restore. Runs once after layout; FITVB persists it across redraws.
+'function tightFit(){try{var p0=STATE.prog;FITVB=null;draw(100);var svg=host.querySelector("svg");var bb=svg.getBBox();var m=Math.max(bb.width,bb.height)*0.06;FITVB=(bb.x-m)+" "+(bb.y-m)+" "+(bb.width+2*m)+" "+(bb.height+2*m);draw(p0);}catch(e){}}'+
+'if(EMBED){requestAnimationFrame(function(){requestAnimationFrame(tightFit);});}'+
 'function loop(){if(running&&!paused){var el=(Date.now()-startTs-pausedMs)/1000;var p=Math.min(100,el/TOTAL*100);draw(p);'+
 'if(p>=100&&!done){done=true;doneTs=Date.now();if(ALERTDUR>0)host.classList.add("flash");chimeStart();}'+
 'if(done&&ALERTDUR>0&&Date.now()-doneTs>ALERTDUR*1000)host.classList.remove("flash");}'+
@@ -2804,6 +2810,11 @@ $("dlLauncher").addEventListener("click",function(){
   const fileMode=location.protocol==="file:";
   if(fileMode){ toast("请先部署到 https（如 Vercel）再下载启动器"); }
   const fname=launcherFileName();
+  // window size adapts to shape so there's minimal white border around the timer:
+  // bar = wide & short; ring/petal/pinwheel/heart/clover = near-square.
+  var WW=520, HH=180;
+  if(S.shape==="bar"){ WW=560; HH=130; }
+  else { WW=420; HH=380; }
   const NL="\r\n";  // Windows line endings
   const lines=[
     "@echo off",
@@ -2818,9 +2829,9 @@ $("dlLauncher").addEventListener("click",function(){
     "",
     'set "URL='+url+'"',
     "",
-    "REM 小窗初始尺寸（像素），可自行修改；打开后也能拖角缩放",
-    'set "W=520"',
-    'set "H=180"',
+    "REM 小窗初始尺寸（像素）；已按形态预设，可自行修改，打开后也能拖角缩放",
+    'set "W='+WW+'"',
+    'set "H='+HH+'"',
     "",
     'set "EDGE=%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe"',
     'set "EDGE2=%ProgramFiles%\\Microsoft\\Edge\\Application\\msedge.exe"',
