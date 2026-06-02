@@ -317,7 +317,7 @@
         <span class="usetag tag-link">🔗 复制嵌入链接</span>
         <div class="usetxt">
           <b>嵌进 PPT 某一页里（翻到即显示、自动计时，背景透明）。</b>
-          ① 在本工具调好样式后点「复制嵌入链接」。② PowerPoint → 插入 → 获取加载项 → 搜 <b>Web Viewer</b> → 添加 → 在幻灯片上拖出一个框 → 粘贴链接。③ 拖动 / 缩放该框即可调位置和大小（框比例尽量贴合形态：横条拉扁长、圆环/四叶草拉近正方）。
+          ① 在本工具调好样式后点「复制嵌入链接」。② 在 PowerPoint 顶部找到 <b>「加载项」</b>入口（视版本而定：可能在<b>「插入」</b>选项卡，或在<b>「开发工具」选项卡 → 加载项</b>）→ 打开「Office 加载项」→ 切到<b>「应用商店」</b>标签 → 搜 <b>Web Viewer</b> → 添加。③ 它会在幻灯片上插入一个框，把链接粘进去、确认。④ 拖动 / 缩放该框即可调位置和大小（框比例尽量贴合形态：横条拉扁长、圆环/四叶草拉近正方）。
           <span class="usenote">需要先把本工具部署到 https 网址（如 Vercel）；放映时须联网。<b>Windows 桌面版 PowerPoint 支持最好；Mac 版 / 网页版的 Web Viewer 常不可用——Mac 用户请改用下方「下载计时器」。</b></span>
         </div>
       </div>
@@ -2723,7 +2723,7 @@ $("copyEmbed").addEventListener("click",function(){
   function done(){
     const note=fileMode
       ? "已复制嵌入链接。注意：当前是本地文件，PPT 的 Web Viewer 只接受已发布的 https 网址，请先部署到 Vercel 再复制。详见下方说明。"
-      : "已复制嵌入链接。粘贴到 PowerPoint 的 Web Viewer 即可，详见下方说明。";
+      : "已复制嵌入链接。在 PowerPoint 找到「加载项」（「插入」或「开发工具」选项卡）→ 应用商店 → 搜 Web Viewer → 添加后粘贴此链接。详见下方说明。";
     alert(note);
   }
   if(navigator.clipboard&&navigator.clipboard.writeText){
