@@ -94,6 +94,11 @@
   .usenote{display:block;margin-top:5px;color:var(--ink-soft);opacity:.92}
   .usewarn{display:block;margin-top:6px;color:#C0392B;font-weight:700}
   .usewarn b{color:#C0392B}
+  .usesteps{margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+  .usesteps li{font-size:11.5px;color:var(--ink-soft);line-height:1.6}
+  .usesteps li b{color:var(--ink);font-weight:700}
+  .usesteps code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;background:var(--paper-2);padding:1px 4px;border-radius:4px}
+  .usesub{font-weight:700;color:var(--ink);margin-top:9px}
   .icongrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
   .icongrid .ic{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.14s}
   .icongrid .ic svg{width:60%;height:60%}
@@ -120,6 +125,7 @@
   .btn:hover{background:var(--ink);color:var(--paper)}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn.primary:hover{filter:brightness(1.08)}
+  .reco{display:inline-block;margin-left:5px;background:#fff;color:var(--accent);font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;vertical-align:middle}
   .grow{flex:1}
   #busy{position:fixed;inset:0;background:#0e0c08cc;backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:30;color:#fff}
   #busy .bar{width:240px;height:8px;border-radius:6px;background:#ffffff22;overflow:hidden}
@@ -304,8 +310,9 @@
       <button class="btn" id="dlPng">PNG</button>
       <button class="btn" id="dlGif">⬇ GIF 动图</button>
       <button class="btn" id="openTimer">▶ 实时演示</button>
-      <button class="btn primary" id="dlTimer">⬇ 计时器</button>
-      <button class="btn primary" id="copyEmbed">🔗 复制嵌入链接</button>
+      <button class="btn" id="dlTimer">⬇ 计时器</button>
+      <button class="btn" id="copyEmbed">🔗 复制嵌入链接</button>
+      <button class="btn primary" id="dlLauncher">⬇ 小窗启动器 <span class="reco">推荐</span></button>
     </div>
     <div class="exportbar" style="margin-top:-8px">
       <span style="font-size:11.5px;color:var(--ink-soft)">GIF ·</span>
@@ -320,24 +327,40 @@
     </div>
     <p class="hint" style="margin-top:6px">GIF 不支持透明背景，请将「GIF 底色」选成与幻灯片接近的颜色；需要真正透明请改用 PNG 导出。</p>
     <div class="usebox">
-      <div class="userow" id="useEmbed" style="display:none">
-        <span class="usetag tag-link">🔗 复制嵌入链接</span>
+      <div class="userow" id="useLauncher" style="display:none">
+        <span class="usetag tag-link">⬇ 小窗启动器</span>
         <div class="usetxt">
-          <b>嵌进 PPT 某一页里（翻到即显示、自动计时，背景透明）。需用免费加载项 LiveWeb。</b>
-          ① <b>装 LiveWeb（一次性）：</b>微软自带的 Web Viewer 已停用，应用商店里同名的多为<b>收费</b>，请改用免费的 <b>LiveWeb</b>（搜「LiveWeb PowerPoint」从作者 Shyam Pillai 官网下载安装）。安装后在 PowerPoint「文件 → 选项 → 加载项 → 底部『管理: PowerPoint 加载项』→ 转到 → 添加新的」，选中安装目录里的 <b>LiveWeb.ppam</b>（默认在 <code>C:\Program Files (x86)\Shyam Pillai\LiveWeb\</code>）→ 启用。
-          ② 在本工具点「复制嵌入链接」。
-          ③ PowerPoint <b>「插入」选项卡 → LiveWeb 组 → Web Page</b> → 把链接粘进输入框 → <b>Add</b>（确认链接进入下方列表）→ Next。
-          ④ 完成后 Finish。<b>编辑态显示为空白占位框是正常的；按 F5 放映那页才会真正加载并自动计时（放映须联网）。</b>
-          ⑤ 拖动 / 缩放该占位框即可调位置和大小（框比例尽量贴合形态：横条拉扁长、圆环 / 四叶草拉近正方）。
-          <span class="usewarn">⚠ 插入向导中「Refresh / 自动刷新」务必<b>不要勾选</b>！勾了会让网页每隔几秒重新加载、计时器反复从 0 重启，<b>永远走不完、也不会触发到点提醒</b>。</span>
-          <span class="usenote">仅适用于 Windows 桌面版 PowerPoint；Mac 版 / 网页版无法用 LiveWeb，Mac 用户请改用下方「下载计时器」。</span>
+          <b>把计时器做成一个干净小窗，浮在 PPT 放映之上（角落显示、自动计时、可半透明）。推荐方式，免插件、不收费。</b>
+          <div class="usesub">一、装 PowerToys（只需一次，微软官方免费）</div>
+          <ol class="usesteps">
+            <li>打开「Microsoft Store（微软商店）」→ 搜 <b>PowerToys</b>（发布者为 Microsoft）→ 安装。装完打开一次，让它在后台运行。</li>
+            <li>打开 PowerToys → 左侧「<b>Always On Top（始终置顶）</b>」→ 确认开关已开启；记下「激活快捷键」（默认 <b>Win+Ctrl+T</b>，有的机器是别的组合，以这里显示的为准，可自行改）。</li>
+            <li>建议在「常规」里打开「<b>开机时启动</b>」，以后无需手动开。</li>
+          </ol>
+          <div class="usesub">二、用小窗计时器</div>
+          <ol class="usesteps">
+            <li>在本工具调好样式后点「<b>小窗启动器</b>」，下载一个 <code>.bat</code> 文件（会按当前配置自动命名，如「5分钟·橙·条状·小窗.bat」，链接已填好，无需编辑）。</li>
+            <li><b>双击该 .bat</b>，会用 Edge / Chrome 的「应用模式」弹出一个干净小窗（无地址栏、无书签栏），自动开始计时。首次双击若有安全提示，点「仍要运行」。</li>
+            <li>拖小窗<b>顶部标题条</b>移动位置、拖<b>边角</b>缩放大小，摆到屏幕角落。</li>
+            <li><b>点中这个小窗</b> → 按 PowerToys 置顶快捷键（如 <b>Win+Ctrl+T</b>）→ 出现彩色边框即<b>钉住</b>，它会一直浮在最前面，包括盖在 PPT 之上。</li>
+            <li>之后正常放映 PPT，小窗始终浮在角落。再按一次快捷键可取消置顶。</li>
+          </ol>
+          <span class="usenote">放映须联网（小窗加载在线页面）。若 PPT「全屏放映」偶尔盖住小窗：在 Always On Top 设置里关掉「Game Mode 时不激活」，或把放映改为「幻灯片放映 → 设置 → 由观众浏览(窗口)」模式。置顶后还可按 <b>Win+Ctrl+加/减号</b> 调小窗透明度，更不挡内容。仅 Windows；Mac 请用下方「下载计时器」全屏播放。</span>
+          <span class="usenote">提示：链接已把当前配置烤进 .bat，<b>同一个进度条永远双击同一个 .bat 即可，不用每次重下</b>；想要不同的进度条（换形态 / 时长 / 颜色），调好后再下一个即可。</span>
         </div>
       </div>
       <div class="userow" id="useTimer" style="display:none">
         <span class="usetag tag-dl">⬇ 计时器</span>
         <div class="usetxt">
-          <b>下载一个独立计时器网页，全屏单独播放（跨系统通用、无需联网、无需加载项）。</b>
-          ① 点「计时器」下载 HTML。② 双击用浏览器打开 → 按 <b>F11</b>（Mac 用浏览器全屏）进入全屏 → 点「开始计时」。③ 演讲到该环节时，从 PPT 切出来全屏播放，结束会闪烁提醒；之后用 <b>Alt+Tab</b>（Mac 用 <b>⌘+Tab</b>）切回 PPT。也可放副屏供自己控场。
+          <b>下载一个独立计时器网页，全屏单独播放（跨系统通用、无需联网、无需任何插件）。</b>
+          ① 点「计时器」下载 HTML。② 双击用浏览器打开 → 按 <b>F11</b>（Mac 用浏览器全屏）进入全屏 → 点「开始计时」。③ 演讲到该环节时，从 PPT 切出来全屏播放，结束会闪烁提醒并响提示音；之后用 <b>Alt+Tab</b>（Mac 用 <b>⌘+Tab</b>）切回 PPT。也可放副屏供自己控场。
+        </div>
+      </div>
+      <div class="userow" id="useLink" style="display:none">
+        <span class="usetag tag-dl">🔗 复制嵌入链接</span>
+        <div class="usetxt">
+          <b>仅复制这个计时器的网址（已含全部配置，翻页即自动计时）。</b>给进阶用户用：你可以把它粘到浏览器直接打开预览，或粘到支持嵌入网页的工具里。
+          <span class="usenote">日常用不到这个——把计时器放进 PPT，推荐直接用上方「<b>小窗启动器</b>」（下载即用、浮在 PPT 上）；或用「<b>计时器</b>」全屏播放。链接见下方框，点一下可全选复制。</span>
         </div>
       </div>
     </div>
@@ -2726,13 +2749,11 @@ $("dlTimer").addEventListener("click",function(){
   var el=$("useTimer");el.style.display=(el.style.display==="none"?"flex":"none");
 });
 $("copyEmbed").addEventListener("click",function(){
-  // auto=1: starts counting the moment the slide shows it (best for PPT slideshow).
-  // Note: a deployed https URL is required (PowerPoint LiveWeb add-in); locally this is a file:// link.
+  // auto=1: starts counting the moment the slide shows it.
   const url=buildEmbedURL(true);
   const fileMode=location.protocol==="file:";
-  // always reveal the embed help panel (steps live there) — open it (don't toggle closed on copy)
-  $("useEmbed").style.display="flex";
-  // put the link into a copyable field inside the help panel as a reliable fallback
+  // reveal the link panel where the copyable link lives
+  $("useLink").style.display="flex";
   showEmbedLink(url);
   function ok(){ toast(fileMode? "已复制（本地文件仅供预览，请部署到 https 后再用）" : "已复制嵌入链接"); }
   function fail(){ toast("已生成链接，请在下方手动复制"); }
@@ -2740,9 +2761,89 @@ $("copyEmbed").addEventListener("click",function(){
     navigator.clipboard.writeText(url).then(ok,fail);
   } else { fail(); }
 });
-// Show the embed URL in a read-only, click-to-select field at the top of the help panel.
+// Download a one-click .bat that opens THIS timer config in browser "app mode"
+// (no address/bookmark bars) as a clean small window — URL is pre-filled, no editing needed.
+// Build a descriptive .bat filename from the current config: 时长 + 颜色 + 形态.
+function shapeLabel(s){
+  return ({bar:"条状",ring:"圆环",petal:"花朵",pinwheel:"风车",heart:"心形",clover:"四叶草"})[s]||"进度条";
+}
+function colorName(hex){
+  try{
+    var h=hex.replace("#","");if(h.length===3)h=h.split("").map(function(c){return c+c;}).join("");
+    var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+    var max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+    var l=(max+min)/2/255;
+    if(d<22){ if(l<0.2)return"黑";if(l<0.45)return"深灰";if(l<0.7)return"灰";if(l<0.9)return"浅灰";return"白"; }
+    var hh;
+    if(max===r) hh=((g-b)/d)%6; else if(max===g) hh=(b-r)/d+2; else hh=(r-g)/d+4;
+    hh*=60; if(hh<0)hh+=360;
+    var name;
+    if(hh<16||hh>=345)name="红"; else if(hh<40)name="橙"; else if(hh<68)name="黄";
+    else if(hh<150)name="绿"; else if(hh<200)name="青"; else if(hh<255)name="蓝";
+    else if(hh<290)name="紫"; else name="粉";
+    if(l<0.32)name="深"+name; else if(l>0.75)name="浅"+name;
+    return name;
+  }catch(e){ return ""; }
+}
+function durLabel(sec){
+  sec=Math.max(0,Math.round(sec||0));
+  var m=Math.floor(sec/60),s=sec%60;
+  if(m&&s)return m+"分"+s+"秒";
+  if(m)return m+"分钟";
+  return s+"秒";
+}
+function launcherFileName(){
+  var parts=[durLabel(S.totalSec), colorName(S.fill), shapeLabel(S.shape)];
+  var base=parts.filter(Boolean).join("·");
+  // strip characters illegal in Windows filenames
+  base=base.replace(/[\\/:*?"<>|]/g,"");
+  return (base||"计时器")+"·小窗.bat";
+}
+$("dlLauncher").addEventListener("click",function(){
+  const url=buildEmbedURL(true);
+  const fileMode=location.protocol==="file:";
+  if(fileMode){ toast("请先部署到 https（如 Vercel）再下载启动器"); }
+  const fname=launcherFileName();
+  const NL="\r\n";  // Windows line endings
+  const lines=[
+    "@echo off",
+    "chcp 65001 >nul",
+    "title "+fname.replace(/\.bat$/,""),
+    "",
+    "REM ============================================================",
+    "REM  进度条工坊 · 计时器小窗启动器（链接已自动填好，双击即用）",
+    "REM  以浏览器「应用模式」打开，无地址栏/书签栏，得到干净小窗；",
+    "REM  可拖动、缩放，再用 PowerToys 快捷键钉在最前、浮于 PPT 之上。",
+    "REM ============================================================",
+    "",
+    'set "URL='+url+'"',
+    "",
+    "REM 小窗初始尺寸（像素），可自行修改；打开后也能拖角缩放",
+    'set "W=520"',
+    'set "H=180"',
+    "",
+    'set "EDGE=%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe"',
+    'set "EDGE2=%ProgramFiles%\\Microsoft\\Edge\\Application\\msedge.exe"',
+    'set "CHROME=%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"',
+    'set "CHROME2=%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"',
+    "",
+    'if exist "%EDGE%"   ( start "" "%EDGE%"   --app="%URL%" --window-size=%W%,%H% & goto :eof )',
+    'if exist "%EDGE2%"  ( start "" "%EDGE2%"  --app="%URL%" --window-size=%W%,%H% & goto :eof )',
+    'if exist "%CHROME%" ( start "" "%CHROME%" --app="%URL%" --window-size=%W%,%H% & goto :eof )',
+    'if exist "%CHROME2%"( start "" "%CHROME2%" --app="%URL%" --window-size=%W%,%H% & goto :eof )',
+    "",
+    "echo 未找到 Edge 或 Chrome 浏览器，请确认已安装其中之一。",
+    "pause"
+  ];
+  // UTF-8 BOM so the Chinese comments render correctly in the .bat
+  const bom="\ufeff";
+  const blob=new Blob([bom+lines.join(NL)+NL],{type:"application/octet-stream"});
+  dl(blob,fname);
+  $("useLauncher").style.display="flex";
+  if(!fileMode) toast("已下载小窗启动器，双击即可打开计时器小窗");
+});
 function showEmbedLink(url){
-  var host=$("useEmbed"); if(!host) return;
+  var host=$("useLink"); if(!host) return;
   var box=$("embedLinkBox");
   if(!box){
     box=document.createElement("input");box.type="text";box.id="embedLinkBox";box.readOnly=true;
