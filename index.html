@@ -92,6 +92,8 @@
   .usetxt{font-size:11.5px;color:var(--ink-soft);line-height:1.65}
   .usetxt b{color:var(--ink);font-weight:700}
   .usenote{display:block;margin-top:5px;color:var(--ink-soft);opacity:.92}
+  .usewarn{display:block;margin-top:6px;color:#C0392B;font-weight:700}
+  .usewarn b{color:#C0392B}
   .icongrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
   .icongrid .ic{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:var(--paper);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.14s}
   .icongrid .ic svg{width:60%;height:60%}
@@ -321,9 +323,14 @@
       <div class="userow" id="useEmbed" style="display:none">
         <span class="usetag tag-link">🔗 复制嵌入链接</span>
         <div class="usetxt">
-          <b>嵌进 PPT 某一页里（翻到即显示、自动计时，背景透明）。</b>
-          ① 在本工具调好样式后点「复制嵌入链接」。② 在 PowerPoint 顶部找到 <b>「加载项」</b>入口（视版本而定：可能在<b>「插入」</b>选项卡，或在<b>「开发工具」选项卡 → 加载项</b>）→ 打开「Office 加载项」→ 切到<b>「应用商店」</b>标签 → 搜 <b>Web Viewer</b> → 添加。③ 它会在幻灯片上插入一个框，把链接粘进去、确认。④ 拖动 / 缩放该框即可调位置和大小（框比例尽量贴合形态：横条拉扁长、圆环/四叶草拉近正方）。
-          <span class="usenote">需要先把本工具部署到 https 网址（如 Vercel）；放映时须联网。<b>Windows 桌面版 PowerPoint 支持最好；Mac 版 / 网页版的 Web Viewer 常不可用——Mac 用户请改用下方「下载计时器」。</b></span>
+          <b>嵌进 PPT 某一页里（翻到即显示、自动计时，背景透明）。需用免费加载项 LiveWeb。</b>
+          ① <b>装 LiveWeb（一次性）：</b>微软自带的 Web Viewer 已停用，应用商店里同名的多为<b>收费</b>，请改用免费的 <b>LiveWeb</b>（搜「LiveWeb PowerPoint」从作者 Shyam Pillai 官网下载安装）。安装后在 PowerPoint「文件 → 选项 → 加载项 → 底部『管理: PowerPoint 加载项』→ 转到 → 添加新的」，选中安装目录里的 <b>LiveWeb.ppam</b>（默认在 <code>C:\Program Files (x86)\Shyam Pillai\LiveWeb\</code>）→ 启用。
+          ② 在本工具点「复制嵌入链接」。
+          ③ PowerPoint <b>「插入」选项卡 → LiveWeb 组 → Web Page</b> → 把链接粘进输入框 → <b>Add</b>（确认链接进入下方列表）→ Next。
+          ④ 完成后 Finish。<b>编辑态显示为空白占位框是正常的；按 F5 放映那页才会真正加载并自动计时（放映须联网）。</b>
+          ⑤ 拖动 / 缩放该占位框即可调位置和大小（框比例尽量贴合形态：横条拉扁长、圆环 / 四叶草拉近正方）。
+          <span class="usewarn">⚠ 插入向导中「Refresh / 自动刷新」务必<b>不要勾选</b>！勾了会让网页每隔几秒重新加载、计时器反复从 0 重启，<b>永远走不完、也不会触发到点提醒</b>。</span>
+          <span class="usenote">仅适用于 Windows 桌面版 PowerPoint；Mac 版 / 网页版无法用 LiveWeb，Mac 用户请改用下方「下载计时器」。</span>
         </div>
       </div>
       <div class="userow" id="useTimer" style="display:none">
@@ -2720,7 +2727,7 @@ $("dlTimer").addEventListener("click",function(){
 });
 $("copyEmbed").addEventListener("click",function(){
   // auto=1: starts counting the moment the slide shows it (best for PPT slideshow).
-  // Note: a deployed https URL is required for PowerPoint's Web Viewer; locally this is a file:// link.
+  // Note: a deployed https URL is required (PowerPoint LiveWeb add-in); locally this is a file:// link.
   const url=buildEmbedURL(true);
   const fileMode=location.protocol==="file:";
   // always reveal the embed help panel (steps live there) — open it (don't toggle closed on copy)
@@ -2802,7 +2809,7 @@ $("dlGif").addEventListener("click",exportGif);
 $("busyCancel").addEventListener("click",function(){gifCancel=true;});
 
 // ---- EMBED MODE: when opened as ?embed=1&c=<config>, render a pure full-screen timer
-// (transparent bg) instead of the editor. Used to embed in PowerPoint via Web Viewer. ----
+// (transparent bg) instead of the editor. Used to embed in PowerPoint via the LiveWeb add-in. ----
 (function(){
   var qs=new URLSearchParams(location.search);
   if(qs.get("embed")!=="1") return false;
