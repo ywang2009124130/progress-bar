@@ -250,7 +250,27 @@
       <h2><span class="dot"></span>到点提醒</h2>
       <div class="row"><div class="switch">完成时闪烁警示<label class="toggle"><input type="checkbox" id="alertOn" checked><span></span></label></div></div>
       <div class="row"><label class="lab">闪烁持续 <span class="val"><span id="alertDurVal">60</span>秒</span></label><input type="range" id="alertDur" min="5" max="120" value="60"></div>
-      <p class="hint">进度到 100% / 时间归零后整张图闪烁提醒，持续设定秒数。点 ⏿ 预览。</p>
+      <div class="row"><div class="switch">完成时提示音<label class="toggle"><input type="checkbox" id="soundOn" checked><span></span></label></div></div>
+      <div id="soundBlock">
+        <div class="row"><label class="lab">提示音</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="soundType" style="flex:1">
+              <option value="1">1 · 柔和叮咚</option>
+              <option value="2">2 · 暖钟单响</option>
+              <option value="3">3 · 明亮叮咚</option>
+              <option value="4" selected>4 · 三声轻哔</option>
+              <option value="5">5 · 木琴轻敲</option>
+              <option value="6">6 · 和弦微光</option>
+            </select>
+            <button class="btn" id="soundPrev" style="flex:none">▶ 试听</button>
+          </div>
+        </div>
+        <div class="row"><div class="switch">间隔重复<label class="toggle"><input type="checkbox" id="soundRepeat" checked><span></span></label></div>
+          <p class="hint" style="margin-top:5px">关闭 = 到点后<strong>持续不停</strong>地循环响（紧贴着一遍接一遍）；开启 = 按下面设定的间隔，每隔几秒响一轮。无论哪种，都在「闪烁持续」时间内反复，到时自动停止。</p>
+        </div>
+        <div class="row" id="soundGapRow"><label class="lab">响一轮的间隔 <span class="val"><span id="soundGapVal">2.0</span>秒</span></label><input type="range" id="soundGap" min="1" max="10" step="0.5" value="2"></div>
+      </div>
+      <p class="hint">进度到 100% / 时间归零后整张图闪烁提醒并播放提示音，持续「闪烁持续」秒数。点 ⏿ 预览闪烁。提示音需先与页面有过交互才能发声；PPT 嵌入「翻页即自动计时」模式下声音可能被浏览器静音（闪烁不受影响）。</p>
     </div>
   </aside>
 
@@ -1695,7 +1715,7 @@ const S = {
   cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true,
   segCnt:6, gap:3, segments:[],
   elemOn:true, icon:"heart", elemCnt:5, elemSz:32, dimOff:true, elemFollow:true, elemColor:"#E2682C",
-  alertOn:true, alertDur:60,
+  alertOn:true, alertDur:60, soundOn:true, soundType:"4", soundRepeat:true, soundGap:2,
   scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true
 };
 const VW=900, VH=580, CX=VW/2, CY=VH/2;
@@ -2345,6 +2365,7 @@ function buildTimerHTML(opts){
              pwColor,pwText,bladeLocal,renderPinwheel,getPinwheelMilestonePositions,
              heartColor,heartText,heartLocal,renderHeart,getHeartMilestonePositions,
              cloverColor,cloverText,cloverLeaf,renderClover,getCloverMilestonePositions,
+             chimeNote,chimePlay,
              buildInner]
              .map(function(f){return f.toString();}).join("\n");
   const engine="let S;const VW="+VW+",VH="+VH+",CX="+CX+",CY="+CY+";const ICONS="+JSON.stringify(ICONS)+";"+fns+
@@ -2373,16 +2394,23 @@ hudBlock+
 '<div id="svg"></div>'+hintBlock+
 '<script>'+engine+
 'var STATE='+snap+',TOTAL='+total+',ALERTDUR='+aDur+',AUTO='+(auto?'true':'false')+',EMBED='+(embed?'true':'false')+';'+
+'var SOUND_ON='+(S.soundOn?'true':'false')+',SOUND_TYPE="'+(S.soundType||"4")+'",SOUND_REPEAT='+(S.soundRepeat?'true':'false')+',SOUND_GAP='+(S.soundGap||2)+',SOUND_DUR='+(S.alertDur||60)+';'+
 'var host=document.getElementById("svg"),pctEl=document.getElementById("pct"),cdEl=document.getElementById("cd");'+
 'var running=false,paused=false,startTs=0,pausedMs=0,pauseStart=0,done=false,doneTs=0;'+
+'var _ax=null;function axc(){try{if(!_ax)_ax=new (window.AudioContext||window.webkitAudioContext)();if(_ax.state==="suspended")_ax.resume();return _ax;}catch(e){return null;}}'+
+'var _chl=null;function chimeStop(){if(_chl){clearInterval(_chl);_chl=null;}}'+
+'function chimeStart(){if(!SOUND_ON)return;var x=axc();if(!x)return;chimeStop();'+
+'var len=chimePlay(x,SOUND_TYPE,x.currentTime+0.02);var per=SOUND_REPEAT?Math.max(0.3,SOUND_GAP):Math.max(0.3,len+0.12);'+
+'_chl=setInterval(function(){var xx=axc();if(xx)chimePlay(xx,SOUND_TYPE,xx.currentTime+0.02);},per*1000);'+
+'setTimeout(chimeStop,SOUND_DUR*1000);}'+
 'function fmt(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),x=s%60;return (""+m).padStart(2,"0")+":"+(""+x).padStart(2,"0");}'+
 'function draw(p){STATE.prog=p;host.innerHTML=buildSVG(STATE);if(pctEl)pctEl.textContent=Math.round(p)+"%";if(cdEl)cdEl.textContent=fmt(TOTAL*(1-p/100));}'+
 'draw(0);'+
 'function loop(){if(running&&!paused){var el=(Date.now()-startTs-pausedMs)/1000;var p=Math.min(100,el/TOTAL*100);draw(p);'+
-'if(p>=100&&!done){done=true;doneTs=Date.now();if(ALERTDUR>0)host.classList.add("flash");}'+
+'if(p>=100&&!done){done=true;doneTs=Date.now();if(ALERTDUR>0)host.classList.add("flash");chimeStart();}'+
 'if(done&&ALERTDUR>0&&Date.now()-doneTs>ALERTDUR*1000)host.classList.remove("flash");}'+
 'requestAnimationFrame(loop);}requestAnimationFrame(loop);'+
-'function begin(){running=true;startTs=Date.now();pausedMs=0;paused=false;done=false;host.classList.remove("flash");}'+
+'function begin(){running=true;startTs=Date.now();pausedMs=0;paused=false;done=false;host.classList.remove("flash");chimeStop();}'+
 'var st=document.getElementById("start");if(st){st.addEventListener("click",function(){this.style.display="none";begin();});}'+
 'if(AUTO){begin();}'+
 'var hint=document.getElementById("hint");if(hint)setTimeout(function(){if(running)hint.style.opacity=0;},6500);'+
@@ -2468,6 +2496,11 @@ $("centerText").addEventListener("input",function(e){S.centerText=e.target.value
 $("coreText").addEventListener("input",function(e){S.coreText=e.target.value;render();});
 $("pwCoreText").addEventListener("input",function(e){S.pwCoreText=e.target.value;render();});
 $("alertOn").addEventListener("change",function(e){S.alertOn=e.target.checked;});
+$("soundOn").addEventListener("change",function(e){S.soundOn=e.target.checked;$("soundBlock").style.display=e.target.checked?"":"none";});
+$("soundType").addEventListener("change",function(e){S.soundType=e.target.value;chimeOnce(S.soundType);});
+$("soundPrev").addEventListener("click",function(){chimeOnce(S.soundType);});
+$("soundRepeat").addEventListener("change",function(e){S.soundRepeat=e.target.checked;$("soundGapRow").style.display=e.target.checked?"":"none";});
+$("soundGap").addEventListener("input",function(e){S.soundGap=+e.target.value;$("soundGapVal").textContent=(+e.target.value).toFixed(1);});
 $("transBg").addEventListener("change",function(e){S.transBg=e.target.checked;$("stage").classList.toggle("checker",e.target.checked);});
 $("gifFlash").addEventListener("change",function(e){S.gifFlash=e.target.checked;});
 $("gifDur").addEventListener("input",function(e){S.gifDur=+e.target.value;$("gifDurVal").textContent=e.target.value+"s";});
@@ -2598,10 +2631,60 @@ function fmtTime(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60)
 function updateClock(){$("clock").textContent=fmtTime(S.totalSec*(1-S.prog/100));}
 function sync(){updateClock();}
 
+// ===== Chime engine (Web Audio, synthesized — no audio files) =====
+// Shared with the exported timer/embed page via .toString() injection.
+function chimeNote(x,t0,freq,dur,gain,type){
+  var o=x.createOscillator(),g=x.createGain();
+  o.type=type||"sine";o.frequency.setValueAtTime(freq,t0);
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(gain,t0+0.018);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g).connect(x.destination);o.start(t0);o.stop(t0+dur+0.05);
+}
+// Each sound plays at audiocontext time t and returns its length in seconds.
+function chimePlay(x,type,t){
+  switch(String(type)){
+    case "1": chimeNote(x,t,880,0.5,0.18,"sine");chimeNote(x,t+0.16,660,0.7,0.18,"sine");return 0.95;
+    case "2": chimeNote(x,t,740,1.1,0.2,"triangle");return 1.2;
+    case "3": chimeNote(x,t,659,0.32,0.18,"sine");chimeNote(x,t+0.18,988,0.55,0.18,"sine");return 0.8;
+    case "4": chimeNote(x,t,784,0.18,0.16,"sine");chimeNote(x,t+0.22,784,0.18,0.16,"sine");chimeNote(x,t+0.44,784,0.3,0.16,"sine");return 0.85;
+    case "5": chimeNote(x,t,1047,0.3,0.16,"triangle");chimeNote(x,t,523,0.32,0.10,"sine");return 0.5;
+    case "6": chimeNote(x,t,523,1.3,0.10,"sine");chimeNote(x,t,659,1.3,0.09,"sine");chimeNote(x,t,784,1.3,0.09,"sine");return 1.4;
+    default: chimeNote(x,t,784,0.18,0.16,"sine");chimeNote(x,t+0.22,784,0.18,0.16,"sine");chimeNote(x,t+0.44,784,0.3,0.16,"sine");return 0.85;
+  }
+}
+var _actx=null;
+function chimeCtx(){ try{ if(!_actx)_actx=new (window.AudioContext||window.webkitAudioContext)(); if(_actx.state==="suspended")_actx.resume(); return _actx; }catch(e){ return null; } }
+// Play the chime once.
+function chimeOnce(type){ var x=chimeCtx(); if(x) chimePlay(x,type,x.currentTime+0.02); }
+// Start a repeating chime; repeat=false -> back-to-back (gap = sound length);
+// repeat=true -> wait `gap` seconds between rounds. Returns an interval id.
+var _chimeLoop=null;
+function chimeStart(type,repeat,gap){
+  chimeStop();
+  var x=chimeCtx(); if(!x) return;
+  var len=chimePlay(x,type,x.currentTime+0.02);
+  var period=repeat? Math.max(0.3,gap) : Math.max(0.3,len+0.12);
+  _chimeLoop=setInterval(function(){ var xx=chimeCtx(); if(xx) chimePlay(xx,type,xx.currentTime+0.02); }, period*1000);
+}
+function chimeStop(){ if(_chimeLoop){ clearInterval(_chimeLoop); _chimeLoop=null; } }
+
 let flashTimer=null;
 function startFlash(){$("svgHost").classList.add("flash");clearTimeout(flashTimer);
-  flashTimer=setTimeout(function(){$("svgHost").classList.remove("flash");}, (S.alertOn?S.alertDur:5)*1000);}
-$("alertPrev").addEventListener("click",function(){ if($("svgHost").classList.contains("flash")){$("svgHost").classList.remove("flash");clearTimeout(flashTimer);} else startFlash(); });
+  var dur=(S.alertOn?S.alertDur:5);
+  flashTimer=setTimeout(function(){$("svgHost").classList.remove("flash");}, dur*1000);}
+// Fire the completion alert: flash (if on) + sound (if on), both for the alertDur window.
+function triggerAlert(){
+  var dur=(S.alertOn?S.alertDur:S.alertDur||60);
+  if(S.alertOn) startFlash();
+  if(S.soundOn){ chimeStart(S.soundType,S.soundRepeat,S.soundGap);
+    clearTimeout(soundStopTimer); soundStopTimer=setTimeout(chimeStop, (S.alertDur||60)*1000); }
+}
+var soundStopTimer=null;
+$("alertPrev").addEventListener("click",function(){
+  if($("svgHost").classList.contains("flash")||_chimeLoop){ $("svgHost").classList.remove("flash");clearTimeout(flashTimer);chimeStop();clearTimeout(soundStopTimer); }
+  else { triggerAlert(); }
+});
 
 let timer=null,t0=0,startProg=0;
 $("playBtn").addEventListener("click",function(){
@@ -2609,11 +2692,11 @@ $("playBtn").addEventListener("click",function(){
   if(S.totalSec<=0)return;
   $("playBtn").textContent="❚❚";t0=performance.now();startProg=S.prog;$("svgHost").classList.remove("flash");
   timer=setInterval(function(){const el=(performance.now()-t0)/1000;let np=startProg+(el/S.totalSec)*100;
-    if(np>=100){np=100;clearInterval(timer);timer=null;$("playBtn").textContent="▶";if(S.alertOn)startFlash();}
+    if(np>=100){np=100;clearInterval(timer);timer=null;$("playBtn").textContent="▶";triggerAlert();}
     S.prog=np;$("prog").value=np;$("pVal").textContent=Math.round(np);updateClock();render();},1000/30);
 });
 $("resetBtn").addEventListener("click",function(){if(timer){clearInterval(timer);timer=null;$("playBtn").textContent="▶";}
-  $("svgHost").classList.remove("flash");clearTimeout(flashTimer);S.prog=0;$("prog").value=0;$("pVal").textContent="0";updateClock();render();});
+  $("svgHost").classList.remove("flash");clearTimeout(flashTimer);chimeStop();clearTimeout(soundStopTimer);S.prog=0;$("prog").value=0;$("pVal").textContent="0";updateClock();render();});
 
 $("scaleSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("scaleSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.scale=+b.dataset.s;});});
 function svgBlob(){return new Blob([lastSVG],{type:"image/svg+xml;charset=utf-8"});}
