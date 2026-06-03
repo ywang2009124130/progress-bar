@@ -458,8 +458,13 @@
         </div>
         <span style="font-size:11px;color:var(--ink-soft);flex:1;min-width:160px;margin-top:7px">GIF 不支持透明，用底色贴近幻灯片背景；真正透明请用 PNG。</span>
       </div>
-      <div class="erow">
-        <span class="switch" style="gap:6px;font-size:11.5px;flex:none">含完成闪烁<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifFlash" checked><span></span></label></span>
+      <div class="erow" style="align-items:flex-start">
+        <span class="switch" style="gap:6px;font-size:11.5px;flex:none;margin-top:1px">含完成闪烁<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifFlash" checked><span></span></label></span>
+        <p class="hint" style="margin-top:1px;flex:1;min-width:200px">每段 GIF 播到自己的<b>末尾</b>时整图快闪提醒（批量分段时每段都会闪，适合按 PPT 各页独立使用）。真实时长模式下闪烁用快闪帧，不影响前面的计时。</p>
+      </div>
+      <div class="erow" style="align-items:flex-start">
+        <span class="switch" style="gap:6px;font-size:11.5px;flex:none;margin-top:1px">真实时长导出<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifRealtime"><span></span></label></span>
+        <p class="hint" id="gifRealtimeHint" style="margin-top:1px;flex:1;min-width:200px">开启后 GIF 按「总时长」如实走完（贴 PPT 当真实倒计时用），忽略上面的「时长 / 帧率」。<b>时长越长越影响画面流畅</b>：≤15 分钟每秒一帧（最平滑），15–20 分钟自动每 2 秒一帧，最长 20 分钟。</p>
       </div>
       <div class="erow">
         <button class="btn primary" id="dlGifGo" style="padding:8px 18px">⬇ 生成并下载 GIF</button>
@@ -1890,7 +1895,7 @@ const S = {
   segCnt:6, gap:3, segments:[],
   elemOn:true, icon:"heart", elemCnt:5, elemSz:32, dimOff:true, elemFollow:true, elemColor:"#E2682C",
   alertOn:true, alertDur:60, soundOn:true, soundType:"4", soundRepeat:true, soundGap:2,
-  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifScale:2, gifFrom:0, gifTo:100
+  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:false
 };
 const VW=900, VH=580, CX=VW/2, CY=VH/2;
 const $=id=>document.getElementById(id);
@@ -2843,6 +2848,18 @@ $("soundRepeat").addEventListener("change",function(e){S.soundRepeat=e.target.ch
 $("soundGap").addEventListener("input",function(e){S.soundGap=+e.target.value;$("soundGapVal").textContent=(+e.target.value).toFixed(1);});
 $("transBg").addEventListener("change",function(e){S.transBg=e.target.checked;$("stage").classList.toggle("checker",e.target.checked);});
 $("gifFlash").addEventListener("change",function(e){S.gifFlash=e.target.checked;});
+$("gifRealtime").addEventListener("change",function(e){S.gifRealtime=e.target.checked;updateRealtimeHint();});
+function updateRealtimeHint(){
+  var h=$("gifRealtimeHint"); if(!h) return;
+  if(!S.gifRealtime){
+    h.innerHTML='开启后 GIF 按「总时长」如实走完（贴 PPT 当真实倒计时用），忽略上面的「时长 / 帧率」。<b>时长越长越影响画面流畅</b>：≤15 分钟每秒一帧（最平滑），15–20 分钟自动每 2 秒一帧，最长 20 分钟。';
+    return;
+  }
+  var plan=realtimePlan(0,100);
+  var mm=Math.floor((S.totalSec||0)/60), ss=(S.totalSec||0)%60;
+  var capNote=plan.capped?'（超过 20 分钟，已截断到 20 分钟）':'';
+  h.innerHTML='已开启真实时长导出：本条全程约 <b>'+mm+'分'+(ss?ss+'秒':'')+'</b>'+capNote+'，每 <b>'+plan.stepSec+'</b> 秒一帧，共约 <b>'+plan.frames+'</b> 帧。生成需逐帧编码，帧多时会等待较久。批量分段时每段按其占比同理。';
+}
 $("gifDur").addEventListener("input",function(e){S.gifDur=+e.target.value;$("gifDurVal").textContent=e.target.value+"s";});
 $("fpsSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("fpsSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.gifFps=+b.dataset.f;});});
 
@@ -3040,7 +3057,7 @@ function mountSegEditor(){
     row.appendChild(t);row.appendChild(tpal);row.appendChild(pal);list.appendChild(row);});
 }
 
-function readTime(){const m=clamp(+$("tMin").value||0,0,999),s=clamp(+$("tSec").value||0,0,59);S.totalSec=m*60+s;updateClock();}
+function readTime(){const m=clamp(+$("tMin").value||0,0,999),s=clamp(+$("tSec").value||0,0,59);S.totalSec=m*60+s;updateClock();if(typeof updateRealtimeHint==="function")updateRealtimeHint();}
 $("tMin").addEventListener("input",readTime);$("tSec").addEventListener("input",readTime);
 function fmtTime(sec){sec=Math.max(0,Math.round(sec));const m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,'0')+":"+String(s).padStart(2,'0');}
 function updateClock(){$("clock").textContent=fmtTime(S.totalSec*(1-S.prog/100));}
@@ -3283,17 +3300,31 @@ function toast(msg){
   clearTimeout(_toastT);_toastT=setTimeout(function(){t.classList.remove("show");},2600);
 }
 
+// 真实时长导出：根据「总时长」与该段占比，算出帧数与每帧延迟（自动降帧）。
+// 规则：整段总时长 ≤15分钟用每秒1帧；15–20分钟用每2秒1帧；>20分钟截断到20分钟。
+function realtimePlan(A,B){
+  var fullSec=Math.max(1, S.totalSec||0);
+  var capSec=Math.min(fullSec, 20*60);            // 最长 20 分钟
+  var stepSec=(capSec>15*60)?2:1;                 // 超 15 分钟自动每 2 秒一帧
+  var segSec=capSec*(Math.abs(B-A)/100);          // 该段对应的真实秒数
+  var frames=Math.max(2, Math.round(segSec/stepSec));
+  return { frames:frames, delayMs:stepSec*1000, stepSec:stepSec, segSec:segSec, capped:(fullSec>20*60) };
+}
 function svgToImage(svgStr){return new Promise(function(res,rej){const img=new Image(),url=URL.createObjectURL(new Blob([svgStr],{type:"image/svg+xml;charset=utf-8"}));
   img.onload=function(){res({img:img,url:url});};img.onerror=function(){URL.revokeObjectURL(url);rej(new Error("svg load"));};img.src=url;});}
 // Encode ONE segment (A%→B%) to a GIF blob and download it as fileName.
 // onProg(0..1) reports this segment's own progress for the busy bar.
 async function encodeGifSegment(A,B,fileName,onProg){
-  const fps=S.gifFps, dur=S.gifDur, total=Math.max(2,Math.round(fps*dur));
+  const realtime=!!S.gifRealtime;
+  let total, delayMs;
+  if(realtime){ const plan=realtimePlan(A,B); total=plan.frames; delayMs=plan.delayMs; }
+  else { const fps=S.gifFps, dur=S.gifDur; total=Math.max(2,Math.round(fps*dur)); delayMs=Math.round(1000/fps); }
   const sc = S.gifScale>=2?2:1; const W=VW*sc, H=VH*sc;
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
-  const enc=new GIFEncoder();enc.setRepeat(0);enc.setDelay(Math.round(1000/fps));enc.setSize(W,H);enc.setQuality(10);enc.start();
-  const endsAt100 = B>=100;
-  const flashFrames=(S.gifFlash && S.alertOn && endsAt100)? Math.min(total, fps*2) : 0;
+  const enc=new GIFEncoder();enc.setRepeat(0);enc.setDelay(delayMs);enc.setSize(W,H);enc.setQuality(10);enc.start();
+  // 闪烁：每段播到自己末尾就闪（独立 GIF，由「含完成闪烁」开关控制），不再要求终点必须 100%
+  const flashFrames=(S.gifFlash && S.alertOn)? Math.max(8, Math.round((S.gifFps||15)*1.6)) : 0;
+  const flashDelay=120; // 末尾快闪固定用 120ms/帧，真实时长模式也不影响前面计时
   const totalAll=total+flashFrames;
   let cancelled=false;
   for(let f=0; f<total; f++){
@@ -3307,7 +3338,8 @@ async function encodeGifSegment(A,B,fileName,onProg){
     await new Promise(function(r){setTimeout(r,0);});
   }
   if(!cancelled && flashFrames>0){
-    S.prog=100; render(); const r=await svgToImage(lastSVG);
+    enc.setDelay(flashDelay);               // 切换为快闪延迟（仅作用于后续闪烁帧）
+    S.prog=B; render(); const r=await svgToImage(lastSVG);   // 用该段自己的终点画面来闪
     for(let f=0;f<flashFrames;f++){
       if(gifCancel){cancelled=true;break;}
       ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
