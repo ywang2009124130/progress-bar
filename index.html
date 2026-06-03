@@ -2818,7 +2818,14 @@ function encodeConfig(st){
   catch(e){ return ""; }
 }
 function decodeConfig(str){
-  try{ return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(str))))); }
+  try{
+    var cfg=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(str)))));
+    // 清除临时的"编辑中"状态：读回的合并组一律当已确定（避免恢复出半成品编辑面板）
+    if(cfg && Array.isArray(cfg.barMerges)){
+      cfg.barMerges.forEach(function(g){ if(g && typeof g==="object"){ delete g._editing; g._collapsed=true; } });
+    }
+    return cfg;
+  }
   catch(e){ return null; }
 }
 // Build the embeddable timer URL for the current settings.
@@ -3191,7 +3198,7 @@ function mountBarSegEditor(){
   var tip=document.createElement("div");
   tip.style.cssText="display:flex;gap:8px;align-items:flex-start;background:#E2682C14;border:1.5px solid #E2682C66;border-radius:10px;padding:9px 11px;margin-bottom:9px";
   tip.innerHTML='<span style="flex:none;font-size:14px;line-height:1.3">💡</span>'+
-    '<span style="font-size:11.5px;line-height:1.45;color:var(--ink)"><b style="color:var(--accent)">想把相邻的几段合并成一段？</b>勾选相邻连续的段（如 4、5、6），下方会出现「合并」按钮，点一下即可合并共用一个文字。已合并的会移到「合并组」。</span>';
+    '<span style="font-size:11.5px;line-height:1.45;color:var(--ink)"><b style="color:var(--accent)">想把相邻的几段合并成一段？</b>勾选相邻连续的段（如 4、5、6），下方出现绿色「确认成组」点一下即成组并收起。想改：展开该组→「✎ 重选」可重新勾选增减；「解散该组」彻底拆开。</span>';
   host.appendChild(tip);
 
   var msg=document.createElement("p"); msg.id="barMergeMsg"; msg.className="hint";
@@ -3203,26 +3210,29 @@ function mountBarSegEditor(){
   while(i<n){
     var idx1=i+1, grp=barGroupOf(idx1);
     if(grp){
+      var editing=!!grp._editing;
       // 合并组：把 s..e 的段包进一个淡橙色块（可折叠）
       var block=document.createElement("div"); block.className="merge-block";
-      var collapsed=!!grp._collapsed;
-      // 标题行：点击折叠/展开
+      var collapsed=!editing && !!grp._collapsed;   // 编辑态强制展开
+      // 标题行：点击折叠/展开（编辑态不允许折叠，要先确定成组）
       var cap=document.createElement("div"); cap.className="merge-cap";
-      cap.style.cssText="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;background:var(--accent);color:#fff;margin:-8px -9px 8px;padding:8px 10px;border-radius:9px 9px 0 0;font-size:12px;font-weight:700;letter-spacing:.2px";
-      var arrow=document.createElement("span"); arrow.textContent=collapsed?"▸":"▾"; arrow.style.cssText="flex:none;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.25);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900";
+      cap.style.cssText="display:flex;align-items:center;gap:8px;cursor:"+(editing?"default":"pointer")+";user-select:none;background:var(--accent);color:#fff;margin:-8px -9px 8px;padding:8px 10px;border-radius:9px 9px 0 0;font-size:12px;font-weight:700;letter-spacing:.2px";
+      var arrow=document.createElement("span"); arrow.textContent=editing?"✎":(collapsed?"▸":"▾"); arrow.style.cssText="flex:none;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.25);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900";
       var capTxt=document.createElement("span"); capTxt.style.flex="1";
-      capTxt.textContent= collapsed
-        ? ("合并组 "+grp.s+"–"+grp.e+"｜"+((grp.text||"").trim()||"（未填文字）"))
-        : ("合并组 "+grp.s+"–"+grp.e+"（共用一个文字）");
-      var hint=document.createElement("span"); hint.textContent=collapsed?"展开":"点此收起"; hint.style.cssText="flex:none;font-size:10.5px;font-weight:600;opacity:.85";
+      capTxt.textContent= editing
+        ? ("正在编辑：第 "+grp.s+"–"+grp.e+" 段")
+        : (collapsed
+            ? ("合并组 "+grp.s+"–"+grp.e+"｜"+((grp.text||"").trim()||"（未填文字）"))
+            : ("合并组 "+grp.s+"–"+grp.e+"（共用一个文字）"));
+      var hint=document.createElement("span"); hint.textContent=editing?"编辑中":(collapsed?"展开":"点此收起"); hint.style.cssText="flex:none;font-size:10.5px;font-weight:600;opacity:.85";
       cap.appendChild(arrow); cap.appendChild(capTxt); cap.appendChild(hint);
-      (function(gg){ cap.addEventListener("click",function(){ gg._collapsed=!gg._collapsed; mountBarSegEditor(); }); })(grp);
+      if(!editing){ (function(gg){ cap.addEventListener("click",function(){ gg._collapsed=!gg._collapsed; mountBarSegEditor(); }); })(grp); }
       block.appendChild(cap);
       if(collapsed){ block.style.paddingBottom="8px"; }
 
       if(!collapsed){
         var body=document.createElement("div"); body.style.marginTop="8px";
-        // 1) 共用文字（移到最上，作为第一行）
+        // 1) 共用文字（第一行）
         var gtRow=document.createElement("div"); gtRow.style.cssText="display:flex;align-items:center;gap:7px;margin-bottom:9px;flex-wrap:wrap";
         var gtLab=document.createElement("span"); gtLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; gtLab.textContent="共用文字";
         var gt=document.createElement("input"); gt.type="text"; gt.value=grp.text||""; gt.placeholder="第 "+grp.s+"–"+grp.e+" 段共用文字"; gt.style.cssText="flex:1;min-width:90px";
@@ -3231,27 +3241,50 @@ function mountBarSegEditor(){
         gtpal.style.flex="none";
         gtRow.appendChild(gtLab); gtRow.appendChild(gt); gtRow.appendChild(gtpal);
         body.appendChild(gtRow);
-        // 2) 整组填充（一键统一组内所有段的填充色）
+        // 2) 整组填充
         var allRow=document.createElement("div"); allRow.style.cssText="display:flex;align-items:center;gap:7px;margin-bottom:9px";
         var allLab=document.createElement("span"); allLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; allLab.textContent="整组填充";
         var allPal=buildPalette("",(function(gg){return function(col){ if(!col)return; for(var q=gg.s-1;q<gg.e;q++) S.barSegments[q].color=col; mountBarSegEditor(); render(); };})(grp),{caption:"统一填充"});
         allRow.appendChild(allLab); allRow.appendChild(allPal); body.appendChild(allRow);
-        // 3) 各段：勾选框(默认勾)+ 序号 + 单独填充。取消勾即把该段移出本组。
+        // 3) 各段：编辑态带勾选框（取消=移出该组）；已确定态只读
+        if(editing){
+          var tipE=document.createElement("p"); tipE.className="hint"; tipE.style.cssText="margin:0 0 6px;color:var(--accent);font-weight:600"; tipE.textContent="编辑中：取消勾选可移出该段；到下方分区勾选紧邻的段可加入本组。改好后点「✓ 确定成组」。";
+          body.appendChild(tipE);
+        }
         for(var k=grp.s-1;k<grp.e;k++){
           var brow=document.createElement("div"); brow.className="sec-item";
-          var bcb=document.createElement("input"); bcb.type="checkbox"; bcb.checked=true; bcb.style.cssText="width:16px;height:16px;flex:none;cursor:pointer";
-          (function(gg,seg1){ bcb.addEventListener("change",function(){ if(!this.checked) removeSegFromGroup(gg,seg1); }); })(grp,k+1);
-          brow.appendChild(bcb);
+          if(editing){
+            var bcb=document.createElement("input"); bcb.type="checkbox"; bcb.checked=true; bcb.style.cssText="width:16px;height:16px;flex:none;cursor:pointer";
+            (function(gg,seg1){ bcb.addEventListener("change",function(){ if(!this.checked) removeSegFromGroup(gg,seg1); }); })(grp,k+1);
+            brow.appendChild(bcb);
+          }
           var bidx=document.createElement("span"); bidx.className="idx"; bidx.textContent=(k+1); brow.appendChild(bidx);
           var bname=document.createElement("span"); bname.style.cssText="flex:1;font-size:11.5px;color:var(--ink-soft)"; bname.textContent="第 "+(k+1)+" 段填充";
           var bpal=buildPalette(S.barSegments[k].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(k),{caption:"填充"});
           brow.appendChild(bname); brow.appendChild(bpal); body.appendChild(brow);
         }
-        // 4) 仅保留「解散」（去掉「重选」；增减成员靠勾选框实时生效）
-        var grow=document.createElement("div"); grow.style.cssText="display:flex;justify-content:flex-end;margin-top:9px";
-        var delBtn=document.createElement("button"); delBtn.type="button"; delBtn.className="btn"; delBtn.textContent="解散整组"; delBtn.style.cssText="padding:5px 13px;font-size:11.5px";
+        // 4) 绿色「✓ 确定成组」/「✎ 重选」(一键两态) + 红色「解散该组」
+        var grow=document.createElement("div"); grow.style.cssText="display:flex;justify-content:flex-end;gap:8px;margin-top:9px";
+        var greenBtn=document.createElement("button"); greenBtn.type="button";
+        greenBtn.style.cssText="padding:6px 14px;font-size:11.5px;font-weight:700;border:0;border-radius:9px;cursor:pointer;background:#2E9E5B;color:#fff";
+        greenBtn.textContent=editing?"✓ 确定成组":"✎ 重选";
+        (function(gg){ greenBtn.addEventListener("click",function(){
+          if(gg._editing){
+            // 确定成组：退出编辑、折叠收起
+            gg._editing=false; gg._collapsed=true;
+          } else {
+            // 进入编辑（重选）：一次只能编辑一个，若别处在编辑则拦住
+            var other=(S.barMerges||[]).some(function(x){return x!==gg && x._editing;});
+            if(other){ showBarMergeMsg("请先完成另一组的编辑（点它的「✓ 确定成组」）"); return; }
+            gg._editing=true; gg._collapsed=false;
+          }
+          mountBarSegEditor(); render();
+        }); })(grp);
+        var delBtn=document.createElement("button"); delBtn.type="button";
+        delBtn.style.cssText="padding:6px 14px;font-size:11.5px;font-weight:700;border:0;border-radius:9px;cursor:pointer;background:#C5402F;color:#fff";
+        delBtn.textContent="解散该组";
         (function(gg){ delBtn.addEventListener("click",function(){ S.barMerges=S.barMerges.filter(function(x){return x!==gg;}); mountBarSegEditor(); render(); }); })(grp);
-        grow.appendChild(delBtn);
+        grow.appendChild(greenBtn); grow.appendChild(delBtn);
         body.appendChild(grow);
         block.appendChild(body);
       }
@@ -3265,10 +3298,10 @@ function mountBarSegEditor(){
     cb.checked=!!barMergeSel[idx1];
     (function(id1,box){ box.addEventListener("change",function(){
       if(box.checked){
-        // 若该段紧邻某个已存在的合并组，直接并入该组
+        // 只并入"正在编辑(_editing)"的相邻组；已确定的组不会被吸入（修复串组 bug）
         var gPrev=barGroupOf(id1-1), gNext=barGroupOf(id1+1);
-        if(gPrev){ addSegToGroup(gPrev,id1); return; }
-        if(gNext){ addSegToGroup(gNext,id1); return; }
+        if(gPrev&&gPrev._editing){ addSegToGroup(gPrev,id1); return; }
+        if(gNext&&gNext._editing){ addSegToGroup(gNext,id1); return; }
         barMergeSel[id1]=true;
       } else { delete barMergeSel[id1]; }
       mountBarSegEditor();
@@ -3281,17 +3314,25 @@ function mountBarSegEditor(){
     var pal=buildPalette(S.barSegments[i].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(i),{caption:"填充"});
     row.appendChild(t); row.appendChild(tpal); row.appendChild(pal);
     list.appendChild(row);
-    // 就近出现「合并这 N 段」按钮：当已勾选≥2个相邻连续段，且当前段是勾选区的最后一段时
+    // 勾选≥2相邻段后，在最后一段下方：无组在编辑→出现橙色「合并」按钮；有组在编辑→出现就近提示（不弹窗）
     if(shouldShowMergeBtnAfter(idx1)){
       var selArr=selectedAdjacentRun();
-      var mbWrap=document.createElement("div");
-      mbWrap.style.cssText="display:flex;justify-content:center;margin:2px 0 10px";
-      var mb=document.createElement("button"); mb.type="button"; mb.className="btn primary";
-      mb.style.cssText="padding:7px 18px;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(226,104,44,.35)";
-      mb.textContent="合并这 "+selArr.length+" 段（第 "+selArr[0]+"–"+selArr[selArr.length-1]+" 段）";
-      mb.addEventListener("click",commitBarMerge);
-      mbWrap.appendChild(mb);
-      list.appendChild(mbWrap);
+      var editGrp=(S.barMerges||[]).filter(function(g){return g._editing;})[0];
+      if(editGrp){
+        var noteWrap=document.createElement("div");
+        noteWrap.style.cssText="margin:2px 0 10px;background:#E2682C14;border:1px solid #E2682C55;border-radius:9px;padding:8px 11px;font-size:11.5px;line-height:1.45;color:var(--accent);font-weight:600";
+        noteWrap.textContent="正在编辑「合并组 "+editGrp.s+"–"+editGrp.e+"」。请先点它的「✓ 确定成组」完成，才能新建下一组。";
+        list.appendChild(noteWrap);
+      } else {
+        var mbWrap=document.createElement("div");
+        mbWrap.style.cssText="display:flex;justify-content:center;margin:2px 0 10px";
+        var mb=document.createElement("button"); mb.type="button"; mb.className="btn primary";
+        mb.style.cssText="padding:7px 18px;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(226,104,44,.35)";
+        mb.textContent="合并这 "+selArr.length+" 段（第 "+selArr[0]+"–"+selArr[selArr.length-1]+" 段）";
+        mb.addEventListener("click",commitBarMerge);
+        mbWrap.appendChild(mb);
+        list.appendChild(mbWrap);
+      }
     }
     i++;
   }
@@ -3308,9 +3349,12 @@ function commitBarMerge(){
   if(sel.length<2){ showBarMergeMsg("请先勾选至少 2 个相邻段再合并"); return; }
   var ok=true; for(var i=1;i<sel.length;i++){ if(sel[i]!==sel[i-1]+1){ ok=false; break; } }
   if(!ok){ showBarMergeMsg("只能合并相邻连续的段，请重新勾选"); return; }
+  // 一次只能编辑一个组：若已有组在编辑态，拦住并提示先完成它（不自动替用户确定）
+  var editing=(S.barMerges||[]).some(function(g){return g._editing;});
+  if(editing){ showBarMergeMsg("请先点正在编辑那一组里的「✓ 确定成组」，完成后再合并新的一组"); return; }
   var s=sel[0], e=sel[sel.length-1];
   var firstTxt=(S.barSegments[s-1] && S.barSegments[s-1].text)||"";
-  S.barMerges.push({s:s,e:e,text:firstTxt,tcolor:null});
+  S.barMerges.push({s:s,e:e,text:firstTxt,tcolor:null,_collapsed:false,_editing:true});
   clampBarMerges();
   barMergeSel={};
   mountBarSegEditor(); render();
@@ -3318,15 +3362,15 @@ function commitBarMerge(){
 // 从合并组中移出某一段（实时）。规则：缩小区间；移中间则拆成两组；剩 <2 段自动解散。
 function removeSegFromGroup(grp, segIdx1){
   if(segIdx1<grp.s || segIdx1>grp.e) return;
-  var s=grp.s, e=grp.e, txt=grp.text, tcol=grp.tcolor;
+  var s=grp.s, e=grp.e, txt=grp.text, tcol=grp.tcolor, ed=!!grp._editing;
   // 先移除原组
   S.barMerges=S.barMerges.filter(function(x){return x!==grp;});
   // 左片段 [s, segIdx1-1]
   var leftLen=(segIdx1-1)-s+1;
-  if(leftLen>=2) S.barMerges.push({s:s, e:segIdx1-1, text:txt, tcolor:tcol});
+  if(leftLen>=2) S.barMerges.push({s:s, e:segIdx1-1, text:txt, tcolor:tcol, _editing:ed, _collapsed:false});
   // 右片段 [segIdx1+1, e]
   var rightLen=e-(segIdx1+1)+1;
-  if(rightLen>=2) S.barMerges.push({s:segIdx1+1, e:e, text:txt, tcolor:tcol});
+  if(rightLen>=2) S.barMerges.push({s:segIdx1+1, e:e, text:txt, tcolor:tcol, _editing:ed, _collapsed:false});
   clampBarMerges();
   mountBarSegEditor(); render();
 }
