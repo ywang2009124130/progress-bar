@@ -39,11 +39,12 @@
   .group .gco-body{margin-top:0}
   /* 二级标题（分组小标题）：橙圆点 + 黑体加粗 */
   .subhead{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--ink);margin:2px 0 9px;line-height:1.3}
-  .subhead::before{content:"›";color:var(--accent);font-weight:900;font-size:15px;line-height:1;flex:none;margin-right:-1px}
+  .subhead::before{content:"›";color:var(--accent);font-weight:900;font-size:17px;line-height:1;flex:none;margin-right:-1px}
   .row{margin-bottom:13px}.row:last-child{margin-bottom:0}
   /* 所有字段标签 = 二级标题：左侧缩小橙圆点 + 加粗，数值右对齐 */
   label.lab{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:7px}
-  label.lab::before{content:"›";color:var(--accent);font-weight:900;font-size:14px;line-height:1;flex:none;margin-right:-1px}
+  label.lab::before{content:"›";color:var(--accent);font-weight:900;font-size:16px;line-height:1;flex:none;margin-right:-1px}
+  label.lab.lab3::before{content:"";width:3px;height:3px;border-radius:50%;background:var(--accent);font-size:0;margin-right:3px}
   label.lab .val{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--ink-soft);font-weight:700}
   input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:4px;background:var(--paper-2);outline:none}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--ink);border:3px solid var(--card);box-shadow:0 1px 4px #0003;cursor:pointer}
@@ -56,7 +57,7 @@
   input[type=color]{width:42px;height:32px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:2px;cursor:pointer;flex:none}
   .hex{font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink-soft);text-transform:uppercase}
   .switch{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink);font-weight:700}
-  .switch::before{content:"›";color:var(--accent);font-weight:900;font-size:14px;line-height:1;flex:none;margin-right:-1px}
+  .switch::before{content:"›";color:var(--accent);font-weight:900;font-size:16px;line-height:1;flex:none;margin-right:-1px}
   .toggle{position:relative;width:42px;height:23px;flex:none;margin-left:auto}
   .toggle input{opacity:0;width:0;height:0}
   .toggle span{position:absolute;inset:0;background:var(--paper-2);border:1px solid var(--line);border-radius:20px;transition:.2s;cursor:pointer}
@@ -190,7 +191,7 @@
   .erow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px}
   .erow:last-child{margin-bottom:0}
   .erow>.elab{font-size:12px;font-weight:700;color:var(--ink);min-width:48px;display:flex;align-items:center;gap:6px}
-  .erow>.elab::before{content:"›";color:var(--accent);font-weight:900;font-size:14px;line-height:1;flex:none}
+  .erow>.elab::before{content:"›";color:var(--accent);font-weight:900;font-size:16px;line-height:1;flex:none}
   /* 批量分段折叠块 */
   .batch-block{border:1.5px solid #E2682C66;border-radius:11px;margin-top:13px}
   .batch-head{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;background:var(--accent);color:#fff;padding:9px 12px;font-size:13px;font-weight:700;border-radius:9.5px 9.5px 0 0}
@@ -281,9 +282,9 @@
         </div>
       </div>
       <div class="row"><div class="switch">显示进度百分比<label class="toggle"><input type="checkbox" id="showPct" checked><span></span></label></div></div>
-      <div class="row"><label class="lab">百分比字号 <span class="val"><span id="pctSizeVal">26</span>px</span></label><input type="range" id="pctSize" min="12" max="64" value="26"></div>
+      <div class="row" id="pctSizeRow" style="display:none"><label class="lab lab3">百分比字号 <span class="val"><span id="pctSizeVal">26</span>px</span></label><input type="range" id="pctSize" min="12" max="64" value="26"></div>
       <div class="row"><div class="switch">显示倒计时<label class="toggle"><input type="checkbox" id="showCountdown"><span></span></label></div></div>
-      <div class="row" id="cdSizeRow" style="display:none"><label class="lab">倒计时字号 <span class="val"><span id="cdSizeVal">26</span>px</span></label><input type="range" id="cdSize" min="12" max="64" value="26"></div>
+      <div class="row" id="cdSizeRow" style="display:none"><label class="lab lab3">倒计时字号 <span class="val"><span id="cdSizeVal">26</span>px</span></label><input type="range" id="cdSize" min="12" max="64" value="26"></div>
       <p class="hint" id="cdHint" style="margin-top:-2px;display:none">显示<b>剩余时间</b>。预览／单个 GIF／计时器里是<b>整体剩余</b>（如 2:30→0:00）；<b>批量分段</b>导出时每段 GIF 显示<b>该段自己的剩余</b>。真实时长 GIF、实时演示、计时器里会真实倒数；静态图显示对应时刻的值。百分比与倒计时只能开一个。</p>
       <div class="row">
         <label class="lab">推进方式</label>
@@ -3122,7 +3123,7 @@ $("pieCenterNum").addEventListener("change",function(e){S.pieCenterNum=e.target.
 function syncPctCdRows(){
   var cdRow=$("cdSizeRow"); if(cdRow) cdRow.style.display=S.showCountdown?"":"none";
   var cdH=$("cdHint"); if(cdH) cdH.style.display=S.showCountdown?"":"none";
-  var pctRow=$("pctSize"); // 百分比字号行：百分比开时才有意义（不强制隐藏，保持简单）
+  var pctRow=$("pctSizeRow"); if(pctRow) pctRow.style.display=S.showPct?"":"none";  // 百分比字号：开百分比才显示
   var sp=$("showPct"); if(sp) sp.checked=!!S.showPct;
   var sc=$("showCountdown"); if(sc) sc.checked=!!S.showCountdown;
 }
@@ -3285,7 +3286,9 @@ function buildFontScaleControls(shape, hasCenter){
     var m=S[mapKey]||(S[mapKey]={});
     var cur=Math.round((m[shape]||1)*100);
     var row=document.createElement("div"); row.style.cssText="display:flex;align-items:center;gap:9px;margin-bottom:4px";
-    var lab=document.createElement("span"); lab.style.cssText="font-size:11.5px;color:var(--ink);flex:none;min-width:62px"; lab.textContent=label;
+    var lab=document.createElement("span"); lab.style.cssText="font-size:11.5px;color:var(--ink);flex:none;min-width:62px;display:flex;align-items:center;gap:5px";
+    var dot=document.createElement("span"); dot.style.cssText="width:3px;height:3px;border-radius:50%;background:var(--accent);flex:none";
+    lab.appendChild(dot); lab.appendChild(document.createTextNode(label));
     var rng=document.createElement("input"); rng.type="range"; rng.min="50"; rng.max="200"; rng.value=cur; rng.style.flex="1";
     var val=document.createElement("span"); val.style.cssText="font-size:11.5px;font-weight:700;color:var(--ink);flex:none;min-width:42px;text-align:right"; val.textContent=cur+"%";
     rng.addEventListener("input",function(){ m[shape]=(+rng.value)/100; val.textContent=rng.value+"%"; render(); });
@@ -4462,6 +4465,7 @@ $("busyCancel").addEventListener("click",function(){gifCancel=true;});
   setupCollapsibleGroups();
   if(typeof applyGifMode==="function") applyGifMode();
   if(typeof applyGifLoop==="function") applyGifLoop();
+  if(typeof syncPctCdRows==="function") syncPctCdRows();
 })();
 
 // 把每个 .group 变成可折叠：大标题整行可点 + 醒目箭头；默认折叠非必备板块
