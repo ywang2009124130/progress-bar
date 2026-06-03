@@ -75,6 +75,10 @@
   .pal-std .sw{flex:1}
   .palette .sw:hover{transform:scale(1.18);position:relative;z-index:2}
   .palette .sw.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .pal-auto{display:flex}
+  .pal-auto-btn{flex:1;border:1px solid var(--line);background:var(--card);border-radius:6px;padding:5px 8px;font-family:"DM Sans";font-size:11px;color:var(--ink-soft);cursor:pointer;transition:.12s}
+  .pal-auto-btn:hover{border-color:var(--ink-soft)}
+  .pal-auto-btn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
   .timefield{display:flex;gap:8px;align-items:center}
   .timefield input{width:64px;text-align:center}
   .timefield .sep{font-weight:700;color:var(--ink-soft)}
@@ -127,6 +131,44 @@
   .btn.primary:hover{filter:brightness(1.08)}
   .reco{display:inline-block;margin-left:5px;background:#fff;color:var(--accent);font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;vertical-align:middle}
   .grow{flex:1}
+  .btn.on{background:var(--ink);color:var(--paper)}
+  .exp-panel{width:100%;max-width:900px;margin-top:9px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 16px;box-shadow:var(--shadow);display:none}
+  .exp-panel.show{display:block;animation:expIn .18s ease}
+  @keyframes expIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .exp-panel .ehead{font-family:"Fraunces",serif;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:11px;display:flex;align-items:center;gap:7px}
+  .exp-panel .ehead .edot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .erow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px}
+  .erow:last-child{margin-bottom:0}
+  .erow>.elab{font-size:11.5px;color:var(--ink-soft);min-width:48px}
+  /* PowerPoint-style swatch picker */
+  .swatch-pick{position:relative;display:inline-block}
+  .swatch-trig{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);background:var(--card);border-radius:9px;padding:6px 11px;cursor:pointer;font-family:"DM Sans";font-size:12px;color:var(--ink);transition:.15s}
+  .swatch-trig:hover{border-color:var(--ink-soft)}
+  .swatch-trig .chip{width:20px;height:20px;border-radius:5px;border:1px solid #0002;box-shadow:inset 0 1px 2px #0001;flex:none}
+  .swatch-trig .car{font-size:9px;color:var(--ink-soft);transition:transform .18s}
+  .swatch-trig.open .car{transform:rotate(180deg)}
+  .swatch-pop{position:absolute;top:calc(100% + 7px);left:0;z-index:20;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 18px 44px -18px #2a230f66,0 1px 0 #fff8;display:none}
+  .swatch-pop.show{display:block;animation:expIn .16s ease}
+  .swatch-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+  .swatch-grid.shades{margin-top:4px}
+  .sw{width:26px;height:18px;border-radius:4px;border:1px solid #0002;cursor:pointer;padding:0;transition:transform .1s}
+  .sw:hover{transform:scale(1.12);box-shadow:0 2px 6px #0003;position:relative;z-index:1}
+  .sw.sel{outline:2px solid var(--ink);outline-offset:1px}
+  .swatch-sep{height:1px;background:var(--line-soft);margin:11px 0 9px}
+  .swatch-lbl{font-size:10px;color:var(--ink-soft);margin:0 0 6px;letter-spacing:.3px}
+  .swatch-more{margin-top:11px;display:flex;align-items:center;gap:8px}
+  .swatch-more label{font-size:11px;color:var(--accent-2);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .swatch-more input[type=color]{width:26px;height:22px;border:1px solid var(--line);border-radius:6px;padding:0;cursor:pointer;background:none}
+  .swatch-more .curhex{font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;text-transform:uppercase;margin-left:auto}
+  /* dual-range (interval) */
+  .dual-range{position:relative;height:26px;margin-top:8px}
+  .dual-range .dr-track{position:absolute;top:11px;left:0;right:0;height:4px;border-radius:3px;background:var(--line)}
+  .dual-range .dr-fill{position:absolute;top:11px;height:4px;border-radius:3px;background:var(--accent)}
+  .dual-range input[type=range]{position:absolute;top:0;left:0;width:100%;height:26px;margin:0;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
+  .dual-range input[type=range]::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--card);border:2px solid var(--accent);box-shadow:0 1px 4px #0003;cursor:pointer;margin-top:0}
+  .dual-range input[type=range]::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border-radius:50%;background:var(--card);border:2px solid var(--accent);box-shadow:0 1px 4px #0003;cursor:pointer}
+  .dual-range input[type=range]::-webkit-slider-runnable-track{background:none}
+  .dual-range input[type=range]::-moz-range-track{background:none}
   #busy{position:fixed;inset:0;background:#0e0c08cc;backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:30;color:#fff}
   #busy .bar{width:240px;height:8px;border-radius:6px;background:#ffffff22;overflow:hidden}
   #busy .barfill{height:100%;width:0;background:var(--accent);transition:width .1s}
@@ -177,7 +219,8 @@
     </div>
 
     <div class="group">
-      <h2><span class="dot"></span>颜色与质感</h2>
+      <h2><span class="dot"></span>通用外观</h2>
+      <p class="hint" style="margin-top:-4px;margin-bottom:11px">6 种形态共用的基础样式。条状 / 风车 / 心形 / 四叶草 / 圆环还可在各自「分区」里单独设每段的<b>文字色</b>与<b>填充色</b>，会覆盖这里的填充色。</p>
       <div class="row"><label class="lab">填充色</label><div class="colorrow"><input type="color" id="fillColor" value="#E2682C"><span class="hex" id="fillHex">#E2682C</span></div></div>
       <div class="row"><label class="lab">边框 / 线条色</label><div class="colorrow"><input type="color" id="strokeColor" value="#211C16"><span class="hex" id="strokeHex">#211C16</span></div></div>
       <div class="row"><label class="lab">轨道底色（未完成）</label><div class="colorrow"><input type="color" id="trackColor" value="#E4DCC6"><span class="hex" id="trackHex">#E4DCC6</span></div></div>
@@ -216,7 +259,7 @@
       <h2><span class="dot"></span>花瓣分区</h2>
       <p class="hint" style="margin-top:-4px">一朵比例固定的花，整体等比缩放即可，花瓣不会变形。</p>
       <div class="row" style="margin-top:11px"><label class="lab">整体大小 <span class="val"><span id="petalSizeVal">230</span>px</span></label><input type="range" id="petalSize" min="120" max="270" value="230"></div>
-      <div class="row"><label class="lab">花心文字</label><input type="text" id="coreText" value="绽放"></div>
+      <div class="row"><label class="lab">花心文字</label><input type="text" id="coreText" value="" placeholder="（留空）"></div>
       <div class="row commonseg"></div>
     </div>
 
@@ -302,30 +345,96 @@
     </div>
     <div class="stage checker" id="stage"><div id="svgHost"></div></div>
     <div class="exportbar">
-      <div class="switch" style="gap:8px">透明背景<label class="toggle"><input type="checkbox" id="transBg" checked><span></span></label></div>
-      <span style="font-size:12px;color:var(--ink-soft)">倍率</span>
-      <div class="scale-seg" id="scaleSeg"><button data-s="1">1×</button><button data-s="2" class="on">2×</button><button data-s="3">3×</button></div>
-      <div class="grow"></div>
       <button class="btn" id="dlSvg">SVG</button>
-      <button class="btn" id="dlPng">PNG</button>
-      <button class="btn" id="dlGif">⬇ GIF 动图</button>
+      <button class="btn" id="dlPng">PNG ⚙</button>
+      <button class="btn" id="dlGif">⬇ GIF 动图 ⚙</button>
+      <div class="grow"></div>
       <button class="btn" id="openTimer">▶ 实时演示</button>
-      <button class="btn" id="dlTimer">⬇ 计时器</button>
+      <button class="btn" id="dlTimer">⬇ 计时器html
       <button class="btn" id="copyEmbed">🔗 复制嵌入链接</button>
       <button class="btn primary" id="dlLauncher">⬇ 小窗启动器 <span class="reco">推荐</span></button>
     </div>
-    <div class="exportbar" style="margin-top:-8px">
-      <span style="font-size:11.5px;color:var(--ink-soft)">GIF ·</span>
-      <span style="font-size:11.5px;color:var(--ink-soft)">时长</span>
-      <input type="range" id="gifDur" min="2" max="30" value="8" style="width:110px">
-      <span style="font-size:11.5px;color:var(--ink);font-weight:700" id="gifDurVal">8s</span>
-      <span style="font-size:11.5px;color:var(--ink-soft)">帧率</span>
-      <div class="scale-seg" id="fpsSeg"><button data-f="10">10</button><button data-f="15" class="on">15</button><button data-f="20">20</button></div>
-      <span style="font-size:11.5px;color:var(--ink-soft)">GIF 底色</span>
-      <input type="color" id="gifBg" value="#FFFFFF" style="width:34px;height:28px">
-      <span class="switch" style="gap:6px;font-size:11.5px">含完成闪烁<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifFlash" checked><span></span></label></span>
+
+    <!-- PNG 设置面板（点 PNG 展开） -->
+    <div class="exp-panel" id="pngPanel">
+      <div class="ehead"><span class="edot"></span>PNG 设置</div>
+      <div class="erow">
+        <span class="elab">倍率</span>
+        <div class="scale-seg" id="scaleSeg"><button data-s="1">1×</button><button data-s="2" class="on">2×</button><button data-s="3">3×</button></div>
+        <div class="switch" style="gap:8px;margin-left:6px">透明背景<label class="toggle"><input type="checkbox" id="transBg" checked><span></span></label></div>
+      </div>
+      <div class="erow">
+        <button class="btn primary" id="dlPngGo" style="padding:8px 18px">⬇ 下载 PNG</button>
+        <span class="hint" style="margin-top:0">矢量需求请用上方 SVG（天然透明、可无损缩放）。</span>
+      </div>
     </div>
-    <p class="hint" style="margin-top:6px">GIF 不支持透明背景，请将「GIF 底色」选成与幻灯片接近的颜色；需要真正透明请改用 PNG 导出。</p>
+
+    <!-- GIF 设置面板（点 GIF 展开） -->
+    <div class="exp-panel" id="gifPanel">
+      <div class="ehead"><span class="edot"></span>GIF 设置</div>
+      <div class="erow">
+        <span class="elab">倍率</span>
+        <div class="scale-seg" id="gifScaleSeg"><button data-s="1">1×</button><button data-s="2" class="on">2×</button></div>
+      </div>
+      <div class="erow">
+        <span class="elab">时长</span>
+        <input type="range" id="gifDur" min="2" max="30" value="8" style="width:130px">
+        <span style="font-size:11.5px;color:var(--ink);font-weight:700" id="gifDurVal">8s</span>
+        <span class="elab" style="margin-left:10px">帧率</span>
+        <div class="scale-seg" id="fpsSeg"><button data-f="10">10</button><button data-f="15" class="on">15</button><button data-f="20">20</button></div>
+      </div>
+      <div class="erow" style="align-items:flex-start">
+        <span class="elab" style="margin-top:3px">区间循环</span>
+        <div style="flex:1;min-width:240px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink)">
+            <span>从</span>
+            <input type="number" id="gifFrom" min="0" max="100" value="0" style="width:54px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans';font-size:12px;font-weight:700;text-align:center">
+            <span style="color:var(--ink-soft)">%</span>
+            <span style="margin:0 2px;color:var(--ink-soft)">→</span>
+            <span>到</span>
+            <input type="number" id="gifTo" min="0" max="100" value="100" style="width:54px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans';font-size:12px;font-weight:700;text-align:center">
+            <span style="color:var(--ink-soft)">%</span>
+            <button type="button" class="btn" id="gifFullReset" style="padding:5px 10px;font-size:11px;margin-left:4px">满程 0→100</button>
+          </div>
+          <div class="dual-range" id="gifDual">
+            <div class="dr-track"></div>
+            <div class="dr-fill" id="gifDualFill"></div>
+            <input type="range" id="gifFromR" min="0" max="100" value="0">
+            <input type="range" id="gifToR" min="0" max="100" value="100">
+          </div>
+          <p class="hint" style="margin-top:4px">GIF 只在此区间内循环播放。给不同 PPT 页贴不同进度段（如第 1 页 0→30%，第 2 页 30→70%）。</p>
+        </div>
+      </div>
+      <div class="erow" style="align-items:flex-start">
+        <span class="elab" style="margin-top:7px">GIF 底色</span>
+        <div class="swatch-pick" id="gifBgPick">
+          <button type="button" class="swatch-trig" id="gifBgTrig">
+            <span class="chip" id="gifBgChip" style="background:#FFFFFF"></span>
+            <span id="gifBgName">颜色</span>
+            <span class="car">▾</span>
+          </button>
+          <div class="swatch-pop" id="gifBgPop">
+            <div class="swatch-lbl">主题色</div>
+            <div class="swatch-grid" id="gifBgThemeRow"></div>
+            <div class="swatch-grid shades" id="gifBgShades"></div>
+            <div class="swatch-sep"></div>
+            <div class="swatch-lbl">标准色</div>
+            <div class="swatch-grid" id="gifBgStdRow"></div>
+            <div class="swatch-more">
+              <label>更多颜色…<input type="color" id="gifBg" value="#FFFFFF"></label>
+              <span class="curhex" id="gifBgHex">#FFFFFF</span>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:11px;color:var(--ink-soft);flex:1;min-width:160px;margin-top:7px">GIF 不支持透明，用底色贴近幻灯片背景；真正透明请用 PNG。</span>
+      </div>
+      <div class="erow">
+        <span class="switch" style="gap:6px;font-size:11.5px;flex:none">含完成闪烁<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifFlash" checked><span></span></label></span>
+      </div>
+      <div class="erow">
+        <button class="btn primary" id="dlGifGo" style="padding:8px 18px">⬇ 生成并下载 GIF</button>
+      </div>
+    </div>
     <div class="usebox">
       <div class="userow" id="useLauncher" style="display:none">
         <span class="usetag tag-link">⬇ 小窗启动器</span>
@@ -1744,14 +1853,14 @@ const S = {
   fill:"#E2682C", stroke:"#211C16", track:"#E4DCC6", sat:100, op:100, bw:2,
   orient:"h", len:600, thk:60, corner:"round", rad:28, ch:22, edge:"solid",
   rOut:220, rIn:42, centerText:"进行中", pieCenterNum:true,
-  petalSize:230, coreText:"绽放",
+  petalSize:230, coreText:"",
   pwSize:200, pwCoreText:"进行中", pwSegments:[],
   heartSize:200, heartCoreText:"进行中", heartSegments:[],
   cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true,
   segCnt:6, gap:3, segments:[],
   elemOn:true, icon:"heart", elemCnt:5, elemSz:32, dimOff:true, elemFollow:true, elemColor:"#E2682C",
   alertOn:true, alertDur:60, soundOn:true, soundType:"4", soundRepeat:true, soundGap:2,
-  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true
+  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifScale:2, gifFrom:0, gifTo:100
 };
 const VW=900, VH=580, CX=VW/2, CY=VH/2;
 const $=id=>document.getElementById(id);
@@ -1764,6 +1873,14 @@ function tintC(hex,opacity){const c=hexToRgb(hex);let q=rgbToHsl(c[0],c[1],c[2])
 function autoHue(i,n){const c=hexToRgb(S.fill);let q=rgbToHsl(c[0],c[1],c[2]);const hh=(q[0]+(360/n)*i)%360;return hslToCss(hh,Math.max(35,q[1]*(S.sat/100)),Math.min(62,Math.max(42,q[2])),1);}
 function lum(hex){const c=hexToRgb(hex);return (0.299*c[0]+0.587*c[1]+0.114*c[2])/255;}
 function textOn(hex){return lum(hex)>0.6?"#211C16":"#ffffff";}
+// Per-segment label color. If the user set an explicit text color (seg.tcolor),
+// always use it. Otherwise fall back to the auto rule: lit segments use a
+// contrast color over their fill; unlit segments use the (dark) stroke color.
+function segLabelFill(seg,base,frac,thr){
+  if(seg && seg.tcolor) return seg.tcolor;
+  // Auto mode: lit segments use a uniform white; unlit use the (dark) stroke color.
+  return (frac>=(thr==null?0.5:thr)) ? "#ffffff" : tint(S.stroke,0.9);
+}
 function polar(cx,cy,r,deg){const a=(deg-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function escapeXml(s){return (s||'').replace(/[<>&'"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c];});}
@@ -1947,7 +2064,7 @@ function renderRing(){
     }
     const txt=segText(i).trim();
     if(txt){const aMid=(a0+a1)/2, rMid=solid? rO*0.62 : (rO+rI)/2; const L=polar(cx,cy,rMid,aMid);
-      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="15" font-weight="700" fill="'+(frac>=1? textOn(base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';}
+      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="15" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,1)+'">'+escapeXml(txt)+'</text>';}
   }
   const ct=(S.centerText||"").trim();
   if(!solid){
@@ -2040,7 +2157,7 @@ function renderPetal(){
     }
     const txt=segText(i).trim();
     if(txt){const L=polar(cx,cy,(rBase+rTip)*0.52,aMid);
-      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(12,rTip*0.075)+'" font-weight="700" fill="'+(frac>=0.5? textOn(base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';}
+      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(12,rTip*0.075)+'" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,0.5)+'">'+escapeXml(txt)+'</text>';}
   }
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+core+'" fill="'+tint(S.fill,Math.min(1,S.op/100))+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
   const ct=(S.coreText||"").trim();
@@ -2180,7 +2297,7 @@ function renderPinwheel(){
   for(const b of B){
     const txt=pwText(b.i).trim(); if(!txt) continue;
     const L=polar(cx,cy,R*0.58,b.ang + 20);
-    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.08)+'" font-weight="700" fill="'+(b.frac>=0.5? textOn(b.base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.08)+'" font-weight="700" fill="'+segLabelFill(S.pwSegments[b.i],b.base,b.frac,0.5)+'">'+escapeXml(txt)+'</text>';
   }
 
   // CENTER hub pin, drawn last over the blade roots and the pole top.
@@ -2283,7 +2400,7 @@ function renderHeart(){
   for(const q of parts){
     const txt=heartText(q.i).trim(); if(!txt) continue;
     const lx=cx + (q.i===0? -R*0.42 : R*0.42), ly=cy-R*0.05;
-    out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.085)+'" font-weight="700" fill="'+(q.frac>=0.5? textOn(q.base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.085)+'" font-weight="700" fill="'+segLabelFill(S.heartSegments[q.i],q.base,q.frac,0.5)+'">'+escapeXml(txt)+'</text>';
   }
   // center percentage only — NO circle, NO status text. A thin stroke keeps the number
   // legible across the two-colour halves.
@@ -2359,7 +2476,7 @@ function renderClover(){
   for(const b of B){
     const txt=cloverText(b.i).trim(); if(!txt) continue;
     const L=polar(cx,cy,R*0.50,b.ang);
-    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.08)+'" font-weight="700" fill="'+(b.frac>=0.5? textOn(b.base): tint(S.stroke,0.9))+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.08)+'" font-weight="700" fill="'+segLabelFill(S.cloverSegments[b.i],b.base,b.frac,0.5)+'">'+escapeXml(txt)+'</text>';
   }
   // center small dark dot (caps the four roots; the finalized "medium dot")
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*0.12)+'" fill="'+tint(S.stroke,1)+'"/>';
@@ -2505,7 +2622,91 @@ bindRange("alertDur","alertDur","alertDurVal");
 $("rIn").addEventListener("input",function(e){S.rIn=+e.target.value;$("rInVal").textContent=e.target.value;render();});
 
 bindColor("fillColor","fill","fillHex");bindColor("strokeColor","stroke","strokeHex");bindColor("trackColor","track","trackHex");
-bindColor("gifBg","gifBg",null);
+// ---- GIF 底色：PowerPoint 风格可开合色板 ----
+(function(){
+  // 8 个主题色（每列一个），每列再生成 5 档深浅
+  var THEME=["#1C1A17","#2B3A4A","#2F5BD0","#9A3B16","#5E6B78","#D79B3A","#5C9BD6","#6FA84B"];
+  // 标准色行
+  var STD=["#9E1B1B","#C0392B","#D9A441","#E6D24A","#8FC04A","#3E9B42","#3FB6C0","#2E6FD6","#1E3A8A","#7A3FB0"];
+  // 名称（用于触发器文字，尽量贴近 PPT 习惯）
+  function clamp(v){return Math.max(0,Math.min(255,Math.round(v)));}
+  function hx(n){var s=clamp(n).toString(16);return s.length<2?"0"+s:s;}
+  function toRGB(h){h=h.replace("#","");if(h.length===3)h=h.split("").map(function(c){return c+c;}).join("");return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
+  function toHex(r,g,b){return "#"+hx(r)+hx(g)+hx(b);}
+  // 生成一列深浅：t>0 变浅(向白)，t<0 变深(向黑)
+  function shade(hex,t){var c=toRGB(hex);var r,g,b;
+    if(t>=0){r=c[0]+(255-c[0])*t;g=c[1]+(255-c[1])*t;b=c[2]+(255-c[2])*t;}
+    else{var k=1+t;r=c[0]*k;g=c[1]*k;b=c[2]*k;}
+    return toHex(r,g,b);}
+  var SHADE_STEPS=[0.65,0.4,0.18,-0.22,-0.45]; // 5 行：浅→深
+
+  var trig=$("gifBgTrig"), pop=$("gifBgPop"), chip=$("gifBgChip"),
+      hexEl=$("gifBgHex"), native=$("gifBg"), pickRoot=$("gifBgPick");
+
+  function setColor(hex,doRender){
+    hex=hex.toUpperCase();
+    S.gifBg=hex; native.value=hex;
+    chip.style.background=hex; hexEl.textContent=hex;
+    // 标记选中态
+    pop.querySelectorAll(".sw").forEach(function(b){
+      b.classList.toggle("sel", (b.dataset.c||"").toUpperCase()===hex);
+    });
+    if(doRender) render();
+  }
+  function mkSwatch(hex){
+    var b=document.createElement("button");
+    b.type="button";b.className="sw";b.dataset.c=hex;
+    b.style.background=hex;b.title=hex;
+    b.addEventListener("click",function(){setColor(hex,true);closePop();});
+    return b;
+  }
+  // 主题行
+  var themeRow=$("gifBgThemeRow");
+  THEME.forEach(function(h){themeRow.appendChild(mkSwatch(h));});
+  // 深浅区：5 行 × 8 列
+  var shadesWrap=$("gifBgShades");
+  SHADE_STEPS.forEach(function(t){
+    THEME.forEach(function(h){shadesWrap.appendChild(mkSwatch(shade(h,t)));});
+  });
+  // 标准色行
+  var stdRow=$("gifBgStdRow");
+  STD.forEach(function(h){stdRow.appendChild(mkSwatch(h));});
+
+  function openPop(){pop.classList.add("show");trig.classList.add("open");}
+  function closePop(){pop.classList.remove("show");trig.classList.remove("open");}
+  trig.addEventListener("click",function(e){e.stopPropagation();
+    if(pop.classList.contains("show"))closePop();else openPop();});
+  pop.addEventListener("click",function(e){e.stopPropagation();});
+  document.addEventListener("click",function(){closePop();});
+  // 原生取色器（更多颜色）
+  native.addEventListener("input",function(){setColor(native.value,true);});
+
+  setColor(S.gifBg||"#FFFFFF",false);
+})();
+// ---- GIF 区间循环：双滑块 + 数字输入 双向同步 ----
+(function(){
+  var fromN=$("gifFrom"), toN=$("gifTo"), fromR=$("gifFromR"), toR=$("gifToR"),
+      fill=$("gifDualFill"), resetBtn=$("gifFullReset");
+  var MINGAP=1; // 至少 1% 跨度，避免起止相同
+  function clampInt(v){v=Math.round(+v); if(isNaN(v))v=0; return Math.max(0,Math.min(100,v));}
+  function paint(){
+    fill.style.left=S.gifFrom+"%";
+    fill.style.width=Math.max(0,(S.gifTo-S.gifFrom))+"%";
+  }
+  function sync(){
+    fromN.value=S.gifFrom; toN.value=S.gifTo;
+    fromR.value=S.gifFrom; toR.value=S.gifTo;
+    paint();
+  }
+  function setFrom(v){v=clampInt(v); if(v>S.gifTo-MINGAP)v=S.gifTo-MINGAP; if(v<0)v=0; S.gifFrom=v; sync();}
+  function setTo(v){v=clampInt(v); if(v<S.gifFrom+MINGAP)v=S.gifFrom+MINGAP; if(v>100)v=100; S.gifTo=v; sync();}
+  fromR.addEventListener("input",function(){setFrom(fromR.value);});
+  toR.addEventListener("input",function(){setTo(toR.value);});
+  fromN.addEventListener("change",function(){setFrom(fromN.value);});
+  toN.addEventListener("change",function(){setTo(toN.value);});
+  resetBtn.addEventListener("click",function(){S.gifFrom=0;S.gifTo=100;sync();});
+  sync();
+})();
 // milestone element color uses the same color-block palette as the segments
 (function(){var host=$("elemPalette");if(host){host.appendChild(buildPalette(S.elemColor,function(col){S.elemColor=col;render();}));}})();
 
@@ -2563,14 +2764,15 @@ function hueHex(i,n){const c=hexToRgb(S.fill);let q=rgbToHsl(c[0],c[1],c[2]);let
 // Curated default sequence (mid-tone, visually distinct) drawn from the palette blocks.
 const PALETTE_DEFAULTS=["#C0561E","#6FA644","#5B9BD5","#E8A93A","#1F57D6","#E03131","#36A93B","#7B33C9","#2E3A48","#7C8794","#9E1B1B","#2BB3D6"];
 function palAt(i){return PALETTE_DEFAULTS[i%PALETTE_DEFAULTS.length];}
-function defaultSegments(n){const arr=[];const labels=["调研","设计","开发","测试","上线","复盘","推广","迭代","阶段","环节","目标","总结"];
-  for(let i=0;i<n;i++)arr.push({text:(S.segments[i]?S.segments[i].text:(labels[i]||("分区"+(i+1)))), color:(S.segments[i]&&S.segments[i].color)?S.segments[i].color:palAt(i)});return arr;}
-function defaultPwSegments(){const arr=[];const labels=["调研","设计","开发","测试","上线"];
-  for(let i=0;i<5;i++)arr.push({text:(S.pwSegments[i]?S.pwSegments[i].text:labels[i]), color:(S.pwSegments[i]&&S.pwSegments[i].color)?S.pwSegments[i].color:palAt(i)});return arr;}
-function defaultHeartSegments(){const arr=[];const labels=["左","右"];
-  for(let i=0;i<2;i++)arr.push({text:(S.heartSegments[i]?S.heartSegments[i].text:labels[i]), color:(S.heartSegments[i]&&S.heartSegments[i].color)?S.heartSegments[i].color:palAt(i)});return arr;}
-function defaultCloverSegments(){const arr=[];const labels=["调研","设计","开发","测试"];
-  for(let i=0;i<4;i++)arr.push({text:(S.cloverSegments[i]?S.cloverSegments[i].text:labels[i]), color:(S.cloverSegments[i]&&S.cloverSegments[i].color)?S.cloverSegments[i].color:palAt(i)});return arr;}
+function pad2(i){return String(i+1).padStart(2,"0");}
+function defaultSegments(n){const arr=[];
+  for(let i=0;i<n;i++)arr.push({text:(S.segments[i]?S.segments[i].text:pad2(i)), color:(S.segments[i]&&S.segments[i].color)?S.segments[i].color:palAt(i), tcolor:(S.segments[i]&&S.segments[i].tcolor)||null});return arr;}
+function defaultPwSegments(){const arr=[];
+  for(let i=0;i<5;i++)arr.push({text:(S.pwSegments[i]?S.pwSegments[i].text:pad2(i)), color:(S.pwSegments[i]&&S.pwSegments[i].color)?S.pwSegments[i].color:palAt(i), tcolor:(S.pwSegments[i]&&S.pwSegments[i].tcolor)||null});return arr;}
+function defaultHeartSegments(){const arr=[];
+  for(let i=0;i<2;i++)arr.push({text:(S.heartSegments[i]?S.heartSegments[i].text:pad2(i)), color:(S.heartSegments[i]&&S.heartSegments[i].color)?S.heartSegments[i].color:palAt(i), tcolor:(S.heartSegments[i]&&S.heartSegments[i].tcolor)||null});return arr;}
+function defaultCloverSegments(){const arr=[];
+  for(let i=0;i<4;i++)arr.push({text:(S.cloverSegments[i]?S.cloverSegments[i].text:pad2(i)), color:(S.cloverSegments[i]&&S.cloverSegments[i].color)?S.cloverSegments[i].color:palAt(i), tcolor:(S.cloverSegments[i]&&S.cloverSegments[i].tcolor)||null});return arr;}
 // Reusable fixed-count per-part editor (no count/gap sliders). segs is the live array.
 function mountFixedSegEditor(hostSel,segs,labelText,placeholder){
   const host=document.querySelector(hostSel);
@@ -2578,30 +2780,39 @@ function mountFixedSegEditor(hostSel,segs,labelText,placeholder){
   const list=$("fxSegList");
   segs.forEach(function(sg,i){const row=document.createElement("div");row.className="sec-item";
     row.innerHTML='<span class="idx">'+(i+1)+'</span>';
-    const t=document.createElement("input");t.type="text";t.value=sg.text;t.placeholder=placeholder+(i+1);
+    const t=document.createElement("input");t.type="text";t.value=sg.text;t.placeholder=pad2(i);
     t.addEventListener("input",function(){segs[i].text=t.value;render();});
-    const pal=buildPalette(sg.color,function(col){segs[i].color=col;render();});
-    row.appendChild(t);row.appendChild(pal);list.appendChild(row);});
+    const tpal=buildPalette(sg.tcolor||"",function(col){segs[i].tcolor=col||null;render();},{caption:"文字",allowAuto:true});
+    const pal=buildPalette(sg.color,function(col){segs[i].color=col;render();},{caption:"填充"});
+    row.appendChild(t);row.appendChild(tpal);row.appendChild(pal);list.appendChild(row);});
 }
 // Build a COLLAPSIBLE PowerPoint-style color picker: a small trigger showing the current
 // color; clicking it opens a panel with the theme grid (base + tint/shade ramp) and a
 // standard-color row. Picking a block updates the trigger and closes the panel.
-function buildPalette(current,onPick){
-  let cur=String(current).toLowerCase();
+function buildPalette(current,onPick,opts){
+  opts=opts||{};
+  const caption=opts.caption||"颜色";
+  const allowAuto=!!opts.allowAuto;
+  // "auto" = no explicit color set (falls back to smart black/white). cur stays "" then.
+  let cur=current?String(current).toLowerCase():"";
   const wrap=document.createElement("div");wrap.className="palette";
-  // trigger button (always visible)
   const trig=document.createElement("button");trig.type="button";trig.className="pal-trigger";
-  const dot=document.createElement("span");dot.className="pal-dot";dot.style.background=cur;
-  const cap=document.createElement("span");cap.className="pal-cap";cap.textContent="颜色";
+  const dot=document.createElement("span");dot.className="pal-dot";
+  const cap=document.createElement("span");cap.className="pal-cap";
   const car=document.createElement("span");car.className="pal-caret";car.textContent="▾";
+  function paintTrig(){
+    if(!cur){ dot.style.background="conic-gradient(#211C16 0 25%,#fff 0 50%,#211C16 0 75%,#fff 0)"; cap.textContent=allowAuto?(caption+"·自动"):caption; }
+    else { dot.style.background=cur; cap.textContent=caption; }
+  }
+  paintTrig();
   trig.appendChild(dot);trig.appendChild(cap);trig.appendChild(car);
-  // collapsible panel (hidden by default)
   const panel=document.createElement("div");panel.className="pal-panel";panel.style.display="none";
   const mark=function(sw,col){
     panel.querySelectorAll(".sw").forEach(function(x){x.classList.remove("on");});
-    sw.classList.add("on");cur=col.toLowerCase();dot.style.background=col;
-    onPick(col);
-    panel.style.display="none";trig.classList.remove("open");   // close after pick
+    if(sw)sw.classList.add("on");
+    cur=col?col.toLowerCase():""; paintTrig();
+    onPick(col); // col may be null => clear (auto)
+    panel.style.display="none";trig.classList.remove("open");
   };
   const addSw=function(parent,col){
     const sw=document.createElement("div");sw.className="sw"+(col.toLowerCase()===cur?" on":"");
@@ -2609,6 +2820,13 @@ function buildPalette(current,onPick){
     sw.addEventListener("click",function(){mark(sw,col);});
     parent.appendChild(sw);return sw;
   };
+  if(allowAuto){
+    const autoRow=document.createElement("div");autoRow.className="pal-auto";
+    const ab=document.createElement("button");ab.type="button";ab.className="pal-auto-btn"+(cur?"":" on");
+    ab.textContent="自动（随进度黑/白）";
+    ab.addEventListener("click",function(){mark(null,null);});
+    autoRow.appendChild(ab);panel.appendChild(autoRow);
+  }
   const grid=document.createElement("div");grid.className="pal-grid";
   PALETTE_THEME.forEach(function(base){
     const colEl=document.createElement("div");colEl.className="pal-col";
@@ -2632,17 +2850,17 @@ function mountSegEditor(){
   if(S.shape==="bar")return;
   if(S.shape==="pinwheel"){
     S.pwSegments=defaultPwSegments();
-    mountFixedSegEditor("#pinwheelGroup .commonseg",S.pwSegments,"5 片扇叶 文字 · 颜色","扇叶");
+    mountFixedSegEditor("#pinwheelGroup .commonseg",S.pwSegments,"5 片扇叶 - 文字 · 填充","扇叶");
     return;
   }
   if(S.shape==="heart"){
     S.heartSegments=defaultHeartSegments();
-    mountFixedSegEditor("#heartGroup .commonseg",S.heartSegments,"2 片分区 文字 · 颜色","分区");
+    mountFixedSegEditor("#heartGroup .commonseg",S.heartSegments,"2 片分区 - 文字 · 填充","分区");
     return;
   }
   if(S.shape==="clover"){
     S.cloverSegments=defaultCloverSegments();
-    mountFixedSegEditor("#cloverGroup .commonseg",S.cloverSegments,"4 片叶 文字 · 颜色","叶");
+    mountFixedSegEditor("#cloverGroup .commonseg",S.cloverSegments,"4 片叶 - 文字 · 填充","叶");
     return;
   }
   const isPetal=(S.shape==="petal");
@@ -2654,16 +2872,17 @@ function mountSegEditor(){
   const host=document.querySelector("#"+gid+" .commonseg");
   host.innerHTML='<label class="lab">分区数量 <span class="val">'+S.segCnt+'</span></label><input type="range" min="'+cntMin+'" max="'+cntMax+'" value="'+S.segCnt+'" id="segCntR">'+
     '<label class="lab" style="margin-top:11px">分区间隙 <span class="val">'+S.gap+'°</span></label><input type="range" min="0" max="10" value="'+S.gap+'" id="gapR">'+
-    '<label class="lab" style="margin-top:11px">各分区 文字 · 颜色</label><div class="seg-list" id="segList"></div>';
+    '<label class="lab" style="margin-top:11px">各分区 - 文字 · 填充</label><div class="seg-list" id="segList"></div>';
   $("segCntR").addEventListener("input",function(e){S.segCnt=+e.target.value;mountSegEditor();render();});
   $("gapR").addEventListener("input",function(e){S.gap=+e.target.value;e.target.previousElementSibling.querySelector(".val").textContent=e.target.value+"°";render();});
   const list=$("segList");
   S.segments.forEach(function(sg,i){const row=document.createElement("div");row.className="sec-item";
     row.innerHTML='<span class="idx">'+(i+1)+'</span>';
-    const t=document.createElement("input");t.type="text";t.value=sg.text;t.placeholder="分区"+(i+1);
+    const t=document.createElement("input");t.type="text";t.value=sg.text;t.placeholder=pad2(i);
     t.addEventListener("input",function(){S.segments[i].text=t.value;render();});
-    const pal=buildPalette(sg.color,function(col){S.segments[i].color=col;render();});
-    row.appendChild(t);row.appendChild(pal);list.appendChild(row);});
+    const tpal=buildPalette(sg.tcolor||"",function(col){S.segments[i].tcolor=col||null;render();},{caption:"文字",allowAuto:true});
+    const pal=buildPalette(sg.color,function(col){S.segments[i].color=col;render();},{caption:"填充"});
+    row.appendChild(t);row.appendChild(tpal);row.appendChild(pal);list.appendChild(row);});
 }
 
 function readTime(){const m=clamp(+$("tMin").value||0,0,999),s=clamp(+$("tSec").value||0,0,59);S.totalSec=m*60+s;updateClock();}
@@ -2740,14 +2959,31 @@ $("resetBtn").addEventListener("click",function(){if(timer){clearInterval(timer)
   $("svgHost").classList.remove("flash");clearTimeout(flashTimer);chimeStop();clearTimeout(soundStopTimer);S.prog=0;$("prog").value=0;$("pVal").textContent="0";updateClock();render();});
 
 $("scaleSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("scaleSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.scale=+b.dataset.s;});});
+$("gifScaleSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("gifScaleSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.gifScale=+b.dataset.s;});});
 function svgBlob(){return new Blob([lastSVG],{type:"image/svg+xml;charset=utf-8"});}
 function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
 $("dlSvg").addEventListener("click",function(){dl(svgBlob(),"progress.svg");});
-$("dlPng").addEventListener("click",function(){const sc=S.scale,img=new Image(),url=URL.createObjectURL(svgBlob());
+
+// --- On-demand export setting panels ---
+function setExpBtn(id,on){var b=$(id);if(b)b.classList.toggle("on",on);}
+function toggleExpPanel(which){
+  var png=$("pngPanel"), gif=$("gifPanel");
+  var openPng = (which==="png") && !png.classList.contains("show");
+  var openGif = (which==="gif") && !gif.classList.contains("show");
+  png.classList.toggle("show",openPng);
+  gif.classList.toggle("show",openGif);
+  setExpBtn("dlPng",openPng);
+  setExpBtn("dlGif",openGif);
+}
+$("dlPng").addEventListener("click",function(){toggleExpPanel("png");});
+$("dlGif").addEventListener("click",function(){toggleExpPanel("gif");});
+
+function doPng(){const sc=S.scale,img=new Image(),url=URL.createObjectURL(svgBlob());
   img.onload=function(){const cv=document.createElement("canvas");cv.width=VW*sc;cv.height=VH*sc;const ctx=cv.getContext("2d");
     if(!S.transBg){ctx.fillStyle="#FBF8F0";ctx.fillRect(0,0,cv.width,cv.height);}ctx.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);
     cv.toBlob(function(b){dl(b,"progress.png");},"image/png");};
-  img.onerror=function(){toast("导出失败，请重试");URL.revokeObjectURL(url);};img.src=url;});
+  img.onerror=function(){toast("导出失败，请重试");URL.revokeObjectURL(url);};img.src=url;}
+$("dlPngGo").addEventListener("click",doPng);
 
 $("openTimer").addEventListener("click",function(){const w=window.open();if(!w){toast("浏览器拦截了弹窗，请允许后重试");return;}w.document.open();w.document.write(buildTimerHTML());w.document.close();});
 $("dlTimer").addEventListener("click",function(){
@@ -2896,19 +3132,21 @@ function svgToImage(svgStr){return new Promise(function(res,rej){const img=new I
   img.onload=function(){res({img:img,url:url});};img.onerror=function(){URL.revokeObjectURL(url);rej(new Error("svg load"));};img.src=url;});}
 async function exportGif(){
   const fps=S.gifFps, dur=S.gifDur, total=Math.max(2,Math.round(fps*dur));
-  const sc = S.scale>=2?2:1; const W=VW*sc, H=VH*sc;
+  const sc = S.gifScale>=2?2:1; const W=VW*sc, H=VH*sc;
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
   const enc=new GIFEncoder();enc.setRepeat(0);enc.setDelay(Math.round(1000/fps));enc.setSize(W,H);enc.setQuality(10);enc.start();
   gifCancel=false;
   $("busy").style.display="flex";
   const savedProg=S.prog;
-  const flashFrames=(S.gifFlash && S.alertOn)? Math.min(total, fps*2) : 0;
+  const A=Math.min(S.gifFrom,S.gifTo), B=Math.max(S.gifFrom,S.gifTo);
+  const endsAt100 = B>=100;
+  const flashFrames=(S.gifFlash && S.alertOn && endsAt100)? Math.min(total, fps*2) : 0;
   const totalAll=total+flashFrames;
   let cancelled=false;
   try{
     for(let f=0; f<total; f++){
       if(gifCancel){cancelled=true;break;}
-      S.prog=(f/(total-1))*100; render();
+      S.prog=A+(B-A)*(f/(total-1)); render();
       const r=await svgToImage(lastSVG);
       ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
       ctx.drawImage(r.img,0,0,W,H);URL.revokeObjectURL(r.url);
@@ -2935,7 +3173,7 @@ async function exportGif(){
   }catch(e){if(!gifCancel)toast("GIF 生成失败："+e.message);}
   finally{gifCancel=false;S.prog=savedProg;$("prog").value=savedProg;$("pVal").textContent=Math.round(savedProg);render();$("busy").style.display="none";$("busyFill").style.width="0";}
 }
-$("dlGif").addEventListener("click",exportGif);
+$("dlGifGo").addEventListener("click",exportGif);
 $("busyCancel").addEventListener("click",function(){gifCancel=true;});
 
 // ---- EMBED MODE: when opened as ?embed=1&c=<config>, render a pure full-screen timer
