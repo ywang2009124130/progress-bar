@@ -2831,30 +2831,27 @@ $("dlLauncher").addEventListener("click",function(){
   // PowerShell reads the bat ($MyInvocation script path passed in as %~f0), takes the
   // text after ':DATA', strips whitespace, base64-decodes, writes file, opens browser.
   const ps =
-    "$self=$args[0];"+
-    "$txt=Get-Content -LiteralPath $self -Raw;"+
+    "$self=$env:PSTIMER_SELF;"+
+    "$txt=Get-Content -LiteralPath $self -Raw -Encoding UTF8;"+
     "$b64=($txt -split ':DATA\\r?\\n',2)[1];"+
     "$b64=($b64 -replace '\\s','');"+
     "$d=[Convert]::FromBase64String($b64);"+
     "$tmp=Join-Path $env:TEMP ('pstimer_'+[guid]::NewGuid().ToString('N')+'.html');"+
     "[System.IO.File]::WriteAllBytes($tmp,$d);"+
     "$a='--app=file:///'+($tmp -replace '\\\\','/')+' --window-size="+WW+","+HH+"';"+
-    "$p=@('${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe','${env:ProgramFiles}\\Microsoft\\Edge\\Application\\msedge.exe','${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe','${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe');"+
+    "$p=@('${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe','${env:ProgramFiles}\\Microsoft\\Edge\\Application\\msedge.exe','${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe','${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe','${env:LocalAppData}\\Microsoft\\Edge\\Application\\msedge.exe','${env:LocalAppData}\\Google\\Chrome\\Application\\chrome.exe');"+
     "$b=$null; foreach($x in $p){ if(Test-Path $x){ $b=$x; break } }"+
     "if($b){ Start-Process $b -ArgumentList $a } else { Write-Host 'no browser found'; pause }";
   const headerLines=[
     "@echo off",
     "chcp 65001 >nul",
-    "title "+fname.replace(/\.bat$/,""),
-    "REM ============================================================",
-    "REM  进度条工坊 · 计时器小窗启动器（配置已内嵌，双击即用，离线可用）",
-    "REM  计时器整页以 base64 存放在本文件末尾 :DATA 之后。双击后由本脚本",
-    "REM  读取自身、解码到本地临时文件，再以浏览器「应用模式」打开 ——",
-    "REM  不访问任何网址、不经命令行传参，配置绝不会丢失，也不会跑得飞快。",
-    "REM  要让小窗浮在 PPT 放映之上：装 PowerToys，开 Always-On-Top，",
-    "REM  点中小窗后按 Win+Ctrl+T 钉在最顶层。",
-    "REM ============================================================",
-    'powershell -NoProfile -ExecutionPolicy Bypass -Command "'+ps+'" "%~f0"',
+    "title timer",
+    "REM Self-extracting timer launcher. Base64 payload after :DATA at EOF.",
+    "REM Tip: install PowerToys, enable Always-On-Top, press Win+Ctrl+T to pin the window.",
+    "REM Copy self to an ASCII temp path first, so a Chinese folder name can't break reading.",
+    'copy /y "%~f0" "%TEMP%\\pstimer_self.bat" >nul',
+    'set "PSTIMER_SELF=%TEMP%\\pstimer_self.bat"',
+    'powershell -NoProfile -ExecutionPolicy Bypass -Command "'+ps+'"',
     "goto :eof",
     ":DATA"
   ];
