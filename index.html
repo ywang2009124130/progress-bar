@@ -162,10 +162,19 @@
   .play-fab button{width:38px;height:38px;border-radius:11px;border:1px solid var(--ink);background:var(--card);cursor:pointer;font-size:14px;color:var(--ink);display:flex;align-items:center;justify-content:center;transition:.15s}
   .play-fab button:hover{background:var(--ink);color:var(--paper)}
   .clock{font-variant-numeric:tabular-nums;font-family:"Fraunces",serif;font-size:20px;font-weight:600;min-width:78px}
-  .exportbar{width:100%;max-width:900px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .exportbar{width:100%;max-width:900px;display:flex;gap:14px;align-items:stretch;flex-wrap:wrap}
+  .exp-group{display:flex;gap:9px;align-items:center;flex-wrap:wrap;flex:1;min-width:280px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px 9px;box-shadow:var(--shadow)}
   .scale-seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--card)}
   .scale-seg button{border:0;background:transparent;padding:8px 12px;font-family:"DM Sans";font-weight:700;font-size:12px;color:var(--ink-soft);cursor:pointer}
   .scale-seg button.on{background:var(--ink);color:var(--paper)}
+  .mode-seg{display:flex;border:1.5px solid var(--accent);border-radius:9px;overflow:hidden}
+  .mode-seg button{border:0;background:transparent;padding:8px 14px;font-family:"DM Sans";font-weight:700;font-size:12px;color:var(--accent);cursor:pointer}
+  .mode-seg button.on{background:var(--accent);color:#fff}
+  .gif-type-opt{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;color:var(--ink);line-height:1.4;margin-bottom:6px;cursor:pointer}
+  .gif-type-opt input{width:16px;height:16px;flex:none;margin-top:1px;cursor:pointer;accent-color:var(--accent)}
+  .outlet-sep{height:1px;background:var(--line-soft);margin:15px 0 12px}
+  .outlet-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--accent);margin-bottom:11px}
+  .outlet-title::before{content:"›";font-weight:900;font-size:15px;line-height:1}
   .btn{border:1px solid var(--ink);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 13px;font-family:"DM Sans";font-weight:700;font-size:12.5px;cursor:pointer;transition:.16s}
   .btn:hover{background:var(--ink);color:var(--paper)}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -176,11 +185,21 @@
   .exp-panel{width:100%;max-width:900px;margin-top:9px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 16px;box-shadow:var(--shadow);display:none}
   .exp-panel.show{display:block;animation:expIn .18s ease}
   @keyframes expIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-  .exp-panel .ehead{font-family:"Fraunces",serif;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:11px;display:flex;align-items:center;gap:7px}
-  .exp-panel .ehead .edot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .exp-panel .ehead{font-family:"Fraunces",serif;font-size:16px;font-weight:700;color:var(--ink);margin-bottom:13px;display:flex;align-items:center;gap:9px}
+  .exp-panel .ehead .edot{width:13px;height:13px;border-radius:50%;background:var(--accent);box-shadow:0 1px 3px rgba(226,104,44,.3);flex:none}
   .erow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px}
   .erow:last-child{margin-bottom:0}
-  .erow>.elab{font-size:11.5px;color:var(--ink-soft);min-width:48px}
+  .erow>.elab{font-size:12px;font-weight:700;color:var(--ink);min-width:48px;display:flex;align-items:center;gap:6px}
+  .erow>.elab::before{content:"›";color:var(--accent);font-weight:900;font-size:14px;line-height:1;flex:none}
+  /* 批量分段折叠块 */
+  .batch-block{border:1.5px solid #E2682C66;border-radius:11px;margin-top:13px}
+  .batch-head{display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;background:var(--accent);color:#fff;padding:9px 12px;font-size:13px;font-weight:700;border-radius:9.5px 9.5px 0 0}
+  .batch-block.collapsed .batch-head{border-radius:9.5px}
+  .batch-head .batch-arrow{flex:none;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.25);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+  .batch-head .batch-title{flex:1}
+  .batch-head .batch-hint{flex:none;font-size:10.5px;font-weight:600;opacity:.85}
+  .batch-block.collapsed .batch-body{display:none}
+  .batch-body{padding:11px 12px}
   /* 批量分段：每段时长行 */
   .segdur-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
   .segdur-row .sd-idx{flex:none;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -262,6 +281,7 @@
         </div>
       </div>
       <div class="row"><div class="switch">显示进度百分比<label class="toggle"><input type="checkbox" id="showPct" checked><span></span></label></div></div>
+      <div class="row"><label class="lab">百分比字号 <span class="val"><span id="pctSizeVal">26</span>px</span></label><input type="range" id="pctSize" min="12" max="64" value="26"></div>
       <div class="row">
         <label class="lab">推进方式</label>
         <div class="chips" id="growSeg">
@@ -405,7 +425,7 @@
     <div class="stage-head">
       <div>
         <div class="t">实时预览</div>
-        <div class="s">画布 900 × 580 · 透明 PNG/SVG 贴入 PPT；GIF 循环播放；「实时演示」按真实时间运行不受翻页影响</div>
+        <div class="s">画布 900 × 580 · 透明 PNG/SVG 贴入 PPT；GIF 循环播放；点下方播放按钮即按真实时间从头放映，不受翻页影响</div>
       </div>
       <div class="play-fab">
         <div class="clock" id="clock">02:30</div>
@@ -423,15 +443,18 @@
       </div>
     </div>
     <div class="exportbar">
-      <button class="btn" id="dlSvg">SVG</button>
-      <button class="btn" id="dlPng">PNG ⚙</button>
-      <button class="btn primary" id="dlGif">⬇ GIF 动图 ⚙ <span class="reco">推荐</span></button>
-      <div class="grow"></div>
-      <button class="btn" id="openTimer">▶ 实时演示</button>
-      <button class="btn" id="dlTimer">⬇ 计时器html
-      <button class="btn" id="copyEmbed">🔗 复制嵌入链接</button>
-      <button class="btn primary" id="dlLauncher">⬇ 小窗启动器 <span class="reco">推荐</span></button>
+      <div class="exp-group">
+        <button class="btn" id="dlSvg">SVG</button>
+        <button class="btn" id="dlPng">PNG ⚙</button>
+        <button class="btn primary" id="dlGif" style="margin-left:auto">⬇ GIF 动图 ⚙ <span class="reco">推荐</span></button>
+      </div>
+      <div class="exp-group">
+        <button class="btn" id="dlTimer">⬇ 计时器html</button>
+        <button class="btn" id="copyEmbed">🔗 复制嵌入链接</button>
+        <button class="btn primary" id="dlLauncher" style="margin-left:auto">⬇ 小窗启动器 <span class="reco">推荐</span></button>
+      </div>
     </div>
+    <p id="expStatus" style="display:none;margin:8px 2px 0;font-size:12px;font-weight:700;color:var(--accent)"></p>
 
     <!-- PNG 设置面板（点 PNG 展开） -->
     <div class="exp-panel" id="pngPanel">
@@ -450,48 +473,29 @@
     <!-- GIF 设置面板（点 GIF 展开） -->
     <div class="exp-panel" id="gifPanel">
       <div class="ehead"><span class="edot"></span>GIF 设置</div>
+
+      <!-- ===== 共用设置（管下面两个出口） ===== -->
       <div class="erow">
         <span class="elab">倍率</span>
         <div class="scale-seg" id="gifScaleSeg"><button data-s="1">1×</button><button data-s="2" class="on">2×</button></div>
-      </div>
-      <div class="erow">
-        <span class="elab">时长</span>
-        <input type="range" id="gifDur" min="2" max="30" value="8" style="width:130px">
-        <span style="font-size:11.5px;color:var(--ink);font-weight:700" id="gifDurVal">8s</span>
-        <span class="elab" style="margin-left:10px">帧率</span>
+        <span class="elab" style="margin-left:14px">帧率</span>
         <div class="scale-seg" id="fpsSeg"><button data-f="10">10</button><button data-f="15" class="on">15</button><button data-f="20">20</button></div>
       </div>
       <div class="erow" style="align-items:flex-start">
-        <span class="elab" style="margin-top:3px">区间循环</span>
+        <span class="elab" style="margin-top:3px">GIF 类型</span>
         <div style="flex:1;min-width:240px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink)">
-            <span>从</span>
-            <input type="number" id="gifFrom" min="0" max="100" value="0" style="width:54px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans';font-size:12px;font-weight:700;text-align:center">
-            <span style="color:var(--ink-soft)">%</span>
-            <span style="margin:0 2px;color:var(--ink-soft)">→</span>
-            <span>到</span>
-            <input type="number" id="gifTo" min="0" max="100" value="100" style="width:54px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans';font-size:12px;font-weight:700;text-align:center">
-            <span style="color:var(--ink-soft)">%</span>
-            <button type="button" class="btn" id="gifFullReset" style="padding:5px 10px;font-size:11px;margin-left:4px">满程 0→100</button>
+          <label class="gif-type-opt"><input type="checkbox" id="gifTypeLoop" checked><span><b>小 GIF：短时循环</b>——做成一段循环动画，几秒转一圈，贴 PPT 当装饰。</span></label>
+          <div id="gifDurRow" style="display:flex;align-items:center;gap:9px;margin:2px 0 4px 26px">
+            <span style="font-size:11.5px;font-weight:700;color:var(--ink)">循环一圈</span>
+            <input type="range" id="gifDur" min="2" max="30" value="8" style="width:130px">
+            <span style="font-size:11.5px;color:var(--ink);font-weight:700" id="gifDurVal">8s</span>
           </div>
-          <div class="dual-range" id="gifDual">
-            <div class="dr-track"></div>
-            <div class="dr-fill" id="gifDualFill"></div>
-            <input type="range" id="gifFromR" min="0" max="100" value="0">
-            <input type="range" id="gifToR" min="0" max="100" value="100">
-          </div>
-          <p class="hint" style="margin-top:4px">GIF 只在此区间内循环播放。给不同 PPT 页贴不同进度段（如第 1 页 0→30%，第 2 页 30→70%）。</p>
+          <p class="hint" id="gifModeHint" style="margin:0 0 8px 26px">⚠ 这个秒数<b>不是真实时长</b>——是限定秒数内不断循环播放的动画时长。要按真实时间走完，请改勾「大 GIF：真实时长」。</p>
+          <label class="gif-type-opt"><input type="checkbox" id="gifTypeReal"><span><b>大 GIF：真实时长</b>——按「总时长」如实走完一次（当倒计时用），不循环。</span></label>
+          <p class="hint" id="gifRealtimeHint" style="margin:2px 0 0 26px;display:none"></p>
         </div>
       </div>
-      <div class="erow" style="align-items:flex-start">
-        <span class="elab" style="margin-top:3px">批量分段</span>
-        <div style="flex:1;min-width:240px">
-          <p class="hint" id="gifBatchNote" style="margin-top:0;margin-bottom:7px">每段对应一页 PPT，逐个导出走完该段的 GIF。</p>
-          <div id="gifSegDur"></div>
-          <p class="hint" id="gifSegSum" style="margin-top:7px"></p>
-          <button class="btn primary" id="dlGifBatch" style="padding:7px 16px;margin-top:8px">⬇ 批量生成分段 GIF（打包 zip）</button>
-        </div>
-      </div>
+      <input type="checkbox" id="gifRealtime" style="display:none">
       <div class="erow" style="align-items:flex-start">
         <span class="elab" style="margin-top:7px">GIF 底色</span>
         <div class="swatch-pick" id="gifBgPick">
@@ -522,14 +526,62 @@
       </div>
       <div class="erow" style="align-items:flex-start">
         <span class="switch" style="gap:6px;font-size:11.5px;flex:none;margin-top:1px">含完成闪烁<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifFlash" checked><span></span></label></span>
-        <p class="hint" style="margin-top:1px;flex:1;min-width:200px">每段 GIF 播到自己的<b>末尾</b>时整图快闪提醒（批量分段时每段都会闪，适合按 PPT 各页独立使用）。真实时长模式下闪烁用快闪帧，不影响前面的计时。</p>
+        <p class="hint" style="margin-top:1px;flex:1;min-width:200px">播到<b>末尾</b>时整图快闪提醒。批量分段时<b>每段结尾都会闪</b>，适合按 PPT 各页独立使用。</p>
       </div>
-      <div class="erow" style="align-items:flex-start">
-        <span class="switch" style="gap:6px;font-size:11.5px;flex:none;margin-top:1px">真实时长导出<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifRealtime"><span></span></label></span>
-        <p class="hint" id="gifRealtimeHint" style="margin-top:1px;flex:1;min-width:200px">开启后 GIF 按「总时长」如实走完（贴 PPT 当真实倒计时用），忽略上面的「时长 / 帧率」。<b>时长越长越影响画面流畅</b>：≤15 分钟每秒一帧（最平滑），15–20 分钟自动每 2 秒一帧，最长 20 分钟。</p>
+
+      <!-- ===== 导出①：单个 GIF（折叠块，默认展开） ===== -->
+      <div class="outlet-sep"></div>
+      <div class="batch-block" id="singleBlock">
+        <div class="batch-head" id="singleHead">
+          <span class="batch-arrow" id="singleArrow">▾</span>
+          <span class="batch-title">导出① · 单个 GIF</span>
+          <span class="batch-hint" id="singleHeadHint">点此收起</span>
+        </div>
+        <div class="batch-body" id="singleBody">
+          <div class="erow" style="align-items:flex-start;margin-bottom:0">
+            <span class="elab" style="margin-top:3px">区间循环</span>
+            <div style="flex:1;min-width:240px">
+              <div style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink)">
+                <span>从</span>
+                <input type="number" id="gifFrom" min="0" max="100" value="0" style="width:54px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans';font-size:12px;font-weight:700;text-align:center">
+                <span style="color:var(--ink-soft)">%</span>
+                <span style="margin:0 2px;color:var(--ink-soft)">→</span>
+                <span>到</span>
+                <input type="number" id="gifTo" min="0" max="100" value="100" style="width:54px;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans';font-size:12px;font-weight:700;text-align:center">
+                <span style="color:var(--ink-soft)">%</span>
+                <button type="button" class="btn" id="gifFullReset" style="padding:5px 10px;font-size:11px;margin-left:4px">满程 0→100</button>
+              </div>
+              <div class="dual-range" id="gifDual">
+                <div class="dr-track"></div>
+                <div class="dr-fill" id="gifDualFill"></div>
+                <input type="range" id="gifFromR" min="0" max="100" value="0">
+                <input type="range" id="gifToR" min="0" max="100" value="100">
+              </div>
+              <p class="hint" style="margin-top:4px">GIF 只在此区间内循环播放。给不同 PPT 页贴不同进度段（如第 1 页 0→30%，第 2 页 30→70%）。<b>仅对单个 GIF 有效。</b></p>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:9px">
+            <button class="btn primary" id="dlGifGo" style="padding:8px 18px">⬇ 下载单个 GIF</button>
+          </div>
+        </div>
       </div>
-      <div class="erow">
-        <button class="btn primary" id="dlGifGo" style="padding:8px 18px">⬇ 生成并下载 GIF</button>
+
+      <!-- ===== 导出②：批量分段（折叠块，默认展开） ===== -->
+      <div class="outlet-sep"></div>
+      <div class="batch-block" id="batchBlock">
+        <div class="batch-head" id="batchHead">
+          <span class="batch-arrow" id="batchArrow">▾</span>
+          <span class="batch-title">导出② · 批量分段（每段一页 PPT，打包 zip）</span>
+          <span class="batch-hint" id="batchHeadHint">点此收起</span>
+        </div>
+        <div class="batch-body" id="batchBody">
+          <p class="hint" id="gifBatchNote" style="margin-top:0;margin-bottom:7px">每段对应一页 PPT，逐个导出走完该段的 GIF。</p>
+          <div id="gifSegDur"></div>
+          <p class="hint" id="gifSegSum" style="margin-top:7px"></p>
+          <div style="display:flex;justify-content:flex-end;margin-top:9px">
+            <button class="btn primary" id="dlGifBatch" style="padding:8px 18px">⬇ 批量生成分段 GIF（打包 zip）</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="usebox">
@@ -573,7 +625,7 @@
   </main>
 </div>
 
-<div id="busy"><div style="font-family:Fraunces,serif;font-size:18px">正在编码 GIF…</div><div class="bar"><div class="barfill" id="busyFill"></div></div><div style="font-size:12px;opacity:.7" id="busyTxt">0%</div><button id="busyCancel" style="margin-top:14px;font-family:'DM Sans';font-size:13px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:#fff;border-radius:8px;padding:7px 18px;cursor:pointer">✕ 取消</button></div>
+<div id="busy"><div style="font-family:Fraunces,serif;font-size:18px">正在编码 GIF…</div><div class="bar"><div class="barfill" id="busyFill"></div></div><div style="font-size:12px;opacity:.7" id="busyTxt">0%</div><div style="display:flex;align-items:center;gap:8px;margin-top:14px;background:rgba(226,104,44,.92);color:#fff;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;max-width:380px;text-align:left"><span style="font-size:18px;flex:none">💡</span><span>为确保生成速度，请保持在当前页面耐心等待！</span></div><button id="busyCancel" style="margin-top:14px;font-family:'DM Sans';font-size:13px;border:1px solid rgba(255,255,255,0.5);background:transparent;color:#fff;border-radius:8px;padding:7px 18px;cursor:pointer">✕ 取消</button></div>
 
 <script>/*
  * NeuQuant Neural-Net Quantization Algorithm
@@ -1953,12 +2005,12 @@ const S = {
   petalSize:230, coreText:"",
   pwSize:200, pwCoreText:"进行中", pwSegments:[],
   heartSize:200, heartCoreText:"进行中", heartSegments:[],
-  cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true,
+  cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true, pctSize:26,
   segCnt:6, gap:3, segments:[], segDurs:[],
   barSeg:4, barDivOn:true, barDivStyle:"solid", barSegMode:"even", barSegments:[], barMerges:[], barSegW:[],
   elemOn:true, icon:"heart", elemCnt:5, elemSz:32, dimOff:true, elemFollow:true, elemColor:"#E2682C",
   alertOn:true, alertDur:60, soundOn:true, soundType:"4", soundRepeat:true, soundGap:2,
-  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:false
+  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:false, segBg:[]
 };
 const VW=900, VH=580, CX=VW/2, CY=VH/2;
 const $=id=>document.getElementById(id);
@@ -2187,8 +2239,8 @@ function renderBar(){
     }
   }
   const pct=Math.round(S.prog)+"%";
-  let label=!S.showPct? '' : (horiz? '<text x="'+(x+w+16+amp)+'" y="'+CY+'" font-family="Fraunces,serif" font-size="26" font-weight="600" fill="'+tint(S.stroke,1)+'" dominant-baseline="central">'+pct+'</text>'
-                 : '<text x="'+CX+'" y="'+(y-22-amp)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="26" font-weight="600" fill="'+tint(S.stroke,1)+'">'+pct+'</text>');
+  let label=!S.showPct? '' : (horiz? '<text x="'+(x+w+16+amp)+'" y="'+CY+'" font-family="Fraunces,serif" font-size="'+(S.pctSize||26)+'" font-weight="600" fill="'+tint(S.stroke,1)+'" dominant-baseline="central">'+pct+'</text>'
+                 : '<text x="'+CX+'" y="'+(y-22-amp)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+(S.pctSize||26)+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+pct+'</text>');
   const barGid="barg";
   const barFeather=Math.max(4, (horiz?h:w)*0.10);
   const fillLayer = useSegFill
@@ -2782,7 +2834,7 @@ function bindRange(id,key,fmtId){const el=$(id);el.addEventListener("input",func
 function bindColor(id,key,hexId){const el=$(id);el.addEventListener("input",function(){S[key]=el.value;if(hexId)$(hexId).textContent=el.value.toUpperCase();render();});}
 function chipGroup(wrapId,attr,key,after){$(wrapId).querySelectorAll(".chip,button").forEach(function(c){c.addEventListener("click",function(){$(wrapId).querySelectorAll(".chip,button").forEach(function(x){x.classList.remove("on");});c.classList.add("on");S[key]=c.dataset[attr];if(after)after();sync();render();});});}
 
-bindRange("sat","sat","satVal");bindRange("op","op","opVal");bindRange("bw","bw","bwVal");
+bindRange("sat","sat","satVal");bindRange("op","op","opVal");bindRange("bw","bw","bwVal");bindRange("pctSize","pctSize","pctSizeVal");
 // progress slider: while the timer preview is auto-advancing, grabbing the slider should
 // take over — pause the auto-run so the preview follows the slider smoothly (no fight).
 (function(){ var pe=$("prog"); if(pe) pe.addEventListener("input",function(){
@@ -3011,16 +3063,34 @@ $("soundGap").addEventListener("input",function(e){S.soundGap=+e.target.value;$(
 $("transBg").addEventListener("change",function(e){S.transBg=e.target.checked;$("stage").classList.toggle("checker",e.target.checked);});
 $("gifFlash").addEventListener("change",function(e){S.gifFlash=e.target.checked;});
 $("gifRealtime").addEventListener("change",function(e){S.gifRealtime=e.target.checked;updateRealtimeHint();});
+// GIF 类型：两个互斥勾选框（始终恰好一个选中）
+function applyGifMode(){
+  var loop=!S.gifRealtime;
+  var cbL=$("gifTypeLoop"), cbR=$("gifTypeReal");
+  if(cbL) cbL.checked=loop; if(cbR) cbR.checked=!loop;
+  var durRow=$("gifDurRow"); if(durRow) durRow.style.display=loop?"flex":"none";
+  var loopHint=$("gifModeHint"); if(loopHint) loopHint.style.display=loop?"":"none";
+  var realHint=$("gifRealtimeHint"); if(realHint) realHint.style.display=loop?"none":"";
+  updateRealtimeHint();
+}
+function setGifMode(realtime){
+  S.gifRealtime=!!realtime;
+  var cb=$("gifRealtime"); if(cb) cb.checked=S.gifRealtime;
+  applyGifMode();
+}
+(function(){
+  var cbL=$("gifTypeLoop"), cbR=$("gifTypeReal");
+  // 互斥：勾一个 -> 另一个取消；不允许取消到都不选（点已选中的那个无效）
+  if(cbL) cbL.addEventListener("change",function(){ setGifMode(false); });
+  if(cbR) cbR.addEventListener("change",function(){ setGifMode(true); });
+})();
 function updateRealtimeHint(){
   var h=$("gifRealtimeHint"); if(!h) return;
-  if(!S.gifRealtime){
-    h.innerHTML='开启后 GIF 按「总时长」如实走完（贴 PPT 当真实倒计时用），忽略上面的「时长 / 帧率」。<b>时长越长越影响画面流畅</b>：≤15 分钟每秒一帧（最平滑），15–20 分钟自动每 2 秒一帧，最长 20 分钟。';
-    return;
-  }
+  if(!S.gifRealtime){ return; }   // 循环模式用静态的 gifModeHint，这里不处理
   var plan=realtimePlan(0,100);
   var mm=Math.floor((S.totalSec||0)/60), ss=(S.totalSec||0)%60;
   var capNote=plan.capped?'（超过 20 分钟，已截断到 20 分钟）':'';
-  h.innerHTML='已开启真实时长导出：本条全程约 <b>'+mm+'分'+(ss?ss+'秒':'')+'</b>'+capNote+'，每 <b>'+plan.stepSec+'</b> 秒一帧，共约 <b>'+plan.frames+'</b> 帧。生成需逐帧编码，帧多时会等待较久。批量分段时每段按其占比同理。';
+  h.innerHTML='按<b>总时长</b>如实走完：本条全程约 <b>'+mm+'分'+(ss?ss+'秒':'')+'</b>'+capNote+'，每 <b>'+plan.stepSec+'</b> 秒一帧，共约 <b>'+plan.frames+'</b> 帧；不循环、走完即停。帧多时生成会较久。批量分段每段同理。';
 }
 $("gifDur").addEventListener("input",function(e){S.gifDur=+e.target.value;$("gifDurVal").textContent=e.target.value+"s";});
 $("fpsSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("fpsSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.gifFps=+b.dataset.f;});});
@@ -3093,27 +3163,37 @@ function barGroupOf(idx1){
 }
 
 var barMergeSel={}; // 当前勾选的段集合(1-indexed)
+// 返回当前勾选的段（升序）；仅当它们构成"单一连续区间且≥2段"时有效，否则返回 []
+function selectedAdjacentRun(){
+  var sel=Object.keys(barMergeSel).map(Number).filter(function(v){return barMergeSel[v];}).sort(function(a,b){return a-b;});
+  if(sel.length<2) return [];
+  for(var i=1;i<sel.length;i++){ if(sel[i]!==sel[i-1]+1) return []; }  // 必须连续
+  return sel;
+}
+// 是否在第 idx1 段这一行下方显示「合并」按钮（= idx1 是有效连续勾选区的最后一段）
+function shouldShowMergeBtnAfter(idx1){
+  var run=selectedAdjacentRun();
+  return run.length>=2 && run[run.length-1]===idx1;
+}
 function mountBarSegEditor(){
   var host=$("barSegEditor"); if(!host) return;
   ensureBarSegments(); clampBarMerges();
   var n=S.barSegments.length;
   host.innerHTML="";
-  // 二级标题（吸顶）+ 下方合并按钮
+  // 二级标题（吸顶）
   var head=document.createElement("div");
   head.style.cssText="position:sticky;top:0;z-index:8;background:var(--card);padding:6px 0;";
   var title=document.createElement("div"); title.className="subhead"; title.textContent="各分区 · 文字 / 填充";
   head.appendChild(title);
-  var mergeBtn=document.createElement("button");
-  mergeBtn.type="button"; mergeBtn.className="btn primary";
-  mergeBtn.style.cssText="padding:6px 14px;font-size:11.5px;font-weight:700";
-  mergeBtn.textContent="合并选中段";
-  mergeBtn.addEventListener("click",commitBarMerge);
-  head.appendChild(mergeBtn);
   host.appendChild(head);
 
-  var tip=document.createElement("p"); tip.className="hint"; tip.style.marginTop="0";
-  tip.innerHTML='勾选要合并的<b>相邻连续</b>段（如 1、2、3），点「合并选中段」成一组；可重复操作建多组（如再合并 4、5、6）。已合并的段会移到下方「合并组」。';
+  // 醒目说明条：告诉用户可以合并、怎么操作
+  var tip=document.createElement("div");
+  tip.style.cssText="display:flex;gap:8px;align-items:flex-start;background:#E2682C14;border:1.5px solid #E2682C66;border-radius:10px;padding:9px 11px;margin-bottom:9px";
+  tip.innerHTML='<span style="flex:none;font-size:14px;line-height:1.3">💡</span>'+
+    '<span style="font-size:11.5px;line-height:1.45;color:var(--ink)"><b style="color:var(--accent)">想把相邻的几段合并成一段？</b>勾选相邻连续的段（如 4、5、6），下方会出现「合并」按钮，点一下即可合并共用一个文字。已合并的会移到「合并组」。</span>';
   host.appendChild(tip);
+
   var msg=document.createElement("p"); msg.id="barMergeMsg"; msg.className="hint";
   msg.style.cssText="margin-top:0;color:var(--accent);font-weight:700;display:none";
   host.appendChild(msg);
@@ -3142,40 +3222,36 @@ function mountBarSegEditor(){
 
       if(!collapsed){
         var body=document.createElement("div"); body.style.marginTop="8px";
-        // 整组填充（一键统一组内所有段的填充色；之后仍可逐段微调）
+        // 1) 共用文字（移到最上，作为第一行）
+        var gtRow=document.createElement("div"); gtRow.style.cssText="display:flex;align-items:center;gap:7px;margin-bottom:9px;flex-wrap:wrap";
+        var gtLab=document.createElement("span"); gtLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; gtLab.textContent="共用文字";
+        var gt=document.createElement("input"); gt.type="text"; gt.value=grp.text||""; gt.placeholder="第 "+grp.s+"–"+grp.e+" 段共用文字"; gt.style.cssText="flex:1;min-width:90px";
+        (function(gg,el){el.addEventListener("input",function(){gg.text=el.value;render();});})(grp,gt);
+        var gtpal=buildPalette(grp.tcolor||"",(function(gg){return function(col){gg.tcolor=col||null;render();};})(grp),{caption:"文字",allowAuto:true});
+        gtpal.style.flex="none";
+        gtRow.appendChild(gtLab); gtRow.appendChild(gt); gtRow.appendChild(gtpal);
+        body.appendChild(gtRow);
+        // 2) 整组填充（一键统一组内所有段的填充色）
         var allRow=document.createElement("div"); allRow.style.cssText="display:flex;align-items:center;gap:7px;margin-bottom:9px";
         var allLab=document.createElement("span"); allLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; allLab.textContent="整组填充";
         var allPal=buildPalette("",(function(gg){return function(col){ if(!col)return; for(var q=gg.s-1;q<gg.e;q++) S.barSegments[q].color=col; mountBarSegEditor(); render(); };})(grp),{caption:"统一填充"});
         allRow.appendChild(allLab); allRow.appendChild(allPal); body.appendChild(allRow);
-        // 各段单独填充（仍可自定义覆盖）
+        // 3) 各段：勾选框(默认勾)+ 序号 + 单独填充。取消勾即把该段移出本组。
         for(var k=grp.s-1;k<grp.e;k++){
           var brow=document.createElement("div"); brow.className="sec-item";
+          var bcb=document.createElement("input"); bcb.type="checkbox"; bcb.checked=true; bcb.style.cssText="width:16px;height:16px;flex:none;cursor:pointer";
+          (function(gg,seg1){ bcb.addEventListener("change",function(){ if(!this.checked) removeSegFromGroup(gg,seg1); }); })(grp,k+1);
+          brow.appendChild(bcb);
           var bidx=document.createElement("span"); bidx.className="idx"; bidx.textContent=(k+1); brow.appendChild(bidx);
           var bname=document.createElement("span"); bname.style.cssText="flex:1;font-size:11.5px;color:var(--ink-soft)"; bname.textContent="第 "+(k+1)+" 段填充";
           var bpal=buildPalette(S.barSegments[k].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(k),{caption:"填充"});
           brow.appendChild(bname); brow.appendChild(bpal); body.appendChild(brow);
         }
-        // 组的共用文字（独占一行，全宽）
-        var gtRow=document.createElement("div"); gtRow.style.cssText="display:flex;align-items:center;gap:7px;margin-top:8px";
-        var gtLab=document.createElement("span"); gtLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; gtLab.textContent="共用文字";
-        var gt=document.createElement("input"); gt.type="text"; gt.value=grp.text||""; gt.placeholder="第 "+grp.s+"–"+grp.e+" 段共用文字"; gt.style.flex="1";
-        (function(gg,el){el.addEventListener("input",function(){gg.text=el.value;render();});})(grp,gt);
-        gtRow.appendChild(gtLab); gtRow.appendChild(gt);
-        body.appendChild(gtRow);
-        // 文字色 + 重选/解散（另起一行）
-        var grow=document.createElement("div"); grow.className="merge-grp-row";
-        var gtpal=buildPalette(grp.tcolor||"",(function(gg){return function(col){gg.tcolor=col||null;render();};})(grp),{caption:"文字",allowAuto:true});
-        var act=document.createElement("span"); act.className="grp-act";
-        var reBtn=document.createElement("button"); reBtn.type="button"; reBtn.className="btn"; reBtn.textContent="重选";
-        (function(gg){ reBtn.addEventListener("click",function(){
-          for(var q=gg.s;q<=gg.e;q++) barMergeSel[q]=true;
-          S.barMerges=S.barMerges.filter(function(x){return x!==gg;});
-          mountBarSegEditor(); render();
-        }); })(grp);
-        var delBtn=document.createElement("button"); delBtn.type="button"; delBtn.className="btn"; delBtn.textContent="解散";
+        // 4) 仅保留「解散」（去掉「重选」；增减成员靠勾选框实时生效）
+        var grow=document.createElement("div"); grow.style.cssText="display:flex;justify-content:flex-end;margin-top:9px";
+        var delBtn=document.createElement("button"); delBtn.type="button"; delBtn.className="btn"; delBtn.textContent="解散整组"; delBtn.style.cssText="padding:5px 13px;font-size:11.5px";
         (function(gg){ delBtn.addEventListener("click",function(){ S.barMerges=S.barMerges.filter(function(x){return x!==gg;}); mountBarSegEditor(); render(); }); })(grp);
-        act.appendChild(reBtn); act.appendChild(delBtn);
-        grow.appendChild(gtpal); grow.appendChild(act);
+        grow.appendChild(delBtn);
         body.appendChild(grow);
         block.appendChild(body);
       }
@@ -3187,7 +3263,16 @@ function mountBarSegEditor(){
     var row=document.createElement("div"); row.className="sec-item";
     var cb=document.createElement("input"); cb.type="checkbox"; cb.style.cssText="width:16px;height:16px;flex:none;cursor:pointer";
     cb.checked=!!barMergeSel[idx1];
-    (function(id1,box){ box.addEventListener("change",function(){ if(box.checked)barMergeSel[id1]=true; else delete barMergeSel[id1]; }); })(idx1,cb);
+    (function(id1,box){ box.addEventListener("change",function(){
+      if(box.checked){
+        // 若该段紧邻某个已存在的合并组，直接并入该组
+        var gPrev=barGroupOf(id1-1), gNext=barGroupOf(id1+1);
+        if(gPrev){ addSegToGroup(gPrev,id1); return; }
+        if(gNext){ addSegToGroup(gNext,id1); return; }
+        barMergeSel[id1]=true;
+      } else { delete barMergeSel[id1]; }
+      mountBarSegEditor();
+    }); })(idx1,cb);
     row.appendChild(cb);
     var idxEl=document.createElement("span"); idxEl.className="idx"; idxEl.textContent=idx1; row.appendChild(idxEl);
     var t=document.createElement("input"); t.type="text"; t.value=S.barSegments[i].text; t.placeholder=pad2(i);
@@ -3196,13 +3281,25 @@ function mountBarSegEditor(){
     var pal=buildPalette(S.barSegments[i].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(i),{caption:"填充"});
     row.appendChild(t); row.appendChild(tpal); row.appendChild(pal);
     list.appendChild(row);
+    // 就近出现「合并这 N 段」按钮：当已勾选≥2个相邻连续段，且当前段是勾选区的最后一段时
+    if(shouldShowMergeBtnAfter(idx1)){
+      var selArr=selectedAdjacentRun();
+      var mbWrap=document.createElement("div");
+      mbWrap.style.cssText="display:flex;justify-content:center;margin:2px 0 10px";
+      var mb=document.createElement("button"); mb.type="button"; mb.className="btn primary";
+      mb.style.cssText="padding:7px 18px;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(226,104,44,.35)";
+      mb.textContent="合并这 "+selArr.length+" 段（第 "+selArr[0]+"–"+selArr[selArr.length-1]+" 段）";
+      mb.addEventListener("click",commitBarMerge);
+      mbWrap.appendChild(mb);
+      list.appendChild(mbWrap);
+    }
     i++;
   }
   host.appendChild(list);
 }
 var _barMsgT=null;
 function showBarMergeMsg(text){
-  var el=$("barMergeMsg"); if(!el){ toast(text); return; }
+  var el=$("barMergeMsg"); if(!el){ return; }
   el.textContent=text; el.style.display="";
   clearTimeout(_barMsgT); _barMsgT=setTimeout(function(){ var e=$("barMergeMsg"); if(e)e.style.display="none"; },3000);
 }
@@ -3216,6 +3313,29 @@ function commitBarMerge(){
   S.barMerges.push({s:s,e:e,text:firstTxt,tcolor:null});
   clampBarMerges();
   barMergeSel={};
+  mountBarSegEditor(); render();
+}
+// 从合并组中移出某一段（实时）。规则：缩小区间；移中间则拆成两组；剩 <2 段自动解散。
+function removeSegFromGroup(grp, segIdx1){
+  if(segIdx1<grp.s || segIdx1>grp.e) return;
+  var s=grp.s, e=grp.e, txt=grp.text, tcol=grp.tcolor;
+  // 先移除原组
+  S.barMerges=S.barMerges.filter(function(x){return x!==grp;});
+  // 左片段 [s, segIdx1-1]
+  var leftLen=(segIdx1-1)-s+1;
+  if(leftLen>=2) S.barMerges.push({s:s, e:segIdx1-1, text:txt, tcolor:tcol});
+  // 右片段 [segIdx1+1, e]
+  var rightLen=e-(segIdx1+1)+1;
+  if(rightLen>=2) S.barMerges.push({s:segIdx1+1, e:e, text:txt, tcolor:tcol});
+  clampBarMerges();
+  mountBarSegEditor(); render();
+}
+// 把相邻的独立段并入组（实时）。只允许紧邻组的段；否则就近提示、不并入。
+function addSegToGroup(grp, segIdx1){
+  if(segIdx1===grp.s-1){ grp.s=segIdx1; }
+  else if(segIdx1===grp.e+1){ grp.e=segIdx1; }
+  else { showBarMergeMsg("只能并入与本组紧邻的段（第 "+(grp.s-1)+" 段 或 第 "+(grp.e+1)+" 段）"); return; }
+  clampBarMerges();
   mountBarSegEditor(); render();
 }
 // 条状「自定义段宽」编辑器：逐段填宽度%（唯一数据源），右侧显示预计时长
@@ -3305,6 +3425,8 @@ function buildPalette(current,onPick,opts){
   opts=opts||{};
   const caption=opts.caption||"颜色";
   const allowAuto=!!opts.allowAuto;
+  const autoLabel=opts.autoLabel||"自动";
+  const autoBtnText=opts.autoBtnText||"自动（随进度黑/白）";
   // "auto" = no explicit color set (falls back to smart black/white). cur stays "" then.
   let cur=current?String(current).toLowerCase():"";
   const wrap=document.createElement("div");wrap.className="palette";
@@ -3313,7 +3435,7 @@ function buildPalette(current,onPick,opts){
   const cap=document.createElement("span");cap.className="pal-cap";
   const car=document.createElement("span");car.className="pal-caret";car.textContent="▾";
   function paintTrig(){
-    if(!cur){ dot.style.background="conic-gradient(#211C16 0 25%,#fff 0 50%,#211C16 0 75%,#fff 0)"; cap.textContent=allowAuto?(caption+"·自动"):caption; }
+    if(!cur){ dot.style.background="conic-gradient(#211C16 0 25%,#fff 0 50%,#211C16 0 75%,#fff 0)"; cap.textContent=allowAuto?(caption+"·"+autoLabel):caption; }
     else { dot.style.background=cur; cap.textContent=caption; }
   }
   paintTrig();
@@ -3338,7 +3460,7 @@ function buildPalette(current,onPick,opts){
   if(allowAuto){
     const autoRow=document.createElement("div");autoRow.className="pal-auto";
     const ab=document.createElement("button");ab.type="button";ab.className="pal-auto-btn"+(cur?"":" on");
-    ab.textContent="自动（随进度黑/白）";
+    ab.textContent=autoBtnText;
     ab.addEventListener("click",function(){mark(null,null);});
     autoRow.appendChild(ab);panel.appendChild(autoRow);
   }
@@ -3406,18 +3528,19 @@ function buildPalette(current,onPick,opts){
       // 定位：复位后测量，超出侧栏右边界则左移；同时限制宽度不超过侧栏，避免触发滚动条
       panel.style.left="0"; panel.style.right="auto";
       requestAnimationFrame(function(){
-        var sidebar=panel.closest(".panel");
-        if(!sidebar) return;
-        var sr=sidebar.getBoundingClientRect();
-        // 1) 限制面板最大宽度 = 侧栏内宽 - 16，避免比侧栏还宽
+        // 找一个用于定位的边界容器：优先侧栏 .panel，否则 GIF/PNG 面板 .exp-panel，再否则用视口
+        var box=panel.closest(".panel")||panel.closest(".exp-panel")||panel.closest(".batch-block");
+        var sr = box ? box.getBoundingClientRect()
+                     : {left:8, right:(window.innerWidth||document.documentElement.clientWidth)-8, width:(window.innerWidth||document.documentElement.clientWidth)-16};
+        // 1) 限制面板最大宽度 = 容器内宽 - 16，避免比容器还宽
         var maxW=Math.max(180, sr.width-16);
         panel.style.maxWidth=maxW+"px";
-        // 2) 再测一次，超出右边界就整体左移，但不越过侧栏左内边距
+        // 2) 再测一次，超出右边界就整体左移，但不越过容器左内边距
         var pr=panel.getBoundingClientRect();
         var rightLimit=sr.right-8, leftLimit=sr.left+8;
         var shift=0;
-        if(pr.right>rightLimit) shift=pr.right-rightLimit;          // 需要左移的量
-        if(pr.left-shift<leftLimit) shift=pr.left-leftLimit;        // 但别移出左边
+        if(pr.right>rightLimit) shift=pr.right-rightLimit;
+        if(pr.left-shift<leftLimit) shift=pr.left-leftLimit;
         if(shift>0) panel.style.left=(-shift)+"px";
       });
     }
@@ -3598,11 +3721,11 @@ function buildZip(files){ // files: [{name, data:Uint8Array}]
   function u32(v){return [v&0xFF,(v>>8)&0xFF,(v>>16)&0xFF,(v>>>24)&0xFF];}
   files.forEach(function(f){
     var nameBytes=enc.encode(f.name), data=f.data, crc=_crc32(data);
-    var local=[].concat(u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(nameBytes.length),u16(0));
+    var local=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(nameBytes.length),u16(0));
     var lh=new Uint8Array(local.length+nameBytes.length);
     lh.set(local,0); lh.set(nameBytes,local.length);
     chunks.push(lh); chunks.push(data);
-    var cen=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(nameBytes.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset));
+    var cen=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(nameBytes.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset));
     var ch=new Uint8Array(cen.length+nameBytes.length); ch.set(cen,0); ch.set(nameBytes,cen.length);
     central.push(ch);
     offset += lh.length+data.length;
@@ -3632,10 +3755,10 @@ function doPng(){const sc=S.scale,img=new Image(),url=URL.createObjectURL(svgBlo
   img.onload=function(){const cv=document.createElement("canvas");cv.width=VW*sc;cv.height=VH*sc;const ctx=cv.getContext("2d");
     if(!S.transBg){ctx.fillStyle="#FBF8F0";ctx.fillRect(0,0,cv.width,cv.height);}ctx.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);
     cv.toBlob(function(b){dl(b,"progress.png");},"image/png");};
-  img.onerror=function(){toast("导出失败，请重试");URL.revokeObjectURL(url);};img.src=url;}
+  img.onerror=function(){expStatus("导出失败，请重试");URL.revokeObjectURL(url);};img.src=url;}
 $("dlPngGo").addEventListener("click",doPng);
 
-$("openTimer").addEventListener("click",function(){const w=window.open();if(!w){toast("浏览器拦截了弹窗，请允许后重试");return;}w.document.open();w.document.write(buildTimerHTML());w.document.close();});
+
 $("dlTimer").addEventListener("click",function(){
   dl(timerBlob(),"presentation-timer.html");
   var el=$("useTimer");el.style.display=(el.style.display==="none"?"flex":"none");
@@ -3647,8 +3770,8 @@ $("copyEmbed").addEventListener("click",function(){
   // reveal the link panel where the copyable link lives
   $("useLink").style.display="flex";
   showEmbedLink(url);
-  function ok(){ toast(fileMode? "已复制（本地文件仅供预览，请部署到 https 后再用）" : "已复制嵌入链接"); }
-  function fail(){ toast("已生成链接，请在下方手动复制"); }
+  function ok(){ expStatus(fileMode? "已复制（本地文件仅供预览，请部署到 https 后再用）" : "✓ 已复制嵌入链接"); }
+  function fail(){ expStatus("已生成链接，请在下方手动复制"); }
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(url).then(ok,fail);
   } else { fail(); }
@@ -3697,7 +3820,7 @@ $("dlLauncher").addEventListener("click",function(){
   // The embed parser ignores unknown params, so this stays backward-compatible.
   const url=buildEmbedURL(true)+"&v="+Date.now();
   const fileMode=location.protocol==="file:";
-  if(fileMode){ toast("请先部署到 https（如 Vercel）再下载启动器"); }
+  if(fileMode){ expStatus("请先部署到 https（如 Vercel）再下载启动器"); }
   const fname=launcherFileName();
   // window size adapts to shape so there's minimal white border around the timer:
   // bar = wide & short; ring/petal/pinwheel/heart/clover = near-square.
@@ -3755,7 +3878,7 @@ $("dlLauncher").addEventListener("click",function(){
   const blob=new Blob([fileText],{type:"application/octet-stream"});
   dl(blob,fname);
   $("useLauncher").style.display="flex";
-  if(!fileMode) toast("已下载小窗启动器，双击即可打开计时器小窗");
+  if(!fileMode) expStatus("✓ 已下载小窗启动器，双击即可打开计时器小窗");
 });
 function showEmbedLink(url){
   var host=$("useLink"); if(!host) return;
@@ -3777,6 +3900,13 @@ function toast(msg){
   t.textContent=msg;t.classList.add("show");
   clearTimeout(_toastT);_toastT=setTimeout(function(){t.classList.remove("show");},2600);
 }
+var _expStatusT=null;
+// 导出栏就近状态提示（替代页面弹窗），支持 HTML
+function expStatus(msg){
+  var el=$("expStatus"); if(!el){ return; }
+  el.innerHTML=msg; el.style.display="";
+  clearTimeout(_expStatusT); _expStatusT=setTimeout(function(){ var e=$("expStatus"); if(e)e.style.display="none"; },5000);
+}
 
 // 真实时长导出：根据「总时长」与该段占比，算出帧数与每帧延迟（自动降帧）。
 // 规则：整段总时长 ≤15分钟用每秒1帧；15–20分钟用每2秒1帧；>20分钟截断到20分钟。
@@ -3792,8 +3922,9 @@ function svgToImage(svgStr){return new Promise(function(res,rej){const img=new I
   img.onload=function(){res({img:img,url:url});};img.onerror=function(){URL.revokeObjectURL(url);rej(new Error("svg load"));};img.src=url;});}
 // Encode ONE segment (A%→B%) to a GIF blob and download it as fileName.
 // onProg(0..1) reports this segment's own progress for the busy bar.
-async function encodeGifSegment(A,B,fileName,onProg,onBytes){
+async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor){
   const realtime=!!S.gifRealtime;
+  const BG=bgColor||S.gifBg;
   let total, delayMs;
   if(realtime){ const plan=realtimePlan(A,B); total=plan.frames; delayMs=plan.delayMs; }
   else { const fps=S.gifFps, dur=S.gifDur; total=Math.max(2,Math.round(fps*dur)); delayMs=Math.round(1000/fps); }
@@ -3809,7 +3940,7 @@ async function encodeGifSegment(A,B,fileName,onProg,onBytes){
     if(gifCancel){cancelled=true;break;}
     S.prog=A+(B-A)*(f/(total-1)); render();
     const r=await svgToImage(lastSVG);
-    ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
     ctx.drawImage(r.img,0,0,W,H);URL.revokeObjectURL(r.url);
     enc.addFrame(ctx.getImageData(0,0,W,H).data,true);
     if(onProg)onProg(f/totalAll);
@@ -3820,7 +3951,7 @@ async function encodeGifSegment(A,B,fileName,onProg,onBytes){
     S.prog=B; render(); const r=await svgToImage(lastSVG);   // 用该段自己的终点画面来闪
     for(let f=0;f<flashFrames;f++){
       if(gifCancel){cancelled=true;break;}
-      ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
+      ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
       ctx.globalAlpha=(f%2===0)?1:0.18; ctx.drawImage(r.img,0,0,W,H); ctx.globalAlpha=1;
       enc.addFrame(ctx.getImageData(0,0,W,H).data,true);
       if(onProg)onProg((total+f)/totalAll);
@@ -3845,7 +3976,7 @@ async function exportGif(){
     await encodeGifSegment(A,B,"progress.gif",function(p){
       $("busyFill").style.width=Math.round(p*100)+"%";$("busyTxt").textContent=Math.round(p*100)+"%";
     });
-  }catch(e){if(!gifCancel)toast("GIF 生成失败："+e.message);}
+  }catch(e){if(!gifCancel)expStatus("GIF 生成失败："+e.message);}
   finally{gifCancel=false;setProg(savedProg);$("busy").style.display="none";$("busyFill").style.width="0";}
 }
 $("dlGifGo").addEventListener("click",exportGif);
@@ -3882,6 +4013,14 @@ function ensureSegDurs(){
   var n=currentSegInfo().count;
   if(!Array.isArray(S.segDurs)) S.segDurs=[];
   if(S.segDurs.length!==n){ var each=100/Math.max(1,n); S.segDurs=[]; for(var i=0;i<n;i++)S.segDurs.push(each); }
+  return n;
+}
+// 每段 GIF 底色（""=跟随统一「GIF 底色」）。长度对齐当前分段数。
+function ensureSegBg(n){
+  if(n==null) n=currentSegInfo().count;
+  if(!Array.isArray(S.segBg)) S.segBg=[];
+  while(S.segBg.length<n) S.segBg.push("");
+  if(S.segBg.length>n) S.segBg=S.segBg.slice(0,n);
   return n;
 }
 // 【占比数据源】当前形态每段的"占比"数组（合计≈100）。
@@ -3930,10 +4069,11 @@ function mountSegDurEditor(){
   var totSec=S.totalSec||0;
   var noteEl=$("gifBatchNote");
   if(S.shape==="bar"){
-    if(noteEl) noteEl.innerHTML='<b>条状</b>：每段对应一页 PPT，按上方「条状分区」的<b>段宽</b>切分并逐个导出（走完该段）。下面是每段的段宽与<b>预计时长</b>（只读）；要改段宽请到上方「条状分区 → 自定义」。';
+    if(noteEl) noteEl.innerHTML='<b>条状</b>：每段对应一页 PPT，按上方「条状分区」的<b>段宽</b>切分并逐个导出。每段可单独设<b>底色</b>（留「跟随统一」则用上方统一「GIF 底色」），方便贴到背景色不同的 PPT 页。要改段宽请到上方「条状分区 → 自定义」。';
     // 条状：只读，数据来自段宽
     var props=segProportions();
     var sum=props.reduce(function(a,b){return a+Math.max(0,+b||0);},0)||1;
+    ensureSegBg(n);
     for(let i=0;i<n;i++){
       var widthPct=props[i]/sum*100, estSec=totSec*(widthPct/100);
       var name=(info.labels[i]&&String(info.labels[i]).trim())||("分区"+(i+1));
@@ -3942,6 +4082,9 @@ function mountSegDurEditor(){
         '<span class="sd-name" title="'+name+'">'+name+'</span>'+
         '<span class="sd-w">段宽 '+(Math.round(widthPct*10)/10)+'%</span>'+
         '<span class="sd-pct">'+humanTime(estSec)+'</span>';
+      var bgp=buildPalette(S.segBg[i]||"",(function(idx){return function(col){ S.segBg[idx]=col||""; };})(i),{caption:"底色",allowAuto:true,autoLabel:"跟随统一",autoBtnText:"跟随上方统一「GIF 底色」"});
+      bgp.style.flex="none";
+      row.appendChild(bgp);
       host.appendChild(row);
     }
     var elB=$("gifSegSum");
@@ -3951,8 +4094,9 @@ function mountSegDurEditor(){
     return;
   }
   // 非条状：可编辑时间百分比表（默认等分）
-  if(noteEl) noteEl.innerHTML='<b>批量分段：</b>在此设置每段占的时间比例（%），每段对应着进度条的分区。';
+  if(noteEl) noteEl.innerHTML='<b>批量分段：</b>在此设置每段占的时间比例（%），每段对应进度条的一个分区。每段可单独设<b>底色</b>（留「跟随统一」则用上方统一「GIF 底色」），方便贴到背景色不同的 PPT 页。';
   ensureSegDurs();
+  ensureSegBg(n);
   for(let i=0;i<n;i++){
     var name2=(info.labels[i]&&String(info.labels[i]).trim())||("分区"+(i+1));
     var row2=document.createElement("div"); row2.className="segdur-row";
@@ -3963,7 +4107,9 @@ function mountSegDurEditor(){
     (function(idx,el,estEl){
       el.addEventListener("input",function(){ S.segDurs[idx]=Math.max(0,+el.value||0); refreshSegDur(); });
     })(i,inp,est);
-    row2.appendChild(inp); row2.appendChild(unit); row2.appendChild(est);
+    var bgp=buildPalette(S.segBg[i]||"",(function(idx){return function(col){ S.segBg[idx]=col||""; };})(i),{caption:"底色",allowAuto:true,autoLabel:"跟随统一",autoBtnText:"跟随上方统一「GIF 底色」"});
+    bgp.style.flex="none";
+    row2.appendChild(inp); row2.appendChild(unit); row2.appendChild(est); row2.appendChild(bgp);
     host.appendChild(row2);
   }
   var foot=document.createElement("div"); foot.style.cssText="display:flex;align-items:center;gap:9px;margin-top:8px;flex-wrap:wrap";
@@ -4010,11 +4156,21 @@ function refreshSegDurEst(){
   }
 }
 function refreshSegDur(){ if(S.shape==="bar") mountSegDurEditor(); else refreshSegDurEst(); }
+var _batchRealtimeAck=false;
 async function exportGifBatch(){
   var n=currentSegInfo().count;
-  if(n===0){ toast("当前形态没有分区，无法分段。请切换到有分区的形态。"); return; }
+  var msgEl=$("gifSegSum");
+  function inlineMsg(t,warn){ if(msgEl){ msgEl.innerHTML=t; msgEl.style.color=warn?"var(--accent)":"var(--ink-soft)"; msgEl.style.fontWeight=warn?"700":"500"; } }
+  if(n===0){ inlineMsg("当前形态没有分区，无法分段。请切换到有分区的形态。",true); return; }
   var ranges=segDursToRanges();
-  if(!ranges.length){ toast("分段数据无效。"); return; }
+  if(!ranges.length){ inlineMsg("分段数据无效。",true); return; }
+  // 提醒：批量分段建议开启「真实时长」，否则各段只是循环动画、不是真实时长
+  if(!S.gifRealtime && !_batchRealtimeAck){
+    _batchRealtimeAck=true;
+    inlineMsg("⚠ 当前是「短时循环」模式，导出的各段只是循环动画、<b>不是真实时长</b>。若要每段按真实时间走完，请上方切到「大 GIF：真实时长」。<b>仍要按循环模式导出？再点一次按钮。</b>",true);
+    return;
+  }
+  _batchRealtimeAck=false;
   var info=currentSegInfo();
   gifCancel=false;
   $("busy").style.display="flex";
@@ -4032,18 +4188,34 @@ async function exportGifBatch(){
       await encodeGifSegment(A,B,fname,function(p){
         var overall=(i+p)/N;
         $("busyFill").style.width=Math.round(overall*100)+"%";
-      },(function(name){ return function(bytes){ zipFiles.push({name:name,data:bytes}); }; })(fname));
+      },(function(name){ return function(bytes){ zipFiles.push({name:name,data:bytes}); }; })(fname),(S.segBg&&S.segBg[i])||S.gifBg);
     }
     if(!gifCancel && zipFiles.length){
       $("busyTxt").textContent="正在打包 "+zipFiles.length+" 个 GIF…";
       var zip=buildZip(zipFiles);
       dl(zip,"progress_gifs_"+zipFiles.length+"段.zip");
-      toast("已打包下载 "+zipFiles.length+" 个分段 GIF（一个 zip 压缩包，解压即得各页 GIF）");
+      inlineMsg("✓ 已打包下载 "+zipFiles.length+" 个分段 GIF（一个 zip，解压即得各页 GIF）。",true);
     }
-  }catch(e){if(!gifCancel)toast("批量生成失败："+e.message);}
+  }catch(e){if(!gifCancel)inlineMsg("批量生成失败："+e.message,true);}
   finally{gifCancel=false;setProg(savedProg);$("busy").style.display="none";$("busyFill").style.width="0";}
 }
 $("dlGifBatch").addEventListener("click",exportGifBatch);
+(function(){
+  var head=$("batchHead"), block=$("batchBlock"), arrow=$("batchArrow"), hint=$("batchHeadHint");
+  if(head&&block){ head.addEventListener("click",function(){
+    var col=block.classList.toggle("collapsed");
+    if(arrow) arrow.textContent=col?"▸":"▾";
+    if(hint) hint.textContent=col?"展开":"点此收起";
+  }); }
+})();
+(function(){
+  var head=$("singleHead"), block=$("singleBlock"), arrow=$("singleArrow"), hint=$("singleHeadHint");
+  if(head&&block){ head.addEventListener("click",function(){
+    var col=block.classList.toggle("collapsed");
+    if(arrow) arrow.textContent=col?"▸":"▾";
+    if(hint) hint.textContent=col?"展开":"点此收起";
+  }); }
+})();
 $("busyCancel").addEventListener("click",function(){gifCancel=true;});
 
 // ---- EMBED MODE: when opened as ?embed=1&c=<config>, render a pure full-screen timer
@@ -4081,6 +4253,7 @@ $("busyCancel").addEventListener("click",function(){gifCancel=true;});
   var bsg=$("barSegGroup"); if(bsg) bsg.style.display=(S.shape==="bar"?"":"none");
   if(typeof mountSegDurEditor==="function") mountSegDurEditor();
   setupCollapsibleGroups();
+  if(typeof applyGifMode==="function") applyGifMode();
 })();
 
 // 把每个 .group 变成可折叠：大标题整行可点 + 醒目箭头；默认折叠非必备板块
