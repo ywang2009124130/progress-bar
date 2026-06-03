@@ -59,18 +59,21 @@
   .seg-list input[type=color]{width:30px;height:30px}
   /* color-block palette picker (PowerPoint-style, collapsible): trigger + panel */
   .seg-list .sec-item{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:10px}
-  .palette{display:flex;flex-direction:column;gap:6px;flex-basis:100%;margin-top:2px}
+  .palette{display:flex;flex-direction:column;gap:6px;flex-basis:100%;margin-top:2px;position:relative}
   .pal-trigger{display:flex;align-items:center;gap:8px;align-self:flex-start;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:5px 9px;cursor:pointer;font-family:"DM Sans";font-size:12px;color:var(--ink)}
   .pal-trigger:hover{border-color:var(--ink-soft)}
   .pal-dot{width:18px;height:18px;border-radius:5px;box-shadow:0 0 0 1px rgba(0,0,0,0.18) inset;flex:none}
   .pal-cap{font-weight:500;color:var(--ink-soft)}
   .pal-caret{font-size:10px;color:var(--ink-soft);transition:transform .15s}
   .pal-trigger.open .pal-caret{transform:rotate(180deg)}
-  .pal-panel{border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:8px;display:flex;flex-direction:column;gap:5px}
+  /* 展开面板改为浮层：固定宽度、覆盖相邻内容，不再被窄容器挤压 */
+  .pal-panel{position:absolute;top:calc(100% + 6px);left:0;z-index:60;width:300px;max-width:86vw;
+    border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:11px;
+    display:flex;flex-direction:column;gap:6px;box-shadow:0 18px 44px -18px #2a230f66,0 1px 0 #fff8}
   .pal-grid{display:flex;gap:4px}
   .pal-col{display:flex;flex-direction:column;gap:3px;flex:1}
   .pal-std{display:flex;gap:4px;margin-top:3px}
-  .palette .sw{height:15px;border-radius:3px;cursor:pointer;border:2px solid transparent;box-shadow:0 0 0 1px rgba(0,0,0,0.14) inset;transition:transform .08s}
+  .palette .sw{height:17px;border-radius:3px;cursor:pointer;border:2px solid transparent;box-shadow:0 0 0 1px rgba(0,0,0,0.14) inset;transition:transform .08s}
   .pal-col .sw{width:100%}
   .pal-std .sw{flex:1}
   .palette .sw:hover{transform:scale(1.18);position:relative;z-index:2}
@@ -179,7 +182,8 @@
   .merge-block .merge-cap{font-size:10.5px;font-weight:700;color:var(--accent);margin:0 0 6px 2px;letter-spacing:.3px}
   .merge-block .sec-item{margin-bottom:6px}
   .merge-block .sec-item:last-child{margin-bottom:0}
-  .merge-grp-row{display:flex;align-items:center;gap:7px;margin-top:7px}
+  .merge-grp-row{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:7px}
+  .merge-grp-row .palette{flex-basis:auto;margin-top:0}
   .merge-grp-row .grp-act{display:flex;gap:6px;flex:none}
   .merge-grp-row .grp-act button{padding:4px 9px;font-size:11px}
   /* PowerPoint-style swatch picker */
@@ -3110,10 +3114,15 @@ function mountBarSegEditor(){
         var bpal=buildPalette(S.barSegments[k].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(k),{caption:"填充"});
         brow.appendChild(bname); brow.appendChild(bpal); block.appendChild(brow);
       }
-      // 组的共用文字 + 文字色 + 重选/解散
-      var grow=document.createElement("div"); grow.className="merge-grp-row";
+      // 组的共用文字（独占一行，全宽）
+      var gtRow=document.createElement("div"); gtRow.style.cssText="display:flex;align-items:center;gap:7px;margin-top:8px";
+      var gtLab=document.createElement("span"); gtLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; gtLab.textContent="共用文字";
       var gt=document.createElement("input"); gt.type="text"; gt.value=grp.text||""; gt.placeholder="第 "+grp.s+"–"+grp.e+" 段共用文字"; gt.style.flex="1";
       (function(gg,el){el.addEventListener("input",function(){gg.text=el.value;render();});})(grp,gt);
+      gtRow.appendChild(gtLab); gtRow.appendChild(gt);
+      block.appendChild(gtRow);
+      // 文字色 + 重选/解散（另起一行）
+      var grow=document.createElement("div"); grow.className="merge-grp-row";
       var gtpal=buildPalette(grp.tcolor||"",(function(gg){return function(col){gg.tcolor=col||null;render();};})(grp),{caption:"文字",allowAuto:true});
       var act=document.createElement("span"); act.className="grp-act";
       var reBtn=document.createElement("button"); reBtn.type="button"; reBtn.className="btn"; reBtn.textContent="重选";
@@ -3125,7 +3134,7 @@ function mountBarSegEditor(){
       var delBtn=document.createElement("button"); delBtn.type="button"; delBtn.className="btn"; delBtn.textContent="解散";
       (function(gg){ delBtn.addEventListener("click",function(){ S.barMerges=S.barMerges.filter(function(x){return x!==gg;}); mountBarSegEditor(); render(); }); })(grp);
       act.appendChild(reBtn); act.appendChild(delBtn);
-      grow.appendChild(gt); grow.appendChild(gtpal); grow.appendChild(act);
+      grow.appendChild(gtpal); grow.appendChild(act);
       block.appendChild(grow);
       list.appendChild(block);
       i=grp.e; // 跳过整组
