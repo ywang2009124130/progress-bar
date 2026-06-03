@@ -2847,7 +2847,6 @@ $("dlLauncher").addEventListener("click",function(){
     "if($b){ Start-Process $b -ArgumentList $a } else { Write-Host 'no browser found'; pause }";
   const headerLines=[
     "@echo off",
-    "chcp 65001 >nul",
     "title timer",
     "REM Self-extracting timer launcher. Base64 payload after :DATA at EOF.",
     "REM Tip: install PowerToys, enable Always-On-Top, press Win+Ctrl+T to pin the window.",
