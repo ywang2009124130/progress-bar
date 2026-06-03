@@ -231,7 +231,7 @@
   <aside class="panel">
     <div class="brand"><h1>进度条工坊</h1></div>
     <div class="en">PROGRESS STUDIO · FOR SLIDES</div>
-    <div class="credit">Designed by Yuanyuan Wang</div>
+    <div class="credit">Designed by Yuanyuan Wang　·　v2.7</div>
     <p class="tag">为 PPT 定制的时间进度条 — 四种形态、装饰花边、点亮元素、到点闪烁提醒，可导出图片 / GIF 动图 / 实时计时器。</p>
 
     <div class="seg4" id="shapeSeg" style="grid-template-columns:1fr 1fr;gap:7px">
@@ -481,7 +481,7 @@
       <div class="erow" style="align-items:flex-start">
         <span class="elab" style="margin-top:3px">批量分段</span>
         <div style="flex:1;min-width:240px">
-          <p class="hint" id="gifBatchNote" style="margin-top:0;margin-bottom:7px">按当前形态的<b>分区数</b>切成对应段（每段对应一页 PPT），逐个导出走完该段的 GIF。<b>条状</b>跟随上方「条状分区」的段宽（只读显示）；<b>其它形态</b>可在下方填每段的<b>时间百分比</b>（默认等分，合计应为 100%，差了点「一键凑满」）。</p>
+          <p class="hint" id="gifBatchNote" style="margin-top:0;margin-bottom:7px">每段对应一页 PPT，逐个导出走完该段的 GIF。</p>
           <div id="gifSegDur"></div>
           <p class="hint" id="gifSegSum" style="margin-top:7px"></p>
           <button class="btn primary" id="dlGifBatch" style="padding:7px 16px;margin-top:8px">⬇ 批量生成分段 GIF（打包 zip）</button>
@@ -3223,7 +3223,7 @@ function mountBarWidthEditor(){
     host.appendChild(row);
   }
   var foot=document.createElement("div"); foot.style.cssText="display:flex;align-items:center;gap:9px;margin-top:8px;flex-wrap:wrap";
-  var norm=document.createElement("button"); norm.type="button"; norm.className="btn"; norm.style.cssText="padding:5px 11px;font-size:11px"; norm.textContent="一键凑满 100%";
+  var norm=document.createElement("button"); norm.type="button"; norm.className="btn"; norm.style.cssText="padding:5px 11px;font-size:11px"; norm.textContent="去秒为整分"; norm.title="把每段预计时长四舍五入到整分钟（百分比随之变化）";
   norm.addEventListener("click",function(){ normalizeBarSegW(); });
   var sumEl=document.createElement("span"); sumEl.className="hint"; sumEl.id="barWidthSum"; sumEl.style.marginTop="0";
   foot.appendChild(norm); foot.appendChild(sumEl);
@@ -3241,16 +3241,49 @@ function refreshBarWidthEst(){
   var sumEl=$("barWidthSum");
   if(sumEl){
     var rounded=Math.round(sum*10)/10;
-    if(Math.abs(sum-100)<0.1){ sumEl.textContent="合计 100% ✓"; sumEl.style.color="var(--ink-soft)"; sumEl.style.fontWeight="500"; }
-    else { sumEl.textContent="合计 "+rounded+"%（应为 100%，点左侧一键凑满）"; sumEl.style.color="var(--accent)"; sumEl.style.fontWeight="700"; }
+    if(Math.abs(sum-100)<0.1){ sumEl.textContent="合计 100%"; sumEl.style.color="var(--ink-soft)"; sumEl.style.fontWeight="500"; }
+    else { sumEl.textContent="合计 "+rounded+"%（非 100% 也可，按比例分配；点「去秒为整分」可对齐整分钟）"; sumEl.style.color="var(--ink-soft)"; sumEl.style.fontWeight="500"; }
   }
 }
 // 等比例缩放各段宽度，使合计正好 100%
+// 把总时长四舍五入到最近的整分钟，并同步输入框/时钟。返回 {changed, fromSec, toMin}
+function roundTotalToWholeMinute(){
+  var totSec=S.totalSec||0;
+  var toMin=Math.max(1, Math.round(totSec/60));
+  var fromSec=totSec, changed=(totSec!==toMin*60);
+  S.totalSec=toMin*60;
+  var tm=$("tMin"), ts=$("tSec"); if(tm)tm.value=toMin; if(ts)ts.value=0;
+  updateClock();
+  return {changed:changed, fromSec:fromSec, toMin:toMin};
+}
+// 去秒为整分：先把总时长凑成整分钟，再把各段分配成整分钟（段宽存完整精度）
 function normalizeBarSegW(){
-  var sum=S.barSegW.reduce(function(a,b){return a+Math.max(0,+b||0);},0);
-  if(sum<=0){ var each=100/S.barSegW.length; S.barSegW=S.barSegW.map(function(){return each;}); }
-  else { S.barSegW=S.barSegW.map(function(v){ return Math.round((Math.max(0,+v||0)/sum*100)*10)/10; }); }
+  var msgEl0=$("barWidthSum");
+  if((S.totalSec||0)<=0){ if(msgEl0){msgEl0.textContent="请先设置总时长";msgEl0.style.color="var(--accent)";msgEl0.style.fontWeight="700";} return; }
+  var r=roundTotalToWholeMinute();
+  var totSec=S.totalSec, totalMin=r.toMin;
+  var sum=S.barSegW.reduce(function(a,b){return a+Math.max(0,+b||0);},0)||1;
+  var mins=S.barSegW.map(function(v){ var sec=totSec*(Math.max(0,+v||0)/sum); return Math.max(0,Math.round(sec/60)); });
+  var mSum=mins.reduce(function(a,b){return a+b;},0);
+  if(mSum!==totalMin && totalMin>0){
+    var idx=0,best=-1; for(var i=0;i<mins.length;i++){ if(mins[i]>best){best=mins[i];idx=i;} }
+    mins[idx]=Math.max(0, mins[idx]+(totalMin-mSum));
+  }
+  var denom=(totalMin>0?totalMin:1);
+  S.barSegW=mins.map(function(m){ return m/denom*100; });
   mountBarWidthEditor(); if(typeof mountSegDurEditor==="function")mountSegDurEditor(); render();
+  // 提示就地显示（mount 之后再写，避免被覆盖）
+  var msgEl=$("barWidthSum");
+  if(msgEl){
+    if(r.changed){
+      var fm=Math.floor(r.fromSec/60), fs=Math.round(r.fromSec%60);
+      var fromStr=fm+"分"+(fs?fs+"秒":"");
+      msgEl.innerHTML="⚠ 总时长 "+fromStr+" 不是整分钟无法执行，已改为 <b>"+totalMin+" 分整</b>；各段已对齐到整分钟。";
+    } else {
+      msgEl.textContent="✓ 已按 "+totalMin+" 分整对齐，各段均为整分钟。";
+    }
+    msgEl.style.color="var(--accent)"; msgEl.style.fontWeight="700";
+  }
 }
 // Build a COLLAPSIBLE PowerPoint-style color picker.
 function buildPalette(current,onPick,opts){
@@ -3860,7 +3893,9 @@ function mountSegDurEditor(){
     return;
   }
   var totSec=S.totalSec||0;
+  var noteEl=$("gifBatchNote");
   if(S.shape==="bar"){
+    if(noteEl) noteEl.innerHTML='<b>条状</b>：每段对应一页 PPT，按上方「条状分区」的<b>段宽</b>切分并逐个导出（走完该段）。下面是每段的段宽与<b>预计时长</b>（只读）；要改段宽请到上方「条状分区 → 自定义」。';
     // 条状：只读，数据来自段宽
     var props=segProportions();
     var sum=props.reduce(function(a,b){return a+Math.max(0,+b||0);},0)||1;
@@ -3881,6 +3916,7 @@ function mountSegDurEditor(){
     return;
   }
   // 非条状：可编辑时间百分比表（默认等分）
+  if(noteEl) noteEl.innerHTML='<b>批量分段：</b>在此设置每段占的时间比例（%），每段对应着进度条的分区。';
   ensureSegDurs();
   for(let i=0;i<n;i++){
     var name2=(info.labels[i]&&String(info.labels[i]).trim())||("分区"+(i+1));
@@ -3896,12 +3932,30 @@ function mountSegDurEditor(){
     host.appendChild(row2);
   }
   var foot=document.createElement("div"); foot.style.cssText="display:flex;align-items:center;gap:9px;margin-top:8px;flex-wrap:wrap";
-  var norm=document.createElement("button"); norm.type="button"; norm.className="btn"; norm.style.cssText="padding:5px 11px;font-size:11px"; norm.textContent="一键凑满 100%";
+  var norm=document.createElement("button"); norm.type="button"; norm.className="btn"; norm.style.cssText="padding:5px 11px;font-size:11px"; norm.textContent="去秒为整分"; norm.title="把每段预计时长四舍五入到整分钟（百分比随之变化）";
   norm.addEventListener("click",function(){
-    var s=(S.segDurs||[]).reduce(function(a,b){return a+Math.max(0,+b||0);},0);
-    if(s<=0){ var each=100/S.segDurs.length; S.segDurs=S.segDurs.map(function(){return each;}); }
-    else { S.segDurs=S.segDurs.map(function(v){ return Math.round((Math.max(0,+v||0)/s*100)*10)/10; }); }
+    var msgEl0=$("gifSegSum");
+    if((S.totalSec||0)<=0){ if(msgEl0){msgEl0.textContent="请先设置总时长";msgEl0.style.color="var(--accent)";msgEl0.style.fontWeight="700";} return; }
+    var r=roundTotalToWholeMinute();
+    var totSec=S.totalSec, totalMin=r.toMin;
+    var s=(S.segDurs||[]).reduce(function(a,b){return a+Math.max(0,+b||0);},0)||1;
+    var mins=S.segDurs.map(function(v){ return Math.max(0,Math.round(totSec*(Math.max(0,+v||0)/s)/60)); });
+    var mSum=mins.reduce(function(a,b){return a+b;},0);
+    if(mSum!==totalMin && totalMin>0){ var idx=0,best=-1; for(var i=0;i<mins.length;i++){ if(mins[i]>best){best=mins[i];idx=i;} } mins[idx]=Math.max(0,mins[idx]+(totalMin-mSum)); }
+    var denom=(totalMin>0?totalMin:1);
+    S.segDurs=mins.map(function(m){ return m/denom*100; });
     mountSegDurEditor();
+    var msgEl=$("gifSegSum");
+    if(msgEl){
+      if(r.changed){
+        var fm=Math.floor(r.fromSec/60), fs=Math.round(r.fromSec%60);
+        var fromStr=fm+"分"+(fs?fs+"秒":"");
+        msgEl.innerHTML="⚠ 总时长 "+fromStr+" 不是整分钟无法执行，已改为 <b>"+totalMin+" 分整</b>；各段已对齐到整分钟。";
+      } else {
+        msgEl.textContent="✓ 已按 "+totalMin+" 分整对齐，各段均为整分钟。";
+      }
+      msgEl.style.color="var(--accent)"; msgEl.style.fontWeight="700";
+    }
   });
   foot.appendChild(norm); host.appendChild(foot);
   refreshSegDurEst();
@@ -3916,8 +3970,8 @@ function refreshSegDurEst(){
   var el=$("gifSegSum");
   if(el){
     var rounded=Math.round(sum*10)/10;
-    if(Math.abs(sum-100)<0.1){ el.textContent="合计 100% ✓"; el.style.color="var(--ink-soft)"; el.style.fontWeight="500"; }
-    else { el.textContent="合计 "+rounded+"%（应为 100%，点上方一键凑满）"; el.style.color="var(--accent)"; el.style.fontWeight="700"; }
+    if(Math.abs(sum-100)<0.1){ el.textContent="合计 100%"; el.style.color="var(--ink-soft)"; el.style.fontWeight="500"; }
+    else { el.textContent="合计 "+rounded+"%（非 100% 也可，按比例分配；点「去秒为整分」可对齐整分钟）"; el.style.color="var(--ink-soft)"; el.style.fontWeight="500"; }
   }
 }
 function refreshSegDur(){ if(S.shape==="bar") mountSegDurEditor(); else refreshSegDurEst(); }
