@@ -463,7 +463,7 @@
     <div class="exp-panel" id="pngPanel">
       <div class="ehead"><span class="edot"></span>PNG 设置</div>
       <div class="erow">
-        <span class="elab">倍率</span>
+        <span class="elab">清晰度（倍率）</span>
         <div class="scale-seg" id="scaleSeg"><button data-s="1">1×</button><button data-s="2" class="on">2×</button><button data-s="3">3×</button></div>
         <div class="switch" style="gap:8px;margin-left:6px">透明背景<label class="toggle"><input type="checkbox" id="transBg" checked><span></span></label></div>
       </div>
@@ -479,10 +479,15 @@
 
       <!-- ===== 共用设置（管下面两个出口） ===== -->
       <div class="erow">
-        <span class="elab">倍率</span>
+        <span class="elab">清晰度（倍率）</span>
         <div class="scale-seg" id="gifScaleSeg"><button data-s="1">1×</button><button data-s="2" class="on">2×</button></div>
-        <span class="elab" style="margin-left:14px">帧率</span>
+        <span class="elab" style="margin-left:14px">流畅度（帧率）</span>
         <div class="scale-seg" id="fpsSeg"><button data-f="10">10</button><button data-f="15" class="on">15</button><button data-f="20">20</button></div>
+      </div>
+      <p class="hint" style="margin-top:-4px"><b>清晰度（倍率）</b>：1×／2× 是分辨率倍数，2× 像素更多、更清楚，贴 PPT 放大不糊。<b>流畅度（帧率）</b>：每秒帧数，10／15／20 帧——越大进度条动得越顺。<b>两项都越高，生成越慢、文件越大</b>。</p>
+      <div class="erow" style="align-items:flex-start">
+        <span class="switch" style="gap:6px;font-size:11.5px;flex:none;margin-top:1px">最小画布<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="tightCanvas" checked><span></span></label></span>
+        <p class="hint" style="margin-top:1px;flex:1;min-width:200px">导出时<b>紧贴进度条裁掉多余空白</b>（含阴影、里程碑、倒计时数字都不会被切）。同时作用于 <b>GIF / PNG / SVG</b>。关掉则用整块大画布。</p>
       </div>
       <div class="erow" style="align-items:flex-start">
         <span class="elab" style="margin-top:3px">GIF 类型</span>
@@ -2022,11 +2027,13 @@ const S = {
   pwSize:200, pwCoreText:"进行中", pwSegments:[],
   heartSize:200, heartCoreText:"进行中", heartSegments:[],
   cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true, pctSize:26, showCountdown:false, cdSize:26,
+  segFontScaleByShape:{bar:1,ring:1,petal:1,pinwheel:1,heart:1,clover:1},
+  centerFontScaleByShape:{ring:1,petal:1,pinwheel:1,heart:1,clover:1},
   segCnt:6, gap:3, segments:[], segDurs:[],
   barSeg:4, barDivOn:true, barDivStyle:"solid", barSegMode:"even", barSegments:[], barMerges:[], barSegW:[],
   elemOn:true, icon:"heart", elemCnt:5, elemSz:32, dimOff:true, elemFollow:true, elemColor:"#E2682C",
   alertOn:true, alertDur:60, soundOn:true, soundType:"4", soundRepeat:true, soundGap:2,
-  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifFlashDur:3, gifLoop:true, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:false, segBg:[]
+  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifFlashDur:3, gifLoop:true, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:false, segBg:[], tightCanvas:true
 };
 const VW=900, VH=580, CX=VW/2, CY=VH/2;
 const $=id=>document.getElementById(id);
@@ -2251,7 +2258,7 @@ function renderBar(){
       let tx,ty,extra="";
       if(horiz){ tx=x+w*(a+b)/2; ty=CY; extra=' dominant-baseline="central"'; }
       else { tx=CX; ty=y+h*(vUp?(1-(a+b)/2):((a+b)/2)); extra=' dominant-baseline="central"'; }
-      segTexts+='<text x="'+tx+'" y="'+ty+'" text-anchor="middle"'+extra+' font-family="DM Sans" font-size="'+fontSize+'" font-weight="700" fill="'+fill+'">'+escapeXml(txt)+'</text>';
+      segTexts+='<text x="'+tx+'" y="'+ty+'" text-anchor="middle"'+extra+' font-family="DM Sans" font-size="'+segFS(fontSize)+'" font-weight="700" fill="'+fill+'">'+escapeXml(txt)+'</text>';
     }
   }
   const pct=Math.round(S.prog)+"%";
@@ -2308,20 +2315,20 @@ function renderRing(){
     }
     const txt=segText(i).trim();
     if(txt){const aMid=(a0+a1)/2, rMid=solid? rO*0.62 : (rO+rI)/2; const L=polar(cx,cy,rMid,aMid);
-      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="15" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,1)+'">'+escapeXml(txt)+'</text>';}
+      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(15)+'" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,1)+'">'+escapeXml(txt)+'</text>';}
   }
   const ct=(S.centerText||"").trim();
   if(!solid){
     // donut: hub fills the hole, shows label + %
     out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(rI-2)+'" fill="'+tint(S.track,0.5)+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
-    if(ct){out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-8):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(14,rI*0.26)+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+escapeXml(ct)+'</text>';
+    if(ct){out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-8):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+ctrFS(Math.max(14,rI*0.26))+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+escapeXml(ct)+'</text>';
       if(showProgLabel()) out+='<text x="'+cx+'" y="'+(cy+rI*0.34)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(18,rI*0.38)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+progLabelText()+'</text>';}
     else if(showProgLabel()) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,rI*0.5)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+progLabelText()+'</text>';
   } else if(S.pieCenterNum && showProgLabel()){
     // solid pie: NO center circle — the % (and optional label) float directly
     // on the pie so 孔径=0 truly means "no center circle".
     const tc="#ffffff";
-    if(ct){out+='<text x="'+cx+'" y="'+(cy-rO*0.06)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+Math.max(13,rO*0.11)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.6" paint-order="stroke">'+escapeXml(ct)+'</text>';
+    if(ct){out+='<text x="'+cx+'" y="'+(cy-rO*0.06)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+ctrFS(Math.max(13,rO*0.11))+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.6" paint-order="stroke">'+escapeXml(ct)+'</text>';
       out+='<text x="'+cx+'" y="'+(cy+rO*0.10)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(16,rO*0.16)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.8" paint-order="stroke">'+progLabelText()+'</text>';}
     else out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(18,rO*0.2)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.9" paint-order="stroke">'+progLabelText()+'</text>';
   }
@@ -2401,11 +2408,11 @@ function renderPetal(){
     }
     const txt=segText(i).trim();
     if(txt){const L=polar(cx,cy,(rBase+rTip)*0.52,aMid);
-      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(12,rTip*0.075)+'" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,0.5)+'">'+escapeXml(txt)+'</text>';}
+      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(12,rTip*0.075))+'" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,0.5)+'">'+escapeXml(txt)+'</text>';}
   }
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+core+'" fill="'+tint(S.fill,Math.min(1,S.op/100))+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
   const ct=(S.coreText||"").trim();
-  if(ct){out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-core*0.18):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(13,core*0.34)+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
+  if(ct){out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-core*0.18):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+ctrFS(Math.max(13,core*0.34))+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
     if(showProgLabel()) out+='<text x="'+cx+'" y="'+(cy+core*0.32)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(15,core*0.42)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+progLabelText()+'</text>';}
   else if(showProgLabel()) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(18,core*0.6)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+progLabelText()+'</text>';
   if(S.elemOn) out+=renderMilestones(getFlowerMilestonePositions(cx,cy,core,step));
@@ -2545,7 +2552,7 @@ function renderPinwheel(){
   for(const b of B){
     const txt=pwText(b.i).trim(); if(!txt) continue;
     const L=polar(cx,cy,R*0.58,b.ang + 20);
-    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.08)+'" font-weight="700" fill="'+segLabelFill(S.pwSegments[b.i],b.base,b.frac,0.5)+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.08))+'" font-weight="700" fill="'+segLabelFill(S.pwSegments[b.i],b.base,b.frac,0.5)+'">'+escapeXml(txt)+'</text>';
   }
 
   // CENTER hub pin, drawn last over the blade roots and the pole top.
@@ -2554,7 +2561,7 @@ function renderPinwheel(){
   const ct=(S.pwCoreText||"").trim();
   const pctTxt=progLabelText();
   if(ct){
-    out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-hub*0.10):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(10,hub*0.5)+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
+    out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-hub*0.10):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+ctrFS(Math.max(10,hub*0.5))+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
     if(showProgLabel()) out+='<text x="'+cx+'" y="'+(cy+hub*0.55)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(11,hub*0.62)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+pctTxt+'</text>';
   } else if(showProgLabel()) {
     out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(12,hub*0.8)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+pctTxt+'</text>';
@@ -2648,7 +2655,7 @@ function renderHeart(){
   for(const q of parts){
     const txt=heartText(q.i).trim(); if(!txt) continue;
     const lx=cx + (q.i===0? -R*0.42 : R*0.42), ly=cy-R*0.05;
-    out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.085)+'" font-weight="700" fill="'+segLabelFill(S.heartSegments[q.i],q.base,q.frac,0.5)+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.085))+'" font-weight="700" fill="'+segLabelFill(S.heartSegments[q.i],q.base,q.frac,0.5)+'">'+escapeXml(txt)+'</text>';
   }
   // center percentage only — NO circle, NO status text. A thin stroke keeps the number
   // legible across the two-colour halves.
@@ -2724,7 +2731,7 @@ function renderClover(){
   for(const b of B){
     const txt=cloverText(b.i).trim(); if(!txt) continue;
     const L=polar(cx,cy,R*0.50,b.ang);
-    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+Math.max(11,R*0.08)+'" font-weight="700" fill="'+segLabelFill(S.cloverSegments[b.i],b.base,b.frac,0.5)+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.08))+'" font-weight="700" fill="'+segLabelFill(S.cloverSegments[b.i],b.base,b.frac,0.5)+'">'+escapeXml(txt)+'</text>';
   }
   // center small dark dot (caps the four roots; the finalized "medium dot")
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*0.12)+'" fill="'+tint(S.stroke,1)+'"/>';
@@ -2753,6 +2760,43 @@ let gifCancel=false;
 function render(){
   lastSVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+VW+' '+VH+'">'+buildInner()+'</svg>';
   $("svgHost").innerHTML=lastSVG;
+}
+// 计算当前画面所有可见元素的真实包围盒（含阴影扩散），用于"最小画布"。
+// 返回 {x,y,w,h}（viewBox 单位）；测不到则返回 null（回退整画布）。
+function tightBox(){
+  try{
+    var host=$("svgHost"); if(!host) return null;
+    var svg=host.querySelector("svg"); if(!svg||!svg.getBBox) return null;
+    // 合并所有子元素的几何包围盒（defs 无尺寸，自动忽略）
+    var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity, got=false;
+    var kids=svg.querySelectorAll("*");
+    for(var i=0;i<kids.length;i++){
+      var el=kids[i];
+      if(el.tagName==="defs"||el.tagName==="filter"||el.closest("defs")) continue;
+      if(typeof el.getBBox!=="function") continue;
+      var b; try{ b=el.getBBox(); }catch(e){ continue; }
+      if(!b||(!b.width&&!b.height)) continue;
+      if(b.x<minX)minX=b.x; if(b.y<minY)minY=b.y;
+      if(b.x+b.width>maxX)maxX=b.x+b.width; if(b.y+b.height>maxY)maxY=b.y+b.height;
+      got=true;
+    }
+    if(!got||!isFinite(minX)) return null;
+    // 阴影/发光扩散补偿：soft 阴影 dy3+stdDev5≈18，glow stdDev4≈12，统一留 20 单位（这是阴影实际所在，非空白）
+    var pad=20;
+    var x=minX-pad, y=minY-pad, w=(maxX-minX)+pad*2, h=(maxY-minY)+pad*2;
+    return {x:x,y:y,w:w,h:h};
+  }catch(e){ return null; }
+}
+// 生成"最小画布"的 SVG 字符串（紧贴内容）；tightCanvas 关时返回整画布 lastSVG。
+function exportSVGStr(){
+  if(!S.tightCanvas) return lastSVG;
+  var bb=tightBox(); if(!bb) return lastSVG;
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+bb.x+' '+bb.y+' '+bb.w+' '+bb.h+'">'+buildInner()+'</svg>';
+}
+// 导出像素尺寸（按最小画布或整画布的宽高比）
+function exportDims(scale){
+  if(S.tightCanvas){ var bb=tightBox(); if(bb) return {w:Math.max(1,Math.round(bb.w*scale)), h:Math.max(1,Math.round(bb.h*scale))}; }
+  return {w:VW*scale, h:VH*scale};
 }
 
 function buildTimerHTML(opts){
@@ -3104,6 +3148,7 @@ $("soundRepeat").addEventListener("change",function(e){S.soundRepeat=e.target.ch
 $("soundGap").addEventListener("input",function(e){S.soundGap=+e.target.value;$("soundGapVal").textContent=(+e.target.value).toFixed(1);});
 $("transBg").addEventListener("change",function(e){S.transBg=e.target.checked;$("stage").classList.toggle("checker",e.target.checked);});
 $("gifFlash").addEventListener("change",function(e){S.gifFlash=e.target.checked; var r=$("gifFlashDurRow"); if(r) r.style.display=e.target.checked?"":"none";});
+$("tightCanvas").addEventListener("change",function(e){S.tightCanvas=e.target.checked;});
 $("gifFlashDur").addEventListener("input",function(e){S.gifFlashDur=+e.target.value;$("gifFlashDurVal").textContent=e.target.value;});
 // 循环方式：无限循环 / 只播一次（互斥，始终恰好一个）
 function applyGifLoop(){
@@ -3176,7 +3221,9 @@ function defaultCloverSegments(){const arr=[];
 // Reusable fixed-count per-part editor (no count/gap sliders). segs is the live array.
 function mountFixedSegEditor(hostSel,segs,labelText,placeholder){
   const host=document.querySelector(hostSel);
-  host.innerHTML='<label class="lab">'+labelText+'</label><div class="seg-list" id="fxSegList"></div>';
+  host.innerHTML='<label class="lab">'+labelText+'</label>';
+  host.appendChild(buildFontScaleControls(S.shape,true));
+  const listWrap=document.createElement("div"); listWrap.className="seg-list"; listWrap.id="fxSegList"; host.appendChild(listWrap);
   const list=$("fxSegList");
   segs.forEach(function(sg,i){const row=document.createElement("div");row.className="sec-item";
     row.innerHTML='<span class="idx">'+(i+1)+'</span>';
@@ -3228,6 +3275,26 @@ function shouldShowMergeBtnAfter(idx1){
   var run=selectedAdjacentRun();
   return run.length>=2 && run[run.length-1]===idx1;
 }
+// 文字字号控件（每形态独立）：一行"分段文字"，有中心文字的形态再加一行"中心文字"。
+function buildFontScaleControls(shape, hasCenter){
+  var wrap=document.createElement("div");
+  wrap.style.cssText="background:#0000000a;border-radius:9px;padding:8px 10px;margin-bottom:9px";
+  var t=document.createElement("div"); t.className="subhead"; t.style.marginBottom="6px"; t.textContent="文字字号（A⁺ / A⁻）";
+  wrap.appendChild(t);
+  function addRow(label, mapKey){
+    var m=S[mapKey]||(S[mapKey]={});
+    var cur=Math.round((m[shape]||1)*100);
+    var row=document.createElement("div"); row.style.cssText="display:flex;align-items:center;gap:9px;margin-bottom:4px";
+    var lab=document.createElement("span"); lab.style.cssText="font-size:11.5px;color:var(--ink);flex:none;min-width:62px"; lab.textContent=label;
+    var rng=document.createElement("input"); rng.type="range"; rng.min="50"; rng.max="200"; rng.value=cur; rng.style.flex="1";
+    var val=document.createElement("span"); val.style.cssText="font-size:11.5px;font-weight:700;color:var(--ink);flex:none;min-width:42px;text-align:right"; val.textContent=cur+"%";
+    rng.addEventListener("input",function(){ m[shape]=(+rng.value)/100; val.textContent=rng.value+"%"; render(); });
+    row.appendChild(lab); row.appendChild(rng); row.appendChild(val); wrap.appendChild(row);
+  }
+  addRow("分段文字","segFontScaleByShape");
+  if(hasCenter) addRow("中心文字","centerFontScaleByShape");
+  return wrap;
+}
 function mountBarSegEditor(){
   var host=$("barSegEditor"); if(!host) return;
   ensureBarSegments(); clampBarMerges();
@@ -3250,6 +3317,7 @@ function mountBarSegEditor(){
   var msg=document.createElement("p"); msg.id="barMergeMsg"; msg.className="hint";
   msg.style.cssText="margin-top:0;color:var(--accent);font-weight:700;display:none";
   host.appendChild(msg);
+  host.appendChild(buildFontScaleControls("bar", false));
 
   var list=document.createElement("div"); list.className="seg-list"; list.style.marginTop="8px";
   var i=0;
@@ -3676,6 +3744,7 @@ function mountSegEditor(){
     '<div class="subhead" style="margin-top:13px">各分区 · 文字 / 填充</div><div class="seg-list" id="segList"></div>';
   $("segCntR").addEventListener("input",function(e){S.segCnt=+e.target.value;mountSegEditor();mountSegDurEditor();render();});
   $("gapR").addEventListener("input",function(e){S.gap=+e.target.value;e.target.previousElementSibling.querySelector(".val").textContent=e.target.value+"°";render();});
+  host.querySelector(".seg-list").parentNode.insertBefore(buildFontScaleControls(S.shape,true), host.querySelector(".seg-list"));
   const list=$("segList");
   S.segments.forEach(function(sg,i){const row=document.createElement("div");row.className="sec-item";
     row.innerHTML='<span class="idx">'+(i+1)+'</span>';
@@ -3797,7 +3866,7 @@ $("ovProg").addEventListener("input",function(e){
 
 $("scaleSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("scaleSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.scale=+b.dataset.s;});});
 $("gifScaleSeg").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){$("gifScaleSeg").querySelectorAll("button").forEach(function(x){x.classList.remove("on");});b.classList.add("on");S.gifScale=+b.dataset.s;});});
-function svgBlob(){return new Blob([lastSVG],{type:"image/svg+xml;charset=utf-8"});}
+function svgBlob(){return new Blob([exportSVGStr()],{type:"image/svg+xml;charset=utf-8"});}
 function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);}
 // ===== 极简 ZIP 打包（store 方式，无压缩；GIF 本身已压缩）=====
 function _crc32(buf){
@@ -3842,7 +3911,8 @@ $("dlPng").addEventListener("click",function(){toggleExpPanel("png");});
 $("dlGif").addEventListener("click",function(){toggleExpPanel("gif");});
 
 function doPng(){const sc=S.scale,img=new Image(),url=URL.createObjectURL(svgBlob());
-  img.onload=function(){const cv=document.createElement("canvas");cv.width=VW*sc;cv.height=VH*sc;const ctx=cv.getContext("2d");
+  const dim=exportDims(sc);
+  img.onload=function(){const cv=document.createElement("canvas");cv.width=dim.w;cv.height=dim.h;const ctx=cv.getContext("2d");
     if(!S.transBg){ctx.fillStyle="#FBF8F0";ctx.fillRect(0,0,cv.width,cv.height);}ctx.drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(url);
     cv.toBlob(function(b){dl(b,"progress.png");},"image/png");};
   img.onerror=function(){expStatus("导出失败，请重试");URL.revokeObjectURL(url);};img.src=url;}
@@ -4018,7 +4088,24 @@ async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor,segSec){
   let total, delayMs;
   if(realtime){ const plan=realtimePlan(A,B); total=plan.frames; delayMs=plan.delayMs; }
   else { const fps=S.gifFps, dur=S.gifDur; total=Math.max(2,Math.round(fps*dur)); delayMs=Math.round(1000/fps); }
-  const sc = S.gifScale>=2?2:1; const W=VW*sc, H=VH*sc;
+  const sc = S.gifScale>=2?2:1;
+  // 最小画布：为整段算一个固定的紧贴包围盒（取 A、B 两帧并集，覆盖文字宽度变化），整段所有帧用同一尺寸
+  var vb=null;
+  if(S.tightCanvas){
+    var savedP=S.prog;
+    S.prog=A; render(); var bA=tightBox();
+    S.prog=B; render(); var bB=tightBox();
+    if(bA&&bB){
+      var x0=Math.min(bA.x,bB.x), y0=Math.min(bA.y,bB.y);
+      var x1=Math.max(bA.x+bA.w,bB.x+bB.w), y1=Math.max(bA.y+bA.h,bB.y+bB.h);
+      vb={x:x0,y:y0,w:x1-x0,h:y1-y0};
+    } else { vb=bA||bB||null; }
+    S.prog=savedP;
+  }
+  const VBW = vb?vb.w:VW, VBH = vb?vb.h:VH;
+  const vbStr = vb?(vb.x+" "+vb.y+" "+vb.w+" "+vb.h):("0 0 "+VW+" "+VH);
+  const W=Math.max(1,Math.round(VBW*sc)), H=Math.max(1,Math.round(VBH*sc));
+  function frameSVG(){ return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+vbStr+'">'+buildInner()+'</svg>'; }
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
   const enc=new GIFEncoder();enc.setRepeat(S.gifLoop===false?-1:0);enc.setDelay(delayMs);enc.setSize(W,H);enc.setQuality(10);enc.start();
   // 闪烁：每段播到自己末尾就闪（独立 GIF，由「含完成闪烁」开关控制），不再要求终点必须 100%
@@ -4032,7 +4119,7 @@ async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor,segSec){
     S.prog=A+(B-A)*(f/(total-1));
     if(segSec!=null) _cdOverrideSec=Math.max(0, segSec*(1-(f/(total-1))));  // 本段剩余倒计时
     render();
-    const r=await svgToImage(lastSVG);
+    const r=await svgToImage(frameSVG());
     ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
     ctx.drawImage(r.img,0,0,W,H);URL.revokeObjectURL(r.url);
     enc.addFrame(ctx.getImageData(0,0,W,H).data,true);
@@ -4041,7 +4128,7 @@ async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor,segSec){
   }
   if(!cancelled && flashFrames>0){
     enc.setDelay(flashDelay);               // 切换为快闪延迟（仅作用于后续闪烁帧）
-    S.prog=B; if(segSec!=null) _cdOverrideSec=0; render(); const r=await svgToImage(lastSVG);   // 用该段自己的终点画面来闪
+    S.prog=B; if(segSec!=null) _cdOverrideSec=0; render(); const r=await svgToImage(frameSVG());   // 用该段自己的终点画面来闪
     for(let f=0;f<flashFrames;f++){
       if(gifCancel){cancelled=true;break;}
       ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
@@ -4115,6 +4202,11 @@ function countdownStr(){ return clockStr(remainingSec()); }
 // 进度条上"那个数字"：倒计时优先，其次百分比；都没开则空。供各形态统一调用。
 function showProgLabel(){ return !!(S.showPct || S.showCountdown); }
 function progLabelText(){ return S.showCountdown ? countdownStr() : (Math.round(S.prog)+"%"); }
+// 文字字号相对缩放（每形态独立）：段文字 / 中心文字
+function curSegScale(){ var m=S.segFontScaleByShape||{}; return m[S.shape]||1; }
+function curCenterScale(){ var m=S.centerFontScaleByShape||{}; return m[S.shape]||1; }
+function segFS(px){ return px*curSegScale(); }
+function ctrFS(px){ return px*curCenterScale(); }
 // 条状自定义段宽数组，按段数补齐，默认均分（合计 100）
 function ensureBarSegW(){
   var n=Math.max(1,S.barSeg||1);
