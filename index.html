@@ -297,7 +297,7 @@
         <p class="hint">把进度条分成几段（同时决定分界线、里程碑位置、以及「批量分段」导出的段数）。单段进度仍匀速走完整条，分段只是刻度。无论是否显示分界线、是否合并文字，分段始终存在。</p></div>
       <div class="row"><label class="lab">分段宽度</label><div class="chips" id="barSegModeSeg">
         <div class="chip on" data-m="even">等分</div><div class="chip" data-m="custom">自定义</div></div>
-        <p class="hint" id="barSegModeHint">「等分」各段宽度相同。「自定义」按每段时长占比分配宽度——在下方「GIF 设置 → 批量分段」里填每段时长，宽度随之联动。</p></div>
+        <p class="hint" id="barSegModeHint">「等分」各段宽度相同。「自定义」按每段百分比分配宽度——在下方「GIF 设置 → 批量分段」里填每段百分比，宽度随之联动。</p></div>
       <div class="row"><div class="switch">显示分界线<label class="toggle"><input type="checkbox" id="barDivOn" checked><span></span></label></div></div>
       <div class="row" id="barDivStyleRow"><label class="lab">分界线样式</label><div class="chips" id="barDivSeg">
         <div class="chip on" data-dv="solid">实线</div><div class="chip" data-dv="dashed">虚线</div><div class="chip" data-dv="dotted">点线</div></div>
@@ -475,10 +475,10 @@
       <div class="erow" style="align-items:flex-start">
         <span class="elab" style="margin-top:3px">批量分段</span>
         <div style="flex:1;min-width:240px">
-          <p class="hint" id="gifBatchNote" style="margin-top:0;margin-bottom:7px">按当前形态的<b>分区数</b>切成对应段（每段对应一页 PPT），填每段时长，自动换算进度区间，逐个导出走完该段的 GIF。</p>
+          <p class="hint" id="gifBatchNote" style="margin-top:0;margin-bottom:7px">按当前形态的<b>分区数</b>切成对应段（每段对应一页 PPT），填每段占总进度的<b>百分比</b>，自动换算进度区间，逐个导出走完该段的 GIF。各段合计不必正好 100%，按比例切即可。</p>
           <div id="gifSegDur"></div>
           <div style="display:flex;align-items:center;gap:9px;margin-top:7px;flex-wrap:wrap">
-            <button type="button" class="btn" id="gifSegEven" style="padding:5px 10px;font-size:11px">按总时长均分</button>
+            <button type="button" class="btn" id="gifSegEven" style="padding:5px 10px;font-size:11px">平均分配 (各 100÷段数 %)</button>
             <span class="hint" id="gifSegSum" style="margin-top:0"></span>
           </div>
           <button class="btn primary" id="dlGifBatch" style="padding:7px 16px;margin-top:8px">⬇ 批量生成分段 GIF</button>
@@ -3080,9 +3080,9 @@ function mountBarSegEditor(){
   ensureBarSegments(); clampBarMerges();
   var n=S.barSegments.length;
   host.innerHTML="";
-  // 标题行 + 合并按钮
+  // 标题行 + 合并按钮（吸顶，滚动时保持可见）
   var head=document.createElement("div");
-  head.style.cssText="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px";
+  head.style.cssText="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px;position:sticky;top:0;z-index:8;background:var(--card);padding:6px 0;";
   head.innerHTML='<label class="lab" style="margin:0">各分区 - 文字 · 填充</label>';
   var mergeBtn=document.createElement("button");
   mergeBtn.type="button"; mergeBtn.className="btn primary";
@@ -3104,38 +3104,60 @@ function mountBarSegEditor(){
   while(i<n){
     var idx1=i+1, grp=barGroupOf(idx1);
     if(grp){
-      // 合并组：把 s..e 的段包进一个淡橙色块
+      // 合并组：把 s..e 的段包进一个淡橙色块（可折叠）
       var block=document.createElement("div"); block.className="merge-block";
-      var cap=document.createElement("div"); cap.className="merge-cap"; cap.textContent="合并组 "+grp.s+"–"+grp.e+"（共用一个文字）"; block.appendChild(cap);
-      for(var k=grp.s-1;k<grp.e;k++){
-        var brow=document.createElement("div"); brow.className="sec-item";
-        var bidx=document.createElement("span"); bidx.className="idx"; bidx.textContent=(k+1); brow.appendChild(bidx);
-        var bname=document.createElement("span"); bname.style.cssText="flex:1;font-size:11.5px;color:var(--ink-soft)"; bname.textContent="第 "+(k+1)+" 段填充";
-        var bpal=buildPalette(S.barSegments[k].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(k),{caption:"填充"});
-        brow.appendChild(bname); brow.appendChild(bpal); block.appendChild(brow);
+      var collapsed=!!grp._collapsed;
+      // 标题行：点击折叠/展开
+      var cap=document.createElement("div"); cap.className="merge-cap";
+      cap.style.cssText="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none";
+      var arrow=document.createElement("span"); arrow.textContent=collapsed?"▸":"▾"; arrow.style.cssText="font-size:11px";
+      var capTxt=document.createElement("span");
+      capTxt.textContent= collapsed
+        ? ("合并组 "+grp.s+"–"+grp.e+"｜"+((grp.text||"").trim()||"（未填文字）"))
+        : ("合并组 "+grp.s+"–"+grp.e+"（共用一个文字）");
+      cap.appendChild(arrow); cap.appendChild(capTxt);
+      (function(gg){ cap.addEventListener("click",function(){ gg._collapsed=!gg._collapsed; mountBarSegEditor(); }); })(grp);
+      block.appendChild(cap);
+
+      if(!collapsed){
+        var body=document.createElement("div"); body.style.marginTop="8px";
+        // 整组填充（一键统一组内所有段的填充色；之后仍可逐段微调）
+        var allRow=document.createElement("div"); allRow.style.cssText="display:flex;align-items:center;gap:7px;margin-bottom:9px";
+        var allLab=document.createElement("span"); allLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; allLab.textContent="整组填充";
+        var allPal=buildPalette("",(function(gg){return function(col){ if(!col)return; for(var q=gg.s-1;q<gg.e;q++) S.barSegments[q].color=col; mountBarSegEditor(); render(); };})(grp),{caption:"统一填充"});
+        allRow.appendChild(allLab); allRow.appendChild(allPal); body.appendChild(allRow);
+        // 各段单独填充（仍可自定义覆盖）
+        for(var k=grp.s-1;k<grp.e;k++){
+          var brow=document.createElement("div"); brow.className="sec-item";
+          var bidx=document.createElement("span"); bidx.className="idx"; bidx.textContent=(k+1); brow.appendChild(bidx);
+          var bname=document.createElement("span"); bname.style.cssText="flex:1;font-size:11.5px;color:var(--ink-soft)"; bname.textContent="第 "+(k+1)+" 段填充";
+          var bpal=buildPalette(S.barSegments[k].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(k),{caption:"填充"});
+          brow.appendChild(bname); brow.appendChild(bpal); body.appendChild(brow);
+        }
+        // 组的共用文字（独占一行，全宽）
+        var gtRow=document.createElement("div"); gtRow.style.cssText="display:flex;align-items:center;gap:7px;margin-top:8px";
+        var gtLab=document.createElement("span"); gtLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; gtLab.textContent="共用文字";
+        var gt=document.createElement("input"); gt.type="text"; gt.value=grp.text||""; gt.placeholder="第 "+grp.s+"–"+grp.e+" 段共用文字"; gt.style.flex="1";
+        (function(gg,el){el.addEventListener("input",function(){gg.text=el.value;render();});})(grp,gt);
+        gtRow.appendChild(gtLab); gtRow.appendChild(gt);
+        body.appendChild(gtRow);
+        // 文字色 + 重选/解散（另起一行）
+        var grow=document.createElement("div"); grow.className="merge-grp-row";
+        var gtpal=buildPalette(grp.tcolor||"",(function(gg){return function(col){gg.tcolor=col||null;render();};})(grp),{caption:"文字",allowAuto:true});
+        var act=document.createElement("span"); act.className="grp-act";
+        var reBtn=document.createElement("button"); reBtn.type="button"; reBtn.className="btn"; reBtn.textContent="重选";
+        (function(gg){ reBtn.addEventListener("click",function(){
+          for(var q=gg.s;q<=gg.e;q++) barMergeSel[q]=true;
+          S.barMerges=S.barMerges.filter(function(x){return x!==gg;});
+          mountBarSegEditor(); render();
+        }); })(grp);
+        var delBtn=document.createElement("button"); delBtn.type="button"; delBtn.className="btn"; delBtn.textContent="解散";
+        (function(gg){ delBtn.addEventListener("click",function(){ S.barMerges=S.barMerges.filter(function(x){return x!==gg;}); mountBarSegEditor(); render(); }); })(grp);
+        act.appendChild(reBtn); act.appendChild(delBtn);
+        grow.appendChild(gtpal); grow.appendChild(act);
+        body.appendChild(grow);
+        block.appendChild(body);
       }
-      // 组的共用文字（独占一行，全宽）
-      var gtRow=document.createElement("div"); gtRow.style.cssText="display:flex;align-items:center;gap:7px;margin-top:8px";
-      var gtLab=document.createElement("span"); gtLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; gtLab.textContent="共用文字";
-      var gt=document.createElement("input"); gt.type="text"; gt.value=grp.text||""; gt.placeholder="第 "+grp.s+"–"+grp.e+" 段共用文字"; gt.style.flex="1";
-      (function(gg,el){el.addEventListener("input",function(){gg.text=el.value;render();});})(grp,gt);
-      gtRow.appendChild(gtLab); gtRow.appendChild(gt);
-      block.appendChild(gtRow);
-      // 文字色 + 重选/解散（另起一行）
-      var grow=document.createElement("div"); grow.className="merge-grp-row";
-      var gtpal=buildPalette(grp.tcolor||"",(function(gg){return function(col){gg.tcolor=col||null;render();};})(grp),{caption:"文字",allowAuto:true});
-      var act=document.createElement("span"); act.className="grp-act";
-      var reBtn=document.createElement("button"); reBtn.type="button"; reBtn.className="btn"; reBtn.textContent="重选";
-      (function(gg){ reBtn.addEventListener("click",function(){ // 解散并自动勾上这几段，便于增减
-        for(var q=gg.s;q<=gg.e;q++) barMergeSel[q]=true;
-        S.barMerges=S.barMerges.filter(function(x){return x!==gg;});
-        mountBarSegEditor(); render();
-      }); })(grp);
-      var delBtn=document.createElement("button"); delBtn.type="button"; delBtn.className="btn"; delBtn.textContent="解散";
-      (function(gg){ delBtn.addEventListener("click",function(){ S.barMerges=S.barMerges.filter(function(x){return x!==gg;}); mountBarSegEditor(); render(); }); })(grp);
-      act.appendChild(reBtn); act.appendChild(delBtn);
-      grow.appendChild(gtpal); grow.appendChild(act);
-      block.appendChild(grow);
       list.appendChild(block);
       i=grp.e; // 跳过整组
       continue;
@@ -3694,16 +3716,16 @@ function ensureSegDurs(){
   var info=currentSegInfo(), n=info.count;
   if(!Array.isArray(S.segDurs)) S.segDurs=[];
   if(S.segDurs.length!==n){
-    // 段数变了：重新按总时长均分
-    var each=(S.totalSec||0)/Math.max(1,n);
+    // 段数变了：重新按百分比均分（合计 100）
+    var each=100/Math.max(1,n);
     S.segDurs=[]; for(var i=0;i<n;i++) S.segDurs.push(each);
   }
   return n;
 }
-function segDurSumSec(){ return (S.segDurs||[]).reduce(function(a,b){return a+(+b||0);},0); }
+function segDurSumPct(){ return (S.segDurs||[]).reduce(function(a,b){return a+(+b||0);},0); }
 // 每段时长 -> 进度区间 [[0,a],[a,b],...]，按各段占"时长总和"的比例切（与总时长是否相等无关，保证拼满 0–100）
 function segDursToRanges(){
-  var sum=segDurSumSec(); if(sum<=0) return [];
+  var sum=segDurSumPct(); if(sum<=0) return [];
   var ranges=[], acc=0;
   (S.segDurs||[]).forEach(function(d){
     var a=acc/sum*100; acc+=(+d||0); var b=acc/sum*100;
@@ -3739,37 +3761,35 @@ function mountSegDurEditor(){
     return;
   }
   for(let i=0;i<n;i++){
-    var sec=S.segDurs[i]||0;
+    var pctv=S.segDurs[i]||0;
     var row=document.createElement("div"); row.className="segdur-row";
     var name=(info.labels[i]&&String(info.labels[i]).trim())||("分区"+(i+1));
     row.innerHTML='<span class="sd-idx">'+(i+1)+'</span><span class="sd-name" title="'+name+'">'+name+'</span>';
-    var m=document.createElement("input"); m.type="number"; m.className="sd-m"; m.min=0; m.value=Math.floor(sec/60);
-    var sepm=document.createElement("span"); sepm.className="sd-sep"; sepm.textContent="分";
-    var s=document.createElement("input"); s.type="number"; s.className="sd-s"; s.min=0; s.max=59; s.value=Math.round(sec%60);
-    var seps=document.createElement("span"); seps.className="sd-sep"; seps.textContent="秒";
-    var pct=document.createElement("span"); pct.className="sd-pct";
-    (function(idx,mEl,sEl,pctEl){
-      function upd(){ var v=(Math.max(0,+mEl.value||0))*60 + Math.max(0,Math.min(59,+sEl.value||0)); S.segDurs[idx]=v; refreshSegDur(); if(S.shape==="bar"&&S.barSegMode==="custom") render(); }
-      mEl.addEventListener("input",upd); sEl.addEventListener("input",upd);
-    })(i,m,s,pct);
-    row.appendChild(m);row.appendChild(sepm);row.appendChild(s);row.appendChild(seps);row.appendChild(pct);
+    var inp=document.createElement("input"); inp.type="number"; inp.className="sd-m"; inp.min=0; inp.max=100; inp.step="any"; inp.value=Math.round(pctv*10)/10;
+    var unit=document.createElement("span"); unit.className="sd-sep"; unit.textContent="%";
+    var rng=document.createElement("span"); rng.className="sd-pct";
+    (function(idx,el){
+      function upd(){ S.segDurs[idx]=Math.max(0,+el.value||0); refreshSegDur(); if(S.shape==="bar"&&S.barSegMode==="custom") render(); }
+      el.addEventListener("input",upd);
+    })(i,inp);
+    row.appendChild(inp);row.appendChild(unit);row.appendChild(rng);
     host.appendChild(row);
   }
   refreshSegDur();
 }
-// 刷新每段右侧的"占比/进度区间"与总和提示
+// 刷新每段右侧的"进度区间"与合计提示
 function refreshSegDur(){
   var host=$("gifSegDur"); if(!host) return;
   var ranges=segDursToRanges();
   var rows=host.querySelectorAll(".segdur-row");
   rows.forEach(function(row,i){
     var pctEl=row.querySelector(".sd-pct");
-    if(pctEl && ranges[i]) pctEl.textContent=fmtSeg(ranges[i][0])+"–"+fmtSeg(ranges[i][1])+"%";
+    if(pctEl && ranges[i]) pctEl.textContent="→ "+fmtSeg(ranges[i][0])+"–"+fmtSeg(ranges[i][1])+"%";
   });
-  var sum=segDurSumSec(), tot=S.totalSec||0;
+  var sum=segDurSumPct();
   var el=$("gifSegSum"); if(el){
-    var msg="各段合计 "+mmss(sum);
-    if(tot>0){ msg += " ／ 总时长 "+mmss(tot); if(Math.abs(sum-tot)>0.5) msg+="（不一致，导出仍按各段比例切）"; }
+    var msg="各段合计 "+(Math.round(sum*10)/10)+"%";
+    if(Math.abs(sum-100)>0.1) msg+="（不等于 100% 也没关系，导出按各段比例切）";
     el.textContent=msg;
   }
 }
@@ -3777,7 +3797,7 @@ async function exportGifBatch(){
   var n=ensureSegDurs();
   if(n===0){ toast("当前形态没有分区，无法分段。请切换到有分区的形态。"); return; }
   var ranges=segDursToRanges();
-  if(!ranges.length){ toast("请先为各段填入时长。"); return; }
+  if(!ranges.length){ toast("请先为各段填入百分比。"); return; }
   var info=currentSegInfo();
   gifCancel=false;
   $("busy").style.display="flex";
@@ -3804,7 +3824,7 @@ async function exportGifBatch(){
 $("dlGifBatch").addEventListener("click",exportGifBatch);
 $("gifSegEven").addEventListener("click",function(){
   var n=ensureSegDurs(); if(n===0)return;
-  var each=(S.totalSec||0)/n;
+  var each=100/n;
   S.segDurs=[]; for(var i=0;i<n;i++)S.segDurs.push(each);
   mountSegDurEditor();
   if(S.shape==="bar"&&S.barSegMode==="custom") render();
