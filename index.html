@@ -282,6 +282,9 @@
       </div>
       <div class="row"><div class="switch">显示进度百分比<label class="toggle"><input type="checkbox" id="showPct" checked><span></span></label></div></div>
       <div class="row"><label class="lab">百分比字号 <span class="val"><span id="pctSizeVal">26</span>px</span></label><input type="range" id="pctSize" min="12" max="64" value="26"></div>
+      <div class="row"><div class="switch">显示倒计时<label class="toggle"><input type="checkbox" id="showCountdown"><span></span></label></div></div>
+      <div class="row" id="cdSizeRow" style="display:none"><label class="lab">倒计时字号 <span class="val"><span id="cdSizeVal">26</span>px</span></label><input type="range" id="cdSize" min="12" max="64" value="26"></div>
+      <p class="hint" id="cdHint" style="margin-top:-2px;display:none">显示<b>剩余时间</b>。预览／单个 GIF／计时器里是<b>整体剩余</b>（如 2:30→0:00）；<b>批量分段</b>导出时每段 GIF 显示<b>该段自己的剩余</b>。真实时长 GIF、实时演示、计时器里会真实倒数；静态图显示对应时刻的值。百分比与倒计时只能开一个。</p>
       <div class="row">
         <label class="lab">推进方式</label>
         <div class="chips" id="growSeg">
@@ -527,6 +530,19 @@
       <div class="erow" style="align-items:flex-start">
         <span class="switch" style="gap:6px;font-size:11.5px;flex:none;margin-top:1px">含完成闪烁<label class="toggle" style="width:36px;height:20px"><input type="checkbox" id="gifFlash" checked><span></span></label></span>
         <p class="hint" style="margin-top:1px;flex:1;min-width:200px">播到<b>末尾</b>时整图快闪提醒。批量分段时<b>每段结尾都会闪</b>，适合按 PPT 各页独立使用。</p>
+      </div>
+      <div class="erow" id="gifFlashDurRow">
+        <span class="elab">闪烁时长</span>
+        <input type="range" id="gifFlashDur" min="1" max="60" value="3" style="width:130px">
+        <span style="font-size:11.5px;color:var(--ink);font-weight:700"><span id="gifFlashDurVal">3</span> 秒</span>
+        <span class="hint" style="margin-top:0;flex:1;min-width:140px">末尾快闪持续时间。<b>越长 GIF 文件越大</b>。</span>
+      </div>
+      <div class="erow" style="align-items:flex-start">
+        <span class="elab" style="margin-top:3px">循环方式</span>
+        <div style="flex:1;min-width:240px">
+          <label class="gif-type-opt"><input type="checkbox" id="gifLoopInf" checked><span><b>无限循环</b>——GIF 一直循环播放（贴 PPT 当装饰最常用）。</span></label>
+          <label class="gif-type-opt"><input type="checkbox" id="gifLoopOnce"><span><b>只播一次</b>——播完停在最后一帧不再重复（配合「含完成闪烁」当一次性提醒）。</span></label>
+        </div>
       </div>
 
       <!-- ===== 导出①：单个 GIF（折叠块，默认展开） ===== -->
@@ -2005,12 +2021,12 @@ const S = {
   petalSize:230, coreText:"",
   pwSize:200, pwCoreText:"进行中", pwSegments:[],
   heartSize:200, heartCoreText:"进行中", heartSegments:[],
-  cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true, pctSize:26,
+  cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true, pctSize:26, showCountdown:false, cdSize:26,
   segCnt:6, gap:3, segments:[], segDurs:[],
   barSeg:4, barDivOn:true, barDivStyle:"solid", barSegMode:"even", barSegments:[], barMerges:[], barSegW:[],
   elemOn:true, icon:"heart", elemCnt:5, elemSz:32, dimOff:true, elemFollow:true, elemColor:"#E2682C",
   alertOn:true, alertDur:60, soundOn:true, soundType:"4", soundRepeat:true, soundGap:2,
-  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:false, segBg:[]
+  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifFlashDur:3, gifLoop:true, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:false, segBg:[]
 };
 const VW=900, VH=580, CX=VW/2, CY=VH/2;
 const $=id=>document.getElementById(id);
@@ -2239,8 +2255,10 @@ function renderBar(){
     }
   }
   const pct=Math.round(S.prog)+"%";
-  let label=!S.showPct? '' : (horiz? '<text x="'+(x+w+16+amp)+'" y="'+CY+'" font-family="Fraunces,serif" font-size="'+(S.pctSize||26)+'" font-weight="600" fill="'+tint(S.stroke,1)+'" dominant-baseline="central">'+pct+'</text>'
-                 : '<text x="'+CX+'" y="'+(y-22-amp)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+(S.pctSize||26)+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+pct+'</text>');
+  const labelTxt = S.showCountdown ? countdownStr() : (S.showPct? pct : "");
+  const labelSize = S.showCountdown ? (S.cdSize||26) : (S.pctSize||26);
+  let label=(!S.showPct && !S.showCountdown)? '' : (horiz? '<text x="'+(x+w+16+amp)+'" y="'+CY+'" font-family="Fraunces,serif" font-size="'+labelSize+'" font-weight="600" fill="'+tint(S.stroke,1)+'" dominant-baseline="central">'+labelTxt+'</text>'
+                 : '<text x="'+CX+'" y="'+(y-22-amp)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+labelSize+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+labelTxt+'</text>');
   const barGid="barg";
   const barFeather=Math.max(4, (horiz?h:w)*0.10);
   const fillLayer = useSegFill
@@ -2296,16 +2314,16 @@ function renderRing(){
   if(!solid){
     // donut: hub fills the hole, shows label + %
     out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(rI-2)+'" fill="'+tint(S.track,0.5)+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
-    if(ct){out+='<text x="'+cx+'" y="'+(S.showPct?(cy-8):cy)+'" text-anchor="middle" '+(S.showPct?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(14,rI*0.26)+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+escapeXml(ct)+'</text>';
-      if(S.showPct) out+='<text x="'+cx+'" y="'+(cy+rI*0.34)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(18,rI*0.38)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+Math.round(S.prog)+'%</text>';}
-    else if(S.showPct) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,rI*0.5)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+Math.round(S.prog)+'%</text>';
-  } else if(S.pieCenterNum && S.showPct){
+    if(ct){out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-8):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(14,rI*0.26)+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+escapeXml(ct)+'</text>';
+      if(showProgLabel()) out+='<text x="'+cx+'" y="'+(cy+rI*0.34)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(18,rI*0.38)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+progLabelText()+'</text>';}
+    else if(showProgLabel()) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,rI*0.5)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+progLabelText()+'</text>';
+  } else if(S.pieCenterNum && showProgLabel()){
     // solid pie: NO center circle — the % (and optional label) float directly
     // on the pie so 孔径=0 truly means "no center circle".
     const tc="#ffffff";
     if(ct){out+='<text x="'+cx+'" y="'+(cy-rO*0.06)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+Math.max(13,rO*0.11)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.6" paint-order="stroke">'+escapeXml(ct)+'</text>';
-      out+='<text x="'+cx+'" y="'+(cy+rO*0.10)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(16,rO*0.16)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.8" paint-order="stroke">'+Math.round(S.prog)+'%</text>';}
-    else out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(18,rO*0.2)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.9" paint-order="stroke">'+Math.round(S.prog)+'%</text>';
+      out+='<text x="'+cx+'" y="'+(cy+rO*0.10)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(16,rO*0.16)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.8" paint-order="stroke">'+progLabelText()+'</text>';}
+    else out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(18,rO*0.2)+'" font-weight="700" fill="'+tc+'" stroke="rgba(0,0,0,0.25)" stroke-width="0.9" paint-order="stroke">'+progLabelText()+'</text>';
   }
   if(S.elemOn) out+=renderMilestones(getRingMilestonePositions(cx,cy,rO));
   return out;
@@ -2387,9 +2405,9 @@ function renderPetal(){
   }
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+core+'" fill="'+tint(S.fill,Math.min(1,S.op/100))+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
   const ct=(S.coreText||"").trim();
-  if(ct){out+='<text x="'+cx+'" y="'+(S.showPct?(cy-core*0.18):cy)+'" text-anchor="middle" '+(S.showPct?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(13,core*0.34)+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
-    if(S.showPct) out+='<text x="'+cx+'" y="'+(cy+core*0.32)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(15,core*0.42)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+Math.round(S.prog)+'%</text>';}
-  else if(S.showPct) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(18,core*0.6)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+Math.round(S.prog)+'%</text>';
+  if(ct){out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-core*0.18):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(13,core*0.34)+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
+    if(showProgLabel()) out+='<text x="'+cx+'" y="'+(cy+core*0.32)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(15,core*0.42)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+progLabelText()+'</text>';}
+  else if(showProgLabel()) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(18,core*0.6)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+progLabelText()+'</text>';
   if(S.elemOn) out+=renderMilestones(getFlowerMilestonePositions(cx,cy,core,step));
   return out;
 }
@@ -2534,11 +2552,11 @@ function renderPinwheel(){
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+hub+'" fill="'+tint(S.fill,Math.min(1,S.op/100))+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
   // status text + percent sit on/near the hub, centered, not covering blade labels.
   const ct=(S.pwCoreText||"").trim();
-  const pctTxt=Math.round(S.prog)+"%";
+  const pctTxt=progLabelText();
   if(ct){
-    out+='<text x="'+cx+'" y="'+(S.showPct?(cy-hub*0.10):cy)+'" text-anchor="middle" '+(S.showPct?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(10,hub*0.5)+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
-    if(S.showPct) out+='<text x="'+cx+'" y="'+(cy+hub*0.55)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(11,hub*0.62)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+pctTxt+'</text>';
-  } else if(S.showPct) {
+    out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-hub*0.10):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+Math.max(10,hub*0.5)+'" font-weight="600" fill="'+textOn(S.fill)+'">'+escapeXml(ct)+'</text>';
+    if(showProgLabel()) out+='<text x="'+cx+'" y="'+(cy+hub*0.55)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(11,hub*0.62)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+pctTxt+'</text>';
+  } else if(showProgLabel()) {
     out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(12,hub*0.8)+'" font-weight="700" fill="'+textOn(S.fill)+'">'+pctTxt+'</text>';
   }
 
@@ -2634,9 +2652,9 @@ function renderHeart(){
   }
   // center percentage only — NO circle, NO status text. A thin stroke keeps the number
   // legible across the two-colour halves.
-  const pctTxt=Math.round(S.prog)+"%";
+  const pctTxt=progLabelText();
   const dcy=cy+R*0.04;
-  if(S.showPct) out+='<text x="'+cx+'" y="'+dcy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(16,R*0.24)+'" font-weight="700" fill="#ffffff" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(2,R*0.018)+'" paint-order="stroke">'+pctTxt+'</text>';
+  if(showProgLabel()) out+='<text x="'+cx+'" y="'+dcy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(16,R*0.24)+'" font-weight="700" fill="#ffffff" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(2,R*0.018)+'" paint-order="stroke">'+pctTxt+'</text>';
   if(S.elemOn) out+=renderMilestones(getHeartMilestonePositions(cx,cy,R));
   return out;
 }
@@ -2711,8 +2729,8 @@ function renderClover(){
   // center small dark dot (caps the four roots; the finalized "medium dot")
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*0.12)+'" fill="'+tint(S.stroke,1)+'"/>';
   // progress percentage — below the petals, beside the stem
-  if(S.showPct){
-    const pctTxt=Math.round(S.prog)+"%";
+  if(showProgLabel()){
+    const pctTxt=progLabelText();
     const px=cx + R*0.42, py=cy + R*1.02;
     out+='<text x="'+px+'" y="'+py+'" text-anchor="start" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,R*0.22)+'" font-weight="700" fill="'+tint(S.stroke,1)+'">'+pctTxt+'</text>';
   }
@@ -3057,7 +3075,24 @@ $("elemOn").addEventListener("change",function(e){S.elemOn=e.target.checked;$("e
 $("dimOff").addEventListener("change",function(e){S.dimOff=e.target.checked;render();});
 $("elemFollow").addEventListener("change",function(e){S.elemFollow=e.target.checked;$("elemColorRow").style.opacity=e.target.checked?.45:1;$("elemColorRow").style.pointerEvents=e.target.checked?"none":"auto";render();});
 $("pieCenterNum").addEventListener("change",function(e){S.pieCenterNum=e.target.checked;render();});
-$("showPct").addEventListener("change",function(e){S.showPct=e.target.checked;render();});
+function syncPctCdRows(){
+  var cdRow=$("cdSizeRow"); if(cdRow) cdRow.style.display=S.showCountdown?"":"none";
+  var cdH=$("cdHint"); if(cdH) cdH.style.display=S.showCountdown?"":"none";
+  var pctRow=$("pctSize"); // 百分比字号行：百分比开时才有意义（不强制隐藏，保持简单）
+  var sp=$("showPct"); if(sp) sp.checked=!!S.showPct;
+  var sc=$("showCountdown"); if(sc) sc.checked=!!S.showCountdown;
+}
+$("showPct").addEventListener("change",function(e){
+  S.showPct=e.target.checked;
+  if(S.showPct){ S.showCountdown=false; }   // 二选一：开百分比则关倒计时
+  syncPctCdRows(); render();
+});
+$("showCountdown").addEventListener("change",function(e){
+  S.showCountdown=e.target.checked;
+  if(S.showCountdown){ S.showPct=false; }    // 二选一：开倒计时则关百分比
+  syncPctCdRows(); render();
+});
+$("cdSize").addEventListener("input",function(e){S.cdSize=+e.target.value;$("cdSizeVal").textContent=e.target.value;render();});
 $("centerText").addEventListener("input",function(e){S.centerText=e.target.value;render();});
 $("coreText").addEventListener("input",function(e){S.coreText=e.target.value;render();});
 $("pwCoreText").addEventListener("input",function(e){S.pwCoreText=e.target.value;render();});
@@ -3068,7 +3103,18 @@ $("soundPrev").addEventListener("click",function(){chimeOnce(S.soundType);});
 $("soundRepeat").addEventListener("change",function(e){S.soundRepeat=e.target.checked;$("soundGapRow").style.display=e.target.checked?"":"none";});
 $("soundGap").addEventListener("input",function(e){S.soundGap=+e.target.value;$("soundGapVal").textContent=(+e.target.value).toFixed(1);});
 $("transBg").addEventListener("change",function(e){S.transBg=e.target.checked;$("stage").classList.toggle("checker",e.target.checked);});
-$("gifFlash").addEventListener("change",function(e){S.gifFlash=e.target.checked;});
+$("gifFlash").addEventListener("change",function(e){S.gifFlash=e.target.checked; var r=$("gifFlashDurRow"); if(r) r.style.display=e.target.checked?"":"none";});
+$("gifFlashDur").addEventListener("input",function(e){S.gifFlashDur=+e.target.value;$("gifFlashDurVal").textContent=e.target.value;});
+// 循环方式：无限循环 / 只播一次（互斥，始终恰好一个）
+function applyGifLoop(){
+  var inf=$("gifLoopInf"), once=$("gifLoopOnce");
+  if(inf) inf.checked=!!S.gifLoop; if(once) once.checked=!S.gifLoop;
+}
+(function(){
+  var inf=$("gifLoopInf"), once=$("gifLoopOnce");
+  if(inf) inf.addEventListener("change",function(){ S.gifLoop=true; applyGifLoop(); });
+  if(once) once.addEventListener("change",function(){ S.gifLoop=false; applyGifLoop(); });
+})();
 $("gifRealtime").addEventListener("change",function(e){S.gifRealtime=e.target.checked;updateRealtimeHint();});
 // GIF 类型：两个互斥勾选框（始终恰好一个选中）
 function applyGifMode(){
@@ -3966,7 +4012,7 @@ function svgToImage(svgStr){return new Promise(function(res,rej){const img=new I
   img.onload=function(){res({img:img,url:url});};img.onerror=function(){URL.revokeObjectURL(url);rej(new Error("svg load"));};img.src=url;});}
 // Encode ONE segment (A%→B%) to a GIF blob and download it as fileName.
 // onProg(0..1) reports this segment's own progress for the busy bar.
-async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor){
+async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor,segSec){
   const realtime=!!S.gifRealtime;
   const BG=bgColor||S.gifBg;
   let total, delayMs;
@@ -3974,15 +4020,18 @@ async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor){
   else { const fps=S.gifFps, dur=S.gifDur; total=Math.max(2,Math.round(fps*dur)); delayMs=Math.round(1000/fps); }
   const sc = S.gifScale>=2?2:1; const W=VW*sc, H=VH*sc;
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
-  const enc=new GIFEncoder();enc.setRepeat(0);enc.setDelay(delayMs);enc.setSize(W,H);enc.setQuality(10);enc.start();
+  const enc=new GIFEncoder();enc.setRepeat(S.gifLoop===false?-1:0);enc.setDelay(delayMs);enc.setSize(W,H);enc.setQuality(10);enc.start();
   // 闪烁：每段播到自己末尾就闪（独立 GIF，由「含完成闪烁」开关控制），不再要求终点必须 100%
-  const flashFrames=(S.gifFlash && S.alertOn)? Math.max(8, Math.round((S.gifFps||15)*1.6)) : 0;
-  const flashDelay=120; // 末尾快闪固定用 120ms/帧，真实时长模式也不影响前面计时
+  const flashDelay=120; // 末尾快闪固定用 120ms/帧
+  const flashSec=Math.max(1,Math.min(60,S.gifFlashDur||3));
+  const flashFrames=(S.gifFlash && S.alertOn)? Math.max(8, Math.round(flashSec*1000/flashDelay)) : 0;
   const totalAll=total+flashFrames;
   let cancelled=false;
   for(let f=0; f<total; f++){
     if(gifCancel){cancelled=true;break;}
-    S.prog=A+(B-A)*(f/(total-1)); render();
+    S.prog=A+(B-A)*(f/(total-1));
+    if(segSec!=null) _cdOverrideSec=Math.max(0, segSec*(1-(f/(total-1))));  // 本段剩余倒计时
+    render();
     const r=await svgToImage(lastSVG);
     ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
     ctx.drawImage(r.img,0,0,W,H);URL.revokeObjectURL(r.url);
@@ -3992,7 +4041,7 @@ async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor){
   }
   if(!cancelled && flashFrames>0){
     enc.setDelay(flashDelay);               // 切换为快闪延迟（仅作用于后续闪烁帧）
-    S.prog=B; render(); const r=await svgToImage(lastSVG);   // 用该段自己的终点画面来闪
+    S.prog=B; if(segSec!=null) _cdOverrideSec=0; render(); const r=await svgToImage(lastSVG);   // 用该段自己的终点画面来闪
     for(let f=0;f<flashFrames;f++){
       if(gifCancel){cancelled=true;break;}
       ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
@@ -4009,6 +4058,7 @@ async function encodeGifSegment(A,B,fileName,onProg,onBytes,bgColor){
     if(onBytes){ onBytes(bytes); }
     else { dl(new Blob([bytes],{type:"image/gif"}),fileName); }
   }
+  _cdOverrideSec=null;   // 清除本段倒计时覆盖，避免影响预览
   return !cancelled;
 }
 async function exportGif(){
@@ -4045,6 +4095,26 @@ function humanTime(sec){
   if(s===0) return m+" 分";
   return m+" 分 "+s+" 秒";
 }
+// 倒计时时钟格式：<1小时 分:秒（5:00）；≥1小时 时:分:秒（1:15:00）
+function clockStr(sec){
+  sec=Math.max(0,Math.round(sec));
+  var h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+  function p2(n){return (n<10?"0":"")+n;}
+  if(h>0) return h+":"+p2(m)+":"+p2(s);
+  return m+":"+p2(s);
+}
+// 整体剩余时间（秒）：预览 / 单个完整 GIF / 计时器用。批量每段导出时用 _cdOverrideSec 覆盖为本段剩余。
+var _cdOverrideSec=null;
+function remainingSec(){
+  if(_cdOverrideSec!=null) return Math.max(0,_cdOverrideSec);
+  var total=S.totalSec||0;
+  var prog=Math.max(0,Math.min(100,S.prog||0))/100;
+  return Math.max(0,(1-prog)*total);
+}
+function countdownStr(){ return clockStr(remainingSec()); }
+// 进度条上"那个数字"：倒计时优先，其次百分比；都没开则空。供各形态统一调用。
+function showProgLabel(){ return !!(S.showPct || S.showCountdown); }
+function progLabelText(){ return S.showCountdown ? countdownStr() : (Math.round(S.prog)+"%"); }
 // 条状自定义段宽数组，按段数补齐，默认均分（合计 100）
 function ensureBarSegW(){
   var n=Math.max(1,S.barSeg||1);
@@ -4225,6 +4295,7 @@ async function exportGifBatch(){
     for(let i=0;i<N;i++){
       if(gifCancel)break;
       var A=ranges[i][0], B=ranges[i][1];
+      var segSec=Math.max(0,(B-A)/100*(S.totalSec||0));   // 本段时长(秒)，用于本段倒计时
       var nm=(info.labels[i]&&String(info.labels[i]).trim())||("seg"+(i+1));
       nm=nm.replace(/[\\/:*?"<>|]/g,"").slice(0,16);
       var fname="progress_"+String(i+1).padStart(2,"0")+"_"+nm+".gif";
@@ -4232,7 +4303,7 @@ async function exportGifBatch(){
       await encodeGifSegment(A,B,fname,function(p){
         var overall=(i+p)/N;
         $("busyFill").style.width=Math.round(overall*100)+"%";
-      },(function(name){ return function(bytes){ zipFiles.push({name:name,data:bytes}); }; })(fname),(S.segBg&&S.segBg[i])||S.gifBg);
+      },(function(name){ return function(bytes){ zipFiles.push({name:name,data:bytes}); }; })(fname),(S.segBg&&S.segBg[i])||S.gifBg,segSec);
     }
     if(!gifCancel && zipFiles.length){
       $("busyTxt").textContent="正在打包 "+zipFiles.length+" 个 GIF…";
@@ -4298,6 +4369,7 @@ $("busyCancel").addEventListener("click",function(){gifCancel=true;});
   if(typeof mountSegDurEditor==="function") mountSegDurEditor();
   setupCollapsibleGroups();
   if(typeof applyGifMode==="function") applyGifMode();
+  if(typeof applyGifLoop==="function") applyGifLoop();
 })();
 
 // 把每个 .group 变成可折叠：大标题整行可点 + 醒目箭头；默认折叠非必备板块
