@@ -2819,26 +2819,27 @@ $("dlLauncher").addEventListener("click",function(){
   if(S.shape==="bar"){ WW=560; HH=130; }
   else { WW=420; HH=380; }
   const NL="\r\n";  // Windows line endings
-  // PowerShell single-quoted strings need '' for a literal single quote.
-  const psUrl=url.replace(/'/g,"''");
-  // --- Why a redirect file instead of --app="<long url>" directly ---
-  // Chrome/Edge app mode truncates very long URLs passed on the command line,
-  // which drops the long ?c=<config> param -> timer falls back to defaults
-  // (wrong shape/color, runs fast). Fix: PowerShell writes a tiny local .html
-  // whose only job is location.replace('<full url>'); then app mode opens THAT
-  // short file:// path. The browser itself navigates to the full link (no length
-  // limit), so embed=1 + full config always arrive intact.
-  const ps =
-    "$u='"+psUrl+"';"+
-    // build the redirect html; escape the URL for a JS single-quoted string and for HTML
-    "$tmp=Join-Path $env:TEMP ('pstimer_'+[guid]::NewGuid().ToString('N')+'.html');"+
-    "$q=[char]34; $sq=[char]39;"+
-    "$html='<!doctype html><meta charset='+$q+'utf-8'+$q+'><title>t</title><script>location.replace('+$sq+$u+$sq+');</'+'script>';"+
-    "[System.IO.File]::WriteAllText($tmp,$html,(New-Object System.Text.UTF8Encoding $false));"+
-    "$a='--app=file:///'+($tmp -replace '\\\\','/')+' --window-size="+WW+","+HH+"';"+
-    "$p=@(\\\"${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe\\\",\\\"${env:ProgramFiles}\\Microsoft\\Edge\\Application\\msedge.exe\\\",\\\"${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe\\\",\\\"${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe\\\");"+
-    "$b=$null; foreach($x in $p){ if(Test-Path $x){ $b=$x; break } }"+
-    "if($b){ try{ Start-Process $b -ArgumentList $a }catch{ Write-Host $_.Exception.Message; pause } } else { Write-Host 'no browser found'; pause }";
+  // --- Approach: pure batch, no PowerShell, no URL on any command line ---
+  // Every prior failure traced back to the long URL being passed as a command-line
+  // ARGUMENT (to --app= or to powershell -Command), where length limits / & handling
+  // / quote escaping corrupt it. Here the URL is never an argument: we echo a tiny
+  // redirect HTML to a temp file (URL is file CONTENT), then open that short local
+  // path in app mode. The browser itself navigates to the full link -> no limits.
+  //
+  // In a batch `echo`, special chars must be caret-escaped. We escape the whole URL
+  // for echo context: & | < > ^ ( ) %  ->  ^&  ^|  ^<  ^>  ^^  ^(  ^)  and % -> %%.
+  function batEcho(s){
+    return s
+      .replace(/\^/g,"^^")
+      .replace(/&/g,"^&")
+      .replace(/\|/g,"^|")
+      .replace(/</g,"^<")
+      .replace(/>/g,"^>")
+      .replace(/\(/g,"^(")
+      .replace(/\)/g,"^)")
+      .replace(/%/g,"%%");
+  }
+  const urlEsc=batEcho(url);
   const lines=[
     "@echo off",
     "chcp 65001 >nul",
@@ -2847,15 +2848,33 @@ $("dlLauncher").addEventListener("click",function(){
     "REM ============================================================",
     "REM  进度条工坊 · 计时器小窗启动器（链接已自动填好，双击即用）",
     "REM  以浏览器「应用模式」打开，得到无地址栏的纯计时器小窗。",
-    "REM  做法：PowerShell 先在临时目录生成一个极小的跳转网页，",
-    "REM  应用模式打开这个本地短路径，再由浏览器自身跳转到完整长链接，",
-    "REM  从而绕开 --app= 命令行对超长网址的截断（截断会导致配置丢失、",
-    "REM  显示成默认形状、跑得飞快）。",
+    "REM  做法：把一个极小的跳转网页写到临时文件（完整网址作为文件内容，",
+    "REM  而非命令行参数，从根本上避开长度限制与 & 转义问题），再用应用",
+    "REM  模式打开这个本地短路径，由浏览器自身跳转到完整长链接。",
     "REM  要让小窗浮在 PPT 放映之上：装 PowerToys，开 Always-On-Top，",
     "REM  点中小窗后按 Win+Ctrl+T 钉在最顶层。",
     "REM ============================================================",
     "",
-    'powershell -NoProfile -ExecutionPolicy Bypass -Command "'+ps+'"'
+    'set "TMP_HTML=%TEMP%\\pstimer_%RANDOM%%RANDOM%.html"',
+    "",
+    "REM 写跳转网页（URL 是文件内容，echo 已对特殊字符做 ^ 转义）",
+    '>  "%TMP_HTML%" echo ^<!doctype html^>^<meta charset="utf-8"^>^<title^>t^</title^>',
+    '>> "%TMP_HTML%" echo ^<script^>location.replace("'+urlEsc+'");^</script^>',
+    "",
+    'set "TARGET=file:///%TMP_HTML:\\=/%"',
+    "",
+    'set "EDGE=%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe"',
+    'set "EDGE2=%ProgramFiles%\\Microsoft\\Edge\\Application\\msedge.exe"',
+    'set "CHROME=%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"',
+    'set "CHROME2=%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"',
+    "",
+    'if exist "%EDGE%"    ( start "" "%EDGE%"    --app="%TARGET%" --window-size='+WW+','+HH+' & goto :done )',
+    'if exist "%EDGE2%"   ( start "" "%EDGE2%"   --app="%TARGET%" --window-size='+WW+','+HH+' & goto :done )',
+    'if exist "%CHROME%"  ( start "" "%CHROME%"  --app="%TARGET%" --window-size='+WW+','+HH+' & goto :done )',
+    'if exist "%CHROME2%" ( start "" "%CHROME2%" --app="%TARGET%" --window-size='+WW+','+HH+' & goto :done )',
+    "echo 未找到 Edge 或 Chrome 浏览器，请确认已安装其中之一。",
+    "pause",
+    ":done"
   ];
   // UTF-8 BOM so the Chinese comments render correctly in the .bat
   const bom="\ufeff";
