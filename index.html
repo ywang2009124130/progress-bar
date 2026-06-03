@@ -281,9 +281,9 @@
           <span style="font-size:11px;color:var(--ink-soft)">驱动计时</span>
         </div>
       </div>
-      <div class="row"><div class="switch">显示进度百分比<label class="toggle"><input type="checkbox" id="showPct" checked><span></span></label></div></div>
+      <div class="row"><div class="switch">显示进度百分比<label class="toggle"><input type="checkbox" id="showPct"><span></span></label></div></div>
       <div class="row" id="pctSizeRow" style="display:none"><label class="lab lab3">百分比字号 <span class="val"><span id="pctSizeVal">26</span>px</span></label><input type="range" id="pctSize" min="12" max="64" value="26"></div>
-      <div class="row"><div class="switch">显示倒计时<label class="toggle"><input type="checkbox" id="showCountdown"><span></span></label></div></div>
+      <div class="row"><div class="switch">显示倒计时<label class="toggle"><input type="checkbox" id="showCountdown" checked><span></span></label></div></div>
       <div class="row" id="cdSizeRow" style="display:none"><label class="lab lab3">倒计时字号 <span class="val"><span id="cdSizeVal">26</span>px</span></label><input type="range" id="cdSize" min="12" max="64" value="26"></div>
       <p class="hint" id="cdHint" style="margin-top:-2px;display:none">显示<b>剩余时间</b>。预览／单个 GIF／计时器里是<b>整体剩余</b>（如 2:30→0:00）；<b>批量分段</b>导出时每段 GIF 显示<b>该段自己的剩余</b>。真实时长 GIF、实时演示、计时器里会真实倒数；静态图显示对应时刻的值。百分比与倒计时只能开一个。</p>
       <div class="row">
@@ -2027,7 +2027,7 @@ const S = {
   petalSize:230, coreText:"",
   pwSize:200, pwCoreText:"进行中", pwSegments:[],
   heartSize:200, heartCoreText:"进行中", heartSegments:[],
-  cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:true, pctSize:26, showCountdown:false, cdSize:26,
+  cloverSize:155, cloverCoreText:"", cloverSegments:[], showPct:false, pctSize:26, showCountdown:true, cdSize:26,
   segFontScaleByShape:{bar:1,ring:1,petal:1,pinwheel:1,heart:1,clover:1},
   centerFontScaleByShape:{ring:1,petal:1,pinwheel:1,heart:1,clover:1},
   segCnt:6, gap:3, segments:[], segDurs:[],
@@ -2767,22 +2767,29 @@ function render(){
 function tightBox(){
   try{
     var host=$("svgHost"); if(!host) return null;
-    var svg=host.querySelector("svg"); if(!svg||!svg.getBBox) return null;
-    // 合并所有子元素的几何包围盒（defs 无尺寸，自动忽略）
+    var svg=host.querySelector("svg"); if(!svg||typeof svg.getBBox!=="function") return null;
     var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity, got=false;
-    var kids=svg.querySelectorAll("*");
-    for(var i=0;i<kids.length;i++){
-      var el=kids[i];
-      if(el.tagName==="defs"||el.tagName==="filter"||el.closest("defs")) continue;
-      if(typeof el.getBBox!=="function") continue;
-      var b; try{ b=el.getBBox(); }catch(e){ continue; }
-      if(!b||(!b.width&&!b.height)) continue;
-      if(b.x<minX)minX=b.x; if(b.y<minY)minY=b.y;
-      if(b.x+b.width>maxX)maxX=b.x+b.width; if(b.y+b.height>maxY)maxY=b.y+b.height;
-      got=true;
+    // 优先：直接对根 <svg> 取 getBBox（现代浏览器返回所有可见子元素的合并几何框，自动排除 defs）
+    try{
+      var rb=svg.getBBox();
+      if(rb && (rb.width||rb.height)){ minX=rb.x; minY=rb.y; maxX=rb.x+rb.width; maxY=rb.y+rb.height; got=true; }
+    }catch(e){}
+    // 回退：逐元素合并
+    if(!got){
+      var kids=svg.querySelectorAll("path,rect,circle,ellipse,polygon,polyline,line,text,g,image");
+      for(var i=0;i<kids.length;i++){
+        var el=kids[i];
+        if(el.tagName==="defs"||(el.closest&&el.closest("defs"))) continue;
+        if(typeof el.getBBox!=="function") continue;
+        var b; try{ b=el.getBBox(); }catch(e2){ continue; }
+        if(!b||(!b.width&&!b.height)) continue;
+        if(b.x<minX)minX=b.x; if(b.y<minY)minY=b.y;
+        if(b.x+b.width>maxX)maxX=b.x+b.width; if(b.y+b.height>maxY)maxY=b.y+b.height;
+        got=true;
+      }
     }
-    if(!got||!isFinite(minX)) return null;
-    // 阴影/发光扩散补偿：soft 阴影 dy3+stdDev5≈18，glow stdDev4≈12，统一留 20 单位（这是阴影实际所在，非空白）
+    if(!got||!isFinite(minX)||maxX<=minX||maxY<=minY) return null;
+    // 阴影/发光扩散补偿（这是阴影实际所在，非空白）
     var pad=20;
     var x=minX-pad, y=minY-pad, w=(maxX-minX)+pad*2, h=(maxY-minY)+pad*2;
     return {x:x,y:y,w:w,h:h};
@@ -3215,8 +3222,8 @@ function defaultSegments(n){const arr=[];
   for(let i=0;i<n;i++)arr.push({text:(S.segments[i]?S.segments[i].text:pad2(i)), color:(S.segments[i]&&S.segments[i].color)?S.segments[i].color:palAt(i), tcolor:(S.segments[i]&&S.segments[i].tcolor)||null});return arr;}
 function defaultPwSegments(){const arr=[];
   for(let i=0;i<5;i++)arr.push({text:(S.pwSegments[i]?S.pwSegments[i].text:pad2(i)), color:(S.pwSegments[i]&&S.pwSegments[i].color)?S.pwSegments[i].color:palAt(i), tcolor:(S.pwSegments[i]&&S.pwSegments[i].tcolor)||null});return arr;}
-function defaultHeartSegments(){const arr=[];
-  for(let i=0;i<2;i++)arr.push({text:(S.heartSegments[i]?S.heartSegments[i].text:pad2(i)), color:(S.heartSegments[i]&&S.heartSegments[i].color)?S.heartSegments[i].color:palAt(i), tcolor:(S.heartSegments[i]&&S.heartSegments[i].tcolor)||null});return arr;}
+function defaultHeartSegments(){const arr=[]; var heartDefaults=["#D24B3C","#4FA45A"];
+  for(let i=0;i<2;i++)arr.push({text:(S.heartSegments[i]?S.heartSegments[i].text:pad2(i)), color:(S.heartSegments[i]&&S.heartSegments[i].color)?S.heartSegments[i].color:(heartDefaults[i]||palAt(i)), tcolor:(S.heartSegments[i]&&S.heartSegments[i].tcolor)||null});return arr;}
 function defaultCloverSegments(){const arr=[];
   for(let i=0;i<4;i++)arr.push({text:(S.cloverSegments[i]?S.cloverSegments[i].text:pad2(i)), color:(S.cloverSegments[i]&&S.cloverSegments[i].color)?S.cloverSegments[i].color:palAt(i), tcolor:(S.cloverSegments[i]&&S.cloverSegments[i].tcolor)||null});return arr;}
 // Reusable fixed-count per-part editor (no count/gap sliders). segs is the live array.
@@ -4482,9 +4489,8 @@ function setupCollapsibleGroups(){
     // 箭头
     var arrow=document.createElement("span"); arrow.className="gco-arrow"; arrow.textContent="▾";
     h2.appendChild(arrow);
-    // 默认折叠：标题含"里程碑"或"到点提醒"
-    var t=h2.textContent||"";
-    if(/里程碑|到点提醒/.test(t)){ g.classList.add("collapsed"); arrow.textContent="▸"; }
+    // 默认全部折叠（用户按需展开）
+    g.classList.add("collapsed"); arrow.textContent="▸";
     h2.addEventListener("click",function(){
       var col=g.classList.toggle("collapsed");
       arrow.textContent=col?"▸":"▾";
