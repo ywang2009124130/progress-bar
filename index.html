@@ -2821,16 +2821,24 @@ $("dlLauncher").addEventListener("click",function(){
   const NL="\r\n";  // Windows line endings
   // PowerShell single-quoted strings need '' for a literal single quote.
   const psUrl=url.replace(/'/g,"''");
-  // Build the PowerShell command as ONE line (no ^ continuation, which is fragile).
-  // URL lives inside a single-quoted PS string, so & needs no escaping and can never
-  // be treated as a cmd command separator. Start-Process passes the whole URL as a
-  // single argument, so embed=1 & the full config always arrive intact -> pure timer.
+  // --- Why a redirect file instead of --app="<long url>" directly ---
+  // Chrome/Edge app mode truncates very long URLs passed on the command line,
+  // which drops the long ?c=<config> param -> timer falls back to defaults
+  // (wrong shape/color, runs fast). Fix: PowerShell writes a tiny local .html
+  // whose only job is location.replace('<full url>'); then app mode opens THAT
+  // short file:// path. The browser itself navigates to the full link (no length
+  // limit), so embed=1 + full config always arrive intact.
   const ps =
     "$u='"+psUrl+"';"+
-    "$a='--app='+$u+' --window-size="+WW+","+HH+"';"+
+    // build the redirect html; escape the URL for a JS single-quoted string and for HTML
+    "$tmp=Join-Path $env:TEMP ('pstimer_'+[guid]::NewGuid().ToString('N')+'.html');"+
+    "$q=[char]34; $sq=[char]39;"+
+    "$html='<!doctype html><meta charset='+$q+'utf-8'+$q+'><title>t</title><script>location.replace('+$sq+$u+$sq+');</'+'script>';"+
+    "[System.IO.File]::WriteAllText($tmp,$html,(New-Object System.Text.UTF8Encoding $false));"+
+    "$a='--app=file:///'+($tmp -replace '\\\\','/')+' --window-size="+WW+","+HH+"';"+
     "$p=@(\\\"${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe\\\",\\\"${env:ProgramFiles}\\Microsoft\\Edge\\Application\\msedge.exe\\\",\\\"${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe\\\",\\\"${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe\\\");"+
     "$b=$null; foreach($x in $p){ if(Test-Path $x){ $b=$x; break } }"+
-    "if($b){ Start-Process $b -ArgumentList $a } else { Write-Host 'no browser'; pause }";
+    "if($b){ try{ Start-Process $b -ArgumentList $a }catch{ Write-Host $_.Exception.Message; pause } } else { Write-Host 'no browser found'; pause }";
   const lines=[
     "@echo off",
     "chcp 65001 >nul",
@@ -2839,8 +2847,10 @@ $("dlLauncher").addEventListener("click",function(){
     "REM ============================================================",
     "REM  进度条工坊 · 计时器小窗启动器（链接已自动填好，双击即用）",
     "REM  以浏览器「应用模式」打开，得到无地址栏的纯计时器小窗。",
-    "REM  用 PowerShell 启动，整条网址作为单一参数传入，",
-    "REM  彻底避免网址里的 & 被批处理截断（截断会导致配置丢失、跑得飞快）。",
+    "REM  做法：PowerShell 先在临时目录生成一个极小的跳转网页，",
+    "REM  应用模式打开这个本地短路径，再由浏览器自身跳转到完整长链接，",
+    "REM  从而绕开 --app= 命令行对超长网址的截断（截断会导致配置丢失、",
+    "REM  显示成默认形状、跑得飞快）。",
     "REM  要让小窗浮在 PPT 放映之上：装 PowerToys，开 Always-On-Top，",
     "REM  点中小窗后按 Win+Ctrl+T 钉在最顶层。",
     "REM ============================================================",
