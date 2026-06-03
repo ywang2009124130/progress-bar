@@ -2839,7 +2839,10 @@ $("dlLauncher").addEventListener("click",function(){
     "$tmp=Join-Path $env:TEMP ('pstimer_'+[guid]::NewGuid().ToString('N')+'.html');"+
     "[System.IO.File]::WriteAllBytes($tmp,$d);"+
     "$a='--app=file:///'+($tmp -replace '\\\\','/')+' --window-size="+WW+","+HH+"';"+
-    "$p=@('${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe','${env:ProgramFiles}\\Microsoft\\Edge\\Application\\msedge.exe','${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe','${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe','${env:LocalAppData}\\Microsoft\\Edge\\Application\\msedge.exe','${env:LocalAppData}\\Google\\Chrome\\Application\\chrome.exe');"+
+    "$pf86=[Environment]::GetEnvironmentVariable('ProgramFiles(x86)');"+
+    "$pf=$env:ProgramFiles;"+
+    "$lad=$env:LocalAppData;"+
+    "$p=@($pf86+'\\Microsoft\\Edge\\Application\\msedge.exe',$pf+'\\Microsoft\\Edge\\Application\\msedge.exe',$lad+'\\Microsoft\\Edge\\Application\\msedge.exe',$pf+'\\Google\\Chrome\\Application\\chrome.exe',$pf86+'\\Google\\Chrome\\Application\\chrome.exe',$lad+'\\Google\\Chrome\\Application\\chrome.exe');"+
     "$b=$null; foreach($x in $p){ if(Test-Path $x){ $b=$x; break } }"+
     "if($b){ Start-Process $b -ArgumentList $a } else { Write-Host 'no browser found'; pause }";
   const headerLines=[
