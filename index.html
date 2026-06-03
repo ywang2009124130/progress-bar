@@ -84,6 +84,14 @@
   .pal-more-lab input[type=color]{width:24px;height:20px;border:1px solid var(--line);border-radius:5px;padding:0;cursor:pointer;background:none}
   .pal-eye{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:4px 8px;font-family:"DM Sans";font-size:11px;color:var(--ink);cursor:pointer;transition:.12s}
   .pal-eye:hover{border-color:var(--ink-soft)}
+  .pal-recent{position:relative;display:inline-block}
+  .pal-rec-btn{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:4px 8px;font-family:"DM Sans";font-size:11px;color:var(--ink);cursor:pointer;transition:.12s}
+  .pal-rec-btn:hover{border-color:var(--ink-soft)}
+  .pal-rec-btn.open{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .pal-rec-pop{position:absolute;bottom:calc(100% + 6px);left:0;z-index:30;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px;box-shadow:0 12px 30px -12px #2a230f66;display:flex;flex-wrap:wrap;gap:5px;width:172px}
+  .pal-rec-pop .sw{width:26px;height:18px;border-radius:4px;cursor:pointer;border:1px solid rgba(0,0,0,0.18);transition:transform .08s}
+  .pal-rec-pop .sw:hover{transform:scale(1.15)}
+  .pal-rec-empty{font-size:11px;color:var(--ink-soft)}
   .pal-more-hex{font-size:10px;color:var(--ink-soft);font-variant-numeric:tabular-nums;text-transform:uppercase;margin-left:auto}
   .timefield{display:flex;gap:8px;align-items:center}
   .timefield input{width:64px;text-align:center}
@@ -429,6 +437,10 @@
             <div class="swatch-more">
               <label>更多颜色…<input type="color" id="gifBg" value="#FFFFFF"></label>
               <button type="button" class="pal-eye" id="gifBgEye" title="从屏幕任意处吸取颜色">🖍 吸管</button>
+              <div class="pal-recent">
+                <button type="button" class="pal-rec-btn" id="gifBgRecBtn">最近 ▾</button>
+                <div class="pal-rec-pop" id="gifBgRecPop" style="display:none"></div>
+              </div>
               <span class="curhex" id="gifBgHex">#FFFFFF</span>
             </div>
           </div>
@@ -2628,6 +2640,29 @@ bindRange("elemCnt","elemCnt","elemCntVal");bindRange("elemSz","elemSz","elemSzV
 bindRange("alertDur","alertDur","alertDurVal");
 $("rIn").addEventListener("input",function(e){S.rIn=+e.target.value;$("rInVal").textContent=e.target.value;render();});
 
+// ---- 全局「最近使用的颜色」（所有色板共享；优先 localStorage 持久化，失败则内存） ----
+var RecentColors=(function(){
+  var KEY="ps_recent_colors", MAX=8, mem=[], subs=[];
+  function load(){
+    try{ var s=localStorage.getItem(KEY); if(s){ var a=JSON.parse(s); if(Array.isArray(a)) return a.slice(0,MAX); } }catch(e){}
+    return mem.slice(0,MAX);
+  }
+  function save(a){
+    mem=a.slice(0,MAX);
+    try{ localStorage.setItem(KEY, JSON.stringify(mem)); }catch(e){}
+  }
+  return {
+    list:function(){ return load(); },
+    add:function(col){
+      if(!col) return;
+      col=String(col).toLowerCase();
+      var a=load().filter(function(c){return c.toLowerCase()!==col;});
+      a.unshift(col); save(a);
+      subs.forEach(function(fn){ try{fn();}catch(e){} });
+    },
+    subscribe:function(fn){ subs.push(fn); }
+  };
+})();
 // 通用外观三色：用可开合色板（含更多颜色 + 吸管），替代原生取色器
 (function(){
   function mountCommon(hostId,key){
@@ -2674,7 +2709,7 @@ $("rIn").addEventListener("input",function(e){S.rIn=+e.target.value;$("rInVal").
     var b=document.createElement("button");
     b.type="button";b.className="sw";b.dataset.c=hex;
     b.style.background=hex;b.title=hex;
-    b.addEventListener("click",function(){setColor(hex,true);closePop();});
+    b.addEventListener("click",function(){setColor(hex,true);RecentColors.add(hex);closePop();});
     return b;
   }
   // 主题行
@@ -2696,16 +2731,35 @@ $("rIn").addEventListener("input",function(e){S.rIn=+e.target.value;$("rInVal").
   pop.addEventListener("click",function(e){e.stopPropagation();});
   document.addEventListener("click",function(){closePop();});
   // 原生取色器（更多颜色）
-  native.addEventListener("input",function(){setColor(native.value,true);});
+  native.addEventListener("input",function(){setColor(native.value,true);RecentColors.add(native.value);});
   // 屏幕吸管
   var gifEye=$("gifBgEye");
   if(gifEye){
     if(!("EyeDropper" in window)){ gifEye.style.display="none"; }
     gifEye.addEventListener("click",function(e){e.stopPropagation();
       try{ var ed=new window.EyeDropper();
-        ed.open().then(function(r){ if(r&&r.sRGBHex) setColor(r.sRGBHex,true); }).catch(function(){});
+        ed.open().then(function(r){ if(r&&r.sRGBHex){ setColor(r.sRGBHex,true); RecentColors.add(r.sRGBHex);} }).catch(function(){});
       }catch(err){}
     });
+  }
+  // 最近使用（下拉，全局共享）
+  var recBtn=$("gifBgRecBtn"), recPop=$("gifBgRecPop");
+  if(recBtn&&recPop){
+    function gifRenderRecent(){
+      recPop.innerHTML="";
+      var list=RecentColors.list();
+      if(!list.length){ var em=document.createElement("span");em.className="pal-rec-empty";em.textContent="暂无";recPop.appendChild(em);return; }
+      list.forEach(function(c){
+        var sw=document.createElement("div");sw.className="sw";sw.style.background=c;sw.title=c;
+        sw.addEventListener("click",function(e){e.stopPropagation();setColor(c,true);RecentColors.add(c);recPop.style.display="none";recBtn.classList.remove("open");});
+        recPop.appendChild(sw);
+      });
+    }
+    recBtn.addEventListener("click",function(e){e.stopPropagation();
+      var open=recPop.style.display==="none"; if(open) gifRenderRecent();
+      recPop.style.display=open?"":"none"; recBtn.classList.toggle("open",open);
+    });
+    RecentColors.subscribe(function(){ if(recPop.style.display!=="none") gifRenderRecent(); });
   }
 
   setColor(S.gifBg||"#FFFFFF",false);
@@ -2841,6 +2895,7 @@ function buildPalette(current,onPick,opts){
     var hx=panel.querySelector(".pal-more-hex"); if(hx) hx.textContent=cur?cur.toUpperCase():"自动";
     var n2=panel.querySelector(".pal-more input[type=color]"); if(n2&&col) n2.value=(col[0]==='#'?col:('#'+col));
     onPick(col); // col may be null => clear (auto)
+    if(col) RecentColors.add(col);
     panel.style.display="none";trig.classList.remove("open");
   };
   const addSw=function(parent,col){
@@ -2882,7 +2937,27 @@ function buildPalette(current,onPick,opts){
     }catch(e){}
   });
   const hexSp=document.createElement("span");hexSp.className="pal-more-hex";hexSp.textContent=cur?cur.toUpperCase():"自动";
-  more.appendChild(moreLab);more.appendChild(eye);more.appendChild(hexSp);
+  // --- 最近使用的颜色（下拉，全局共享）---
+  const recentWrap=document.createElement("div");recentWrap.className="pal-recent";
+  const recBtn=document.createElement("button");recBtn.type="button";recBtn.className="pal-rec-btn";recBtn.textContent="最近 ▾";
+  const recPop=document.createElement("div");recPop.className="pal-rec-pop";recPop.style.display="none";
+  function renderRecent(){
+    recPop.innerHTML="";
+    var list=RecentColors.list();
+    if(!list.length){ var em=document.createElement("span");em.className="pal-rec-empty";em.textContent="暂无";recPop.appendChild(em); return; }
+    list.forEach(function(c){
+      var sw=document.createElement("div");sw.className="sw";sw.style.background=c;sw.title=c;
+      sw.addEventListener("click",function(e){e.stopPropagation();applyCustom(c);recPop.style.display="none";recBtn.classList.remove("open");});
+      recPop.appendChild(sw);
+    });
+  }
+  recBtn.addEventListener("click",function(e){e.stopPropagation();
+    var open=recPop.style.display==="none"; if(open) renderRecent();
+    recPop.style.display=open?"":"none"; recBtn.classList.toggle("open",open);
+  });
+  RecentColors.subscribe(function(){ if(recPop.style.display!=="none") renderRecent(); });
+  recentWrap.appendChild(recBtn);recentWrap.appendChild(recPop);
+  more.appendChild(moreLab);more.appendChild(eye);more.appendChild(recentWrap);more.appendChild(hexSp);
   panel.appendChild(more);
   function applyCustom(col){
     col=col.toLowerCase();
@@ -2890,6 +2965,7 @@ function buildPalette(current,onPick,opts){
     const ab=panel.querySelector(".pal-auto-btn"); if(ab) ab.classList.remove("on");
     cur=col; paintTrig(); nat.value=(col[0]==='#'?col:('#'+col)); hexSp.textContent=col.toUpperCase();
     onPick(col);
+    RecentColors.add(col);
     // keep panel open so the user can fine-tune; they can click away to close
   }
   trig.addEventListener("click",function(){
