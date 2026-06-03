@@ -2819,46 +2819,50 @@ $("dlLauncher").addEventListener("click",function(){
   if(S.shape==="bar"){ WW=560; HH=130; }
   else { WW=420; HH=380; }
   const NL="\r\n";  // Windows line endings
-  // --- Approach: self-contained HTML, base64-embedded in the .bat ---
-  // All earlier failures came from passing a long URL as a command-line argument
-  // (length limits / & handling / quote escaping) OR from a redirect whose long
-  // URL got mangled. This version removes the URL entirely: we generate the FULL
-  // standalone timer page (same one the "打开计时器" button uses) with the config
-  // baked in, base64-encode it (base64 = only A-Za-z0-9+/=, zero special chars,
-  // so nothing can corrupt it through cmd/PowerShell), and the .bat decodes it to
-  // a local .html and opens THAT in app mode. No server, no URL, no truncation.
+  // --- Approach: self-extracting .bat (base64 payload lives in the FILE, not the cmdline) ---
+  // The previous base64-on-the-command-line version failed because the base64 of the
+  // whole page exceeds cmd's ~8191-char command-line limit -> "cannot execute program".
+  // Fix: store the base64 AFTER a ':DATA' marker at the END of the file. The header
+  // reads THIS bat file, grabs every line after the marker (the payload is file CONTENT,
+  // which has no length limit), decodes it to a local .html, and opens it in app mode.
+  // Still no server, no URL, no config loss; just not bounded by the command line.
   const selfHtml=buildTimerHTML({embed:true,auto:true});
-  // UTF-8 -> base64 (handles the Chinese text in the page safely)
   const b64=btoa(unescape(encodeURIComponent(selfHtml)));
-  // PowerShell one-liner: decode base64 -> bytes -> write file -> open in app mode.
-  // The base64 string is the ONLY long thing on the command line and it is safe.
+  // PowerShell reads the bat ($MyInvocation script path passed in as %~f0), takes the
+  // text after ':DATA', strips whitespace, base64-decodes, writes file, opens browser.
   const ps =
-    "$d=[Convert]::FromBase64String('"+b64+"');"+
+    "$self=$args[0];"+
+    "$txt=Get-Content -LiteralPath $self -Raw;"+
+    "$b64=($txt -split ':DATA\\r?\\n',2)[1];"+
+    "$b64=($b64 -replace '\\s','');"+
+    "$d=[Convert]::FromBase64String($b64);"+
     "$tmp=Join-Path $env:TEMP ('pstimer_'+[guid]::NewGuid().ToString('N')+'.html');"+
     "[System.IO.File]::WriteAllBytes($tmp,$d);"+
     "$a='--app=file:///'+($tmp -replace '\\\\','/')+' --window-size="+WW+","+HH+"';"+
     "$p=@('${env:ProgramFiles(x86)}\\Microsoft\\Edge\\Application\\msedge.exe','${env:ProgramFiles}\\Microsoft\\Edge\\Application\\msedge.exe','${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe','${env:ProgramFiles(x86)}\\Google\\Chrome\\Application\\chrome.exe');"+
     "$b=$null; foreach($x in $p){ if(Test-Path $x){ $b=$x; break } }"+
     "if($b){ Start-Process $b -ArgumentList $a } else { Write-Host 'no browser found'; pause }";
-  const lines=[
+  const headerLines=[
     "@echo off",
     "chcp 65001 >nul",
     "title "+fname.replace(/\.bat$/,""),
-    "",
     "REM ============================================================",
     "REM  进度条工坊 · 计时器小窗启动器（配置已内嵌，双击即用，离线可用）",
-    "REM  计时器整页已 base64 内嵌在本文件中，双击后解码到本地临时文件，",
-    "REM  再以浏览器「应用模式」打开 —— 不访问任何网址、无参数传递，",
-    "REM  因此配置（形状/颜色/时长）绝不会丢失，也不会跑得飞快。",
+    "REM  计时器整页以 base64 存放在本文件末尾 :DATA 之后。双击后由本脚本",
+    "REM  读取自身、解码到本地临时文件，再以浏览器「应用模式」打开 ——",
+    "REM  不访问任何网址、不经命令行传参，配置绝不会丢失，也不会跑得飞快。",
     "REM  要让小窗浮在 PPT 放映之上：装 PowerToys，开 Always-On-Top，",
     "REM  点中小窗后按 Win+Ctrl+T 钉在最顶层。",
     "REM ============================================================",
-    "",
-    'powershell -NoProfile -ExecutionPolicy Bypass -Command "'+ps+'"'
+    'powershell -NoProfile -ExecutionPolicy Bypass -Command "'+ps+'" "%~f0"',
+    "goto :eof",
+    ":DATA"
   ];
-  // UTF-8 BOM so the Chinese comments render correctly in the .bat
+  // Header gets a UTF-8 BOM for the Chinese comments. The base64 payload after :DATA
+  // is pure ASCII, so it is unaffected. PowerShell's split on ':DATA' isolates it.
   const bom="\ufeff";
-  const blob=new Blob([bom+lines.join(NL)+NL],{type:"application/octet-stream"});
+  const fileText=bom+headerLines.join(NL)+NL+b64+NL;
+  const blob=new Blob([fileText],{type:"application/octet-stream"});
   dl(blob,fname);
   $("useLauncher").style.display="flex";
   if(!fileMode) toast("已下载小窗启动器，双击即可打开计时器小窗");
