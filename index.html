@@ -2842,8 +2842,13 @@ $("dlLauncher").addEventListener("click",function(){
     "$pf86=[Environment]::GetEnvironmentVariable('ProgramFiles(x86)');"+
     "$pf=$env:ProgramFiles;"+
     "$lad=$env:LocalAppData;"+
-    "$p=@($pf86+'\\Microsoft\\Edge\\Application\\msedge.exe',$pf+'\\Microsoft\\Edge\\Application\\msedge.exe',$lad+'\\Microsoft\\Edge\\Application\\msedge.exe',$pf+'\\Google\\Chrome\\Application\\chrome.exe',$pf86+'\\Google\\Chrome\\Application\\chrome.exe',$lad+'\\Google\\Chrome\\Application\\chrome.exe');"+
-    "$b=$null; foreach($x in $p){ if(Test-Path $x){ $b=$x; break } }"+
+    "$b=$null;"+
+    "$c1=$pf86+'\\Microsoft\\Edge\\Application\\msedge.exe'; if(-not $b -and (Test-Path $c1)){$b=$c1};"+
+    "$c2=$pf+'\\Microsoft\\Edge\\Application\\msedge.exe'; if(-not $b -and (Test-Path $c2)){$b=$c2};"+
+    "$c3=$lad+'\\Microsoft\\Edge\\Application\\msedge.exe'; if(-not $b -and (Test-Path $c3)){$b=$c3};"+
+    "$c4=$pf+'\\Google\\Chrome\\Application\\chrome.exe'; if(-not $b -and (Test-Path $c4)){$b=$c4};"+
+    "$c5=$pf86+'\\Google\\Chrome\\Application\\chrome.exe'; if(-not $b -and (Test-Path $c5)){$b=$c5};"+
+    "$c6=$lad+'\\Google\\Chrome\\Application\\chrome.exe'; if(-not $b -and (Test-Path $c6)){$b=$c6};"+
     "if($b){ Start-Process $b -ArgumentList $a } else { Write-Host 'no browser found'; pause }";
   const headerLines=[
     "@echo off",
