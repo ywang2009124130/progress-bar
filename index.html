@@ -420,6 +420,17 @@
         </div>
       </div>
       <div class="erow" style="align-items:flex-start">
+        <span class="elab" style="margin-top:3px">批量分段</span>
+        <div style="flex:1;min-width:240px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;color:var(--ink)">
+            <span>分界点</span>
+            <input type="text" id="gifSplits" placeholder="如 30, 70" value="" style="flex:1;min-width:120px;padding:5px 9px;border:1px solid var(--line);border-radius:7px;font-family:'DM Sans';font-size:12px;font-weight:700">
+          </div>
+          <p class="hint" id="gifSplitsPreview" style="margin-top:5px">填入分界点（0–100，逗号分隔），自动切成连续段。例：填 <b>30, 70</b> → 切成 0–30、30–70、70–100 三段，逐个导出。</p>
+          <button class="btn primary" id="dlGifBatch" style="padding:7px 16px;margin-top:6px">⬇ 批量生成分段 GIF</button>
+        </div>
+      </div>
+      <div class="erow" style="align-items:flex-start">
         <span class="elab" style="margin-top:7px">GIF 底色</span>
         <div class="swatch-pick" id="gifBgPick">
           <button type="button" class="swatch-trig" id="gifBgTrig">
@@ -3274,50 +3285,112 @@ function toast(msg){
 
 function svgToImage(svgStr){return new Promise(function(res,rej){const img=new Image(),url=URL.createObjectURL(new Blob([svgStr],{type:"image/svg+xml;charset=utf-8"}));
   img.onload=function(){res({img:img,url:url});};img.onerror=function(){URL.revokeObjectURL(url);rej(new Error("svg load"));};img.src=url;});}
-async function exportGif(){
+// Encode ONE segment (A%→B%) to a GIF blob and download it as fileName.
+// onProg(0..1) reports this segment's own progress for the busy bar.
+async function encodeGifSegment(A,B,fileName,onProg){
   const fps=S.gifFps, dur=S.gifDur, total=Math.max(2,Math.round(fps*dur));
   const sc = S.gifScale>=2?2:1; const W=VW*sc, H=VH*sc;
   const cv=document.createElement("canvas");cv.width=W;cv.height=H;const ctx=cv.getContext("2d");
   const enc=new GIFEncoder();enc.setRepeat(0);enc.setDelay(Math.round(1000/fps));enc.setSize(W,H);enc.setQuality(10);enc.start();
-  gifCancel=false;
-  $("busy").style.display="flex";
-  const savedProg=S.prog;
-  const A=Math.min(S.gifFrom,S.gifTo), B=Math.max(S.gifFrom,S.gifTo);
   const endsAt100 = B>=100;
   const flashFrames=(S.gifFlash && S.alertOn && endsAt100)? Math.min(total, fps*2) : 0;
   const totalAll=total+flashFrames;
   let cancelled=false;
-  try{
-    for(let f=0; f<total; f++){
+  for(let f=0; f<total; f++){
+    if(gifCancel){cancelled=true;break;}
+    S.prog=A+(B-A)*(f/(total-1)); render();
+    const r=await svgToImage(lastSVG);
+    ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
+    ctx.drawImage(r.img,0,0,W,H);URL.revokeObjectURL(r.url);
+    enc.addFrame(ctx.getImageData(0,0,W,H).data,true);
+    if(onProg)onProg(f/totalAll);
+    await new Promise(function(r){setTimeout(r,0);});
+  }
+  if(!cancelled && flashFrames>0){
+    S.prog=100; render(); const r=await svgToImage(lastSVG);
+    for(let f=0;f<flashFrames;f++){
       if(gifCancel){cancelled=true;break;}
-      S.prog=A+(B-A)*(f/(total-1)); render();
-      const r=await svgToImage(lastSVG);
       ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
-      ctx.drawImage(r.img,0,0,W,H);URL.revokeObjectURL(r.url);
+      ctx.globalAlpha=(f%2===0)?1:0.18; ctx.drawImage(r.img,0,0,W,H); ctx.globalAlpha=1;
       enc.addFrame(ctx.getImageData(0,0,W,H).data,true);
-      $("busyFill").style.width=Math.round((f/totalAll)*100)+"%";$("busyTxt").textContent=Math.round((f/totalAll)*100)+"%";
+      if(onProg)onProg((total+f)/totalAll);
       await new Promise(function(r){setTimeout(r,0);});
     }
-    if(!cancelled && flashFrames>0){
-      S.prog=100; render(); const r=await svgToImage(lastSVG);
-      for(let f=0;f<flashFrames;f++){
-        if(gifCancel){cancelled=true;break;}
-        ctx.fillStyle=S.gifBg;ctx.fillRect(0,0,W,H);
-        ctx.globalAlpha=(f%2===0)?1:0.18; ctx.drawImage(r.img,0,0,W,H); ctx.globalAlpha=1;
-        enc.addFrame(ctx.getImageData(0,0,W,H).data,true);
-        $("busyFill").style.width=Math.round(((total+f)/totalAll)*100)+"%";$("busyTxt").textContent=Math.round(((total+f)/totalAll)*100)+"%";
-        await new Promise(function(r){setTimeout(r,0);});
-      }
-      URL.revokeObjectURL(r.url);
-    }
-    if(!cancelled){
-      enc.finish();
-      dl(new Blob([new Uint8Array(enc.stream().bin)],{type:"image/gif"}),"progress.gif");
-    }
+    URL.revokeObjectURL(r.url);
+  }
+  if(!cancelled){
+    enc.finish();
+    dl(new Blob([new Uint8Array(enc.stream().bin)],{type:"image/gif"}),fileName);
+  }
+  return !cancelled;
+}
+async function exportGif(){
+  gifCancel=false;
+  $("busy").style.display="flex";
+  const savedProg=S.prog;
+  const A=Math.min(S.gifFrom,S.gifTo), B=Math.max(S.gifFrom,S.gifTo);
+  try{
+    await encodeGifSegment(A,B,"progress.gif",function(p){
+      $("busyFill").style.width=Math.round(p*100)+"%";$("busyTxt").textContent=Math.round(p*100)+"%";
+    });
   }catch(e){if(!gifCancel)toast("GIF 生成失败："+e.message);}
   finally{gifCancel=false;S.prog=savedProg;$("prog").value=savedProg;$("pVal").textContent=Math.round(savedProg);render();$("busy").style.display="none";$("busyFill").style.width="0";}
 }
 $("dlGifGo").addEventListener("click",exportGif);
+
+// 解析分界点 -> 连续区间段数组 [[0,30],[30,70],[70,100]]
+function parseGifSplits(){
+  var raw=($("gifSplits").value||"").trim();
+  var pts=raw.split(/[，,\s]+/).map(function(s){return parseFloat(s);})
+             .filter(function(v){return !isNaN(v) && v>0 && v<100;});
+  // 去重、排序
+  pts=Array.from(new Set(pts)).sort(function(a,b){return a-b;});
+  var bounds=[0].concat(pts).concat([100]);
+  var segs=[];
+  for(var i=0;i<bounds.length-1;i++){
+    if(bounds[i+1]-bounds[i] >= 1) segs.push([bounds[i],bounds[i+1]]);
+  }
+  return segs;
+}
+function fmtSeg(v){ return String(Math.round(v)); }
+// 实时预览分段结果
+(function(){
+  var inp=$("gifSplits"), prev=$("gifSplitsPreview");
+  if(inp&&prev){
+    inp.addEventListener("input",function(){
+      var raw=(inp.value||"").trim();
+      if(!raw){ prev.innerHTML='填入分界点（0–100，逗号分隔），自动切成连续段。例：填 <b>30, 70</b> → 切成 0–30、30–70、70–100 三段，逐个导出。'; return; }
+      var segs=parseGifSplits();
+      if(!segs.length){ prev.textContent="未识别到有效分界点（需 0–100 之间的数字，逗号分隔）。"; return; }
+      prev.innerHTML="将切成 <b>"+segs.length+"</b> 段并逐个导出："+segs.map(function(s){return fmtSeg(s[0])+"–"+fmtSeg(s[1])+"%";}).join("、");
+    });
+  }
+})();
+async function exportGifBatch(){
+  var segs=parseGifSplits();
+  if(!segs.length){ toast("请先填入有效分界点，如 30, 70"); return; }
+  gifCancel=false;
+  $("busy").style.display="flex";
+  const savedProg=S.prog;
+  const N=segs.length;
+  try{
+    for(let i=0;i<N;i++){
+      if(gifCancel)break;
+      var A=segs[i][0], B=segs[i][1];
+      var fname="progress_"+String(i+1).padStart(2,"0")+"_"+fmtSeg(A)+"-"+fmtSeg(B)+".gif";
+      $("busyTxt").textContent="正在生成第 "+(i+1)+"/"+N+" 个…";
+      await encodeGifSegment(A,B,fname,function(p){
+        var overall=(i+p)/N;
+        $("busyFill").style.width=Math.round(overall*100)+"%";
+      });
+      // 多文件下载之间留一点间隔，降低浏览器拦截概率
+      await new Promise(function(r){setTimeout(r,350);});
+    }
+    if(!gifCancel) toast("已生成 "+N+" 个分段 GIF（若浏览器提示是否允许批量下载，请点允许）");
+  }catch(e){if(!gifCancel)toast("批量生成失败："+e.message);}
+  finally{gifCancel=false;S.prog=savedProg;$("prog").value=savedProg;$("pVal").textContent=Math.round(savedProg);render();$("busy").style.display="none";$("busyFill").style.width="0";}
+}
+$("dlGifBatch").addEventListener("click",exportGifBatch);
 $("busyCancel").addEventListener("click",function(){gifCancel=true;});
 
 // ---- EMBED MODE: when opened as ?embed=1&c=<config>, render a pure full-screen timer
