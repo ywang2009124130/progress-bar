@@ -79,6 +79,12 @@
   .pal-auto-btn{flex:1;border:1px solid var(--line);background:var(--card);border-radius:6px;padding:5px 8px;font-family:"DM Sans";font-size:11px;color:var(--ink-soft);cursor:pointer;transition:.12s}
   .pal-auto-btn:hover{border-color:var(--ink-soft)}
   .pal-auto-btn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .pal-more{display:flex;align-items:center;gap:8px;margin-top:6px;padding-top:7px;border-top:1px solid var(--line-soft)}
+  .pal-more-lab{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent-2);cursor:pointer}
+  .pal-more-lab input[type=color]{width:24px;height:20px;border:1px solid var(--line);border-radius:5px;padding:0;cursor:pointer;background:none}
+  .pal-eye{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:4px 8px;font-family:"DM Sans";font-size:11px;color:var(--ink);cursor:pointer;transition:.12s}
+  .pal-eye:hover{border-color:var(--ink-soft)}
+  .pal-more-hex{font-size:10px;color:var(--ink-soft);font-variant-numeric:tabular-nums;text-transform:uppercase;margin-left:auto}
   .timefield{display:flex;gap:8px;align-items:center}
   .timefield input{width:64px;text-align:center}
   .timefield .sep{font-weight:700;color:var(--ink-soft)}
@@ -221,9 +227,9 @@
     <div class="group">
       <h2><span class="dot"></span>通用外观</h2>
       <p class="hint" style="margin-top:-4px;margin-bottom:11px">6 种形态共用的基础样式。条状 / 风车 / 心形 / 四叶草 / 圆环还可在各自「分区」里单独设每段的<b>文字色</b>与<b>填充色</b>，会覆盖这里的填充色。</p>
-      <div class="row"><label class="lab">填充色</label><div class="colorrow"><input type="color" id="fillColor" value="#E2682C"><span class="hex" id="fillHex">#E2682C</span></div></div>
-      <div class="row"><label class="lab">边框 / 线条色</label><div class="colorrow"><input type="color" id="strokeColor" value="#211C16"><span class="hex" id="strokeHex">#211C16</span></div></div>
-      <div class="row"><label class="lab">轨道底色（未完成）</label><div class="colorrow"><input type="color" id="trackColor" value="#E4DCC6"><span class="hex" id="trackHex">#E4DCC6</span></div></div>
+      <div class="row"><label class="lab">填充色</label><div class="commonpal" id="fillPal"></div></div>
+      <div class="row"><label class="lab">边框 / 线条色</label><div class="commonpal" id="strokePal"></div></div>
+      <div class="row"><label class="lab">轨道底色（未完成）</label><div class="commonpal" id="trackPal"></div></div>
       <div class="row"><label class="lab">饱和度 <span class="val"><span id="satVal">100</span>%</span></label><input type="range" id="sat" min="0" max="180" value="100"></div>
       <div class="row"><label class="lab">填充不透明度 <span class="val"><span id="opVal">100</span>%</span></label><input type="range" id="op" min="10" max="100" value="100"></div>
       <div class="row"><label class="lab">边框粗细 <span class="val"><span id="bwVal">2</span>px</span></label><input type="range" id="bw" min="0" max="14" value="2"></div>
@@ -422,6 +428,7 @@
             <div class="swatch-grid" id="gifBgStdRow"></div>
             <div class="swatch-more">
               <label>更多颜色…<input type="color" id="gifBg" value="#FFFFFF"></label>
+              <button type="button" class="pal-eye" id="gifBgEye" title="从屏幕任意处吸取颜色">🖍 吸管</button>
               <span class="curhex" id="gifBgHex">#FFFFFF</span>
             </div>
           </div>
@@ -2621,7 +2628,17 @@ bindRange("elemCnt","elemCnt","elemCntVal");bindRange("elemSz","elemSz","elemSzV
 bindRange("alertDur","alertDur","alertDurVal");
 $("rIn").addEventListener("input",function(e){S.rIn=+e.target.value;$("rInVal").textContent=e.target.value;render();});
 
-bindColor("fillColor","fill","fillHex");bindColor("strokeColor","stroke","strokeHex");bindColor("trackColor","track","trackHex");
+// 通用外观三色：用可开合色板（含更多颜色 + 吸管），替代原生取色器
+(function(){
+  function mountCommon(hostId,key){
+    var host=$(hostId); if(!host) return;
+    host.innerHTML="";
+    host.appendChild(buildPalette(S[key],function(col){ if(!col)return; S[key]=col; render(); },{caption:"颜色"}));
+  }
+  mountCommon("fillPal","fill");
+  mountCommon("strokePal","stroke");
+  mountCommon("trackPal","track");
+})();
 // ---- GIF 底色：PowerPoint 风格可开合色板 ----
 (function(){
   // 8 个主题色（每列一个），每列再生成 5 档深浅
@@ -2680,6 +2697,16 @@ bindColor("fillColor","fill","fillHex");bindColor("strokeColor","stroke","stroke
   document.addEventListener("click",function(){closePop();});
   // 原生取色器（更多颜色）
   native.addEventListener("input",function(){setColor(native.value,true);});
+  // 屏幕吸管
+  var gifEye=$("gifBgEye");
+  if(gifEye){
+    if(!("EyeDropper" in window)){ gifEye.style.display="none"; }
+    gifEye.addEventListener("click",function(e){e.stopPropagation();
+      try{ var ed=new window.EyeDropper();
+        ed.open().then(function(r){ if(r&&r.sRGBHex) setColor(r.sRGBHex,true); }).catch(function(){});
+      }catch(err){}
+    });
+  }
 
   setColor(S.gifBg||"#FFFFFF",false);
 })();
@@ -2811,6 +2838,8 @@ function buildPalette(current,onPick,opts){
     panel.querySelectorAll(".sw").forEach(function(x){x.classList.remove("on");});
     if(sw)sw.classList.add("on");
     cur=col?col.toLowerCase():""; paintTrig();
+    var hx=panel.querySelector(".pal-more-hex"); if(hx) hx.textContent=cur?cur.toUpperCase():"自动";
+    var n2=panel.querySelector(".pal-more input[type=color]"); if(n2&&col) n2.value=(col[0]==='#'?col:('#'+col));
     onPick(col); // col may be null => clear (auto)
     panel.style.display="none";trig.classList.remove("open");
   };
@@ -2838,6 +2867,31 @@ function buildPalette(current,onPick,opts){
   const std=document.createElement("div");std.className="pal-std";
   PALETTE_STD.forEach(function(col){addSw(std,col);});
   panel.appendChild(std);
+  // --- custom color row: native picker + screen eyedropper + live HEX ---
+  const more=document.createElement("div");more.className="pal-more";
+  const moreLab=document.createElement("label");moreLab.className="pal-more-lab";
+  const nat=document.createElement("input");nat.type="color";nat.value=(cur&&/^#?[0-9a-f]{6}$/i.test(cur.replace('#','')))?(cur[0]==='#'?cur:('#'+cur)):"#888888";
+  moreLab.appendChild(document.createTextNode("更多颜色…"));moreLab.appendChild(nat);
+  nat.addEventListener("input",function(){applyCustom(nat.value);});
+  const eye=document.createElement("button");eye.type="button";eye.className="pal-eye";eye.title="从屏幕任意处吸取颜色";eye.textContent="🖍 吸管";
+  if(!("EyeDropper" in window)){ eye.style.display="none"; }
+  eye.addEventListener("click",function(){
+    try{
+      const ed=new window.EyeDropper();
+      ed.open().then(function(r){ if(r&&r.sRGBHex) applyCustom(r.sRGBHex); }).catch(function(){});
+    }catch(e){}
+  });
+  const hexSp=document.createElement("span");hexSp.className="pal-more-hex";hexSp.textContent=cur?cur.toUpperCase():"自动";
+  more.appendChild(moreLab);more.appendChild(eye);more.appendChild(hexSp);
+  panel.appendChild(more);
+  function applyCustom(col){
+    col=col.toLowerCase();
+    panel.querySelectorAll(".sw").forEach(function(x){x.classList.remove("on");});
+    const ab=panel.querySelector(".pal-auto-btn"); if(ab) ab.classList.remove("on");
+    cur=col; paintTrig(); nat.value=(col[0]==='#'?col:('#'+col)); hexSp.textContent=col.toUpperCase();
+    onPick(col);
+    // keep panel open so the user can fine-tune; they can click away to close
+  }
   trig.addEventListener("click",function(){
     const open=panel.style.display==="none";
     panel.style.display=open?"":"none";trig.classList.toggle("open",open);
