@@ -2663,6 +2663,12 @@ var RecentColors=(function(){
     subscribe:function(fn){ subs.push(fn); }
   };
 })();
+// 全局：记录所有可开合色板的「关闭」函数；点击页面任意空白处时收起已打开的色板
+var PaletteRegistry=(function(){
+  var closers=[];
+  document.addEventListener("click",function(){ closers.forEach(function(fn){ try{fn();}catch(e){} }); });
+  return { register:function(fn){ closers.push(fn); } };
+})();
 // 通用外观三色：用可开合色板（含更多颜色 + 吸管），替代原生取色器
 (function(){
   function mountCommon(hostId,key){
@@ -2971,6 +2977,14 @@ function buildPalette(current,onPick,opts){
   trig.addEventListener("click",function(){
     const open=panel.style.display==="none";
     panel.style.display=open?"":"none";trig.classList.toggle("open",open);
+  });
+  // 点击色板内部不冒泡到 document（否则会立即被全局关闭逻辑收起）
+  wrap.addEventListener("click",function(e){ e.stopPropagation(); });
+  // 注册到全局：点击页面其他空白处时收起本色板（含「最近」下拉）
+  PaletteRegistry.register(function(){
+    panel.style.display="none"; trig.classList.remove("open");
+    var rp=panel.querySelector(".pal-rec-pop"); if(rp){ rp.style.display="none"; }
+    var rb=panel.querySelector(".pal-rec-btn"); if(rb){ rb.classList.remove("open"); }
   });
   wrap.appendChild(trig);wrap.appendChild(panel);
   return wrap;
