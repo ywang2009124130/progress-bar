@@ -301,9 +301,9 @@
       <p class="hint" style="margin-top:-4px;margin-bottom:11px">6 种形态共用的基础样式。心形 / 四叶草 / 风车 / 花朵 / 条状 / 圆环（圆饼）还可在各自「分区」里单独设每段的<b>文字色</b>与<b>填充色</b>，会覆盖这里的填充色。</p>
       <div class="row"><label class="lab">填充色</label><div class="commonpal" id="fillPal"></div></div>
       <div class="row"><label class="lab">边框 / 线条色</label><div class="commonpal" id="strokePal"></div></div>
-      <div class="row"><label class="lab">轨道底色（未完成）</label><div class="commonpal" id="trackPal"></div></div>
+      <div class="row"><label class="lab">轨道底色</label><div class="commonpal" id="trackPal"></div></div>
       <div class="row"><label class="lab">饱和度 <span class="val"><span id="satVal">100</span>%</span></label><input type="range" id="sat" min="0" max="180" value="100"></div>
-      <div class="row"><label class="lab">填充不透明度 <span class="val"><span id="opVal">100</span>%</span></label><input type="range" id="op" min="10" max="100" value="100"></div>
+      <div class="row"><label class="lab">整体透明度 <span class="val"><span id="opVal">100</span>%</span></label><input type="range" id="op" min="10" max="100" value="100"></div>
       <div class="row"><label class="lab">边框粗细 <span class="val"><span id="bwVal">2</span>px</span></label><input type="range" id="bw" min="0" max="14" value="2"></div>
     </div>
 
@@ -385,13 +385,14 @@
       <div class="row"><div class="switch">启用元素里程碑<label class="toggle"><input type="checkbox" id="elemOn" checked><span></span></label></div></div>
       <div id="elemBlock">
         <div class="row"><label class="lab">图形（共 <span id="iconCount">0</span> 款）</label><div class="icongrid" id="iconGrid"></div></div>
+        <div class="row"><div class="switch">跟随填充色<label class="toggle"><input type="checkbox" id="elemFollow" checked><span></span></label></div></div>
+        <p class="hint" style="margin-top:-4px">想自定义颜色无需关它——直接在下方选色，会自动取消跟随。</p>
         <div class="row"><label class="lab">元素颜色</label>
-          <div class="switch" style="margin-bottom:8px">跟随填充色<label class="toggle"><input type="checkbox" id="elemFollow" checked><span></span></label></div>
-          <div id="elemColorRow" style="opacity:.45;pointer-events:none"><div id="elemPalette"></div></div>
+          <div id="elemColorRow"><div id="elemPalette"></div></div>
         </div>
         <div class="row" id="elemCntRow"><label class="lab">数量 <span class="val"><span id="elemCntVal">5</span></span></label><input type="range" id="elemCnt" min="2" max="12" value="5"></div>
         <p class="hint" id="elemCntNote" style="display:none;margin-top:-4px">里程碑数量自动跟随分区：圆环/花朵按分区数、风车固定 5、心形 2、四叶草 4；条状落在各分段交界（= 分段数 − 1）。</p>
-        <div class="row"><label class="lab">大小 <span class="val"><span id="elemSzVal">32</span>px</span></label><input type="range" id="elemSz" min="14" max="72" value="32"></div>
+        <div class="row"><label class="lab">元素大小 <span class="val"><span id="elemSzVal">32</span>px</span></label><input type="range" id="elemSz" min="14" max="72" value="32"></div>
         <div class="row"><div class="switch">未激活里程碑变暗<label class="toggle"><input type="checkbox" id="dimOff" checked><span></span></label></div></div>
         <p class="hint" style="margin-top:-4px">里程碑始终会随进度点亮；此开关仅决定<strong>未经过</strong>的节点是否显示为暗态。</p>
       </div>
@@ -451,11 +452,12 @@
         <button class="btn" id="dlSvg">SVG</button>
         <button class="btn" id="dlPng">PNG ⚙</button>
         <button class="btn primary" id="dlGif" style="margin-left:auto">⬇ GIF 动图 ⚙ <span class="reco">推荐</span></button>
+        <p style="flex-basis:100%;margin:2px 1px 0;font-size:11px;font-weight:500;color:var(--ink-soft);line-height:1.5">💡 SVG / PNG 导出的是<b>实时预览当前停留的画面</b>——把进度拖到你想要的时间点，再下载，就能得到那一帧的静态图。</p>
       </div>
       <div class="exp-group">
-        <button class="btn" id="dlTimer">⬇ 计时器html</button>
-        <button class="btn" id="copyEmbed">🔗 复制嵌入链接</button>
+        <button class="btn" id="dlTimer" style="background:#FFC83D;border-color:#E6A100;color:#3A2E12">⬇ 计时器html</button>
         <button class="btn primary" id="dlLauncher" style="margin-left:auto">⬇ 小窗启动器 <span class="reco">推荐</span></button>
+        <p style="flex-basis:100%;margin:2px 1px 0;font-size:11px;font-weight:500;color:var(--ink-soft);line-height:1.5">💡 「计时器html」<b>Mac / Windows 都能用</b>（Mac 请右键文件 → 打开方式 → Safari / Chrome 打开）；「小窗启动器」<b style="color:var(--accent)">仅限 Windows</b>。</p>
       </div>
     </div>
     <p id="expStatus" style="display:none;margin:8px 2px 0;font-size:12px;font-weight:700;color:var(--accent)"></p>
@@ -493,18 +495,18 @@
       <div class="erow" style="align-items:flex-start">
         <span class="elab" style="margin-top:3px">GIF 类型</span>
         <div style="flex:1;min-width:240px">
-          <label class="gif-type-opt"><input type="checkbox" id="gifTypeLoop" checked><span><b>小 GIF：短时循环</b>——做成一段循环动画，几秒转一圈，贴 PPT 当装饰。</span></label>
+          <label class="gif-type-opt"><input type="checkbox" id="gifTypeLoop"><span><b>小 GIF：短时循环</b>——做成一段循环动画，几秒转一圈，贴 PPT 当装饰。</span></label>
           <div id="gifDurRow" style="display:flex;align-items:center;gap:9px;margin:2px 0 4px 26px">
             <span style="font-size:11.5px;font-weight:700;color:var(--ink)">循环一圈</span>
             <input type="range" id="gifDur" min="2" max="30" value="8" style="width:130px">
             <span style="font-size:11.5px;color:var(--ink);font-weight:700" id="gifDurVal">8s</span>
           </div>
           <p class="hint" id="gifModeHint" style="margin:0 0 8px 26px">⚠ 这个秒数<b>不是真实时长</b>——是限定秒数内不断循环播放的动画时长。要按真实时间走完，请改勾「大 GIF：真实时长」。</p>
-          <label class="gif-type-opt"><input type="checkbox" id="gifTypeReal"><span><b>大 GIF：真实时长</b>——按「总时长」如实走完一次（当倒计时用），不循环。</span></label>
+          <label class="gif-type-opt"><input type="checkbox" id="gifTypeReal" checked><span><b>大 GIF：真实时长</b>——按「总时长」如实走完一次（当倒计时用），不循环。</span></label>
           <p class="hint" id="gifRealtimeHint" style="margin:2px 0 0 26px;display:none"></p>
         </div>
       </div>
-      <input type="checkbox" id="gifRealtime" style="display:none">
+      <input type="checkbox" id="gifRealtime" checked style="display:none">
       <div class="erow" style="align-items:flex-start">
         <span class="elab" style="margin-top:7px">GIF 底色</span>
         <div class="swatch-pick" id="gifBgPick">
@@ -539,15 +541,15 @@
       </div>
       <div class="erow" id="gifFlashDurRow">
         <span class="elab">闪烁时长</span>
-        <input type="range" id="gifFlashDur" min="1" max="60" value="3" style="width:130px">
-        <span style="font-size:11.5px;color:var(--ink);font-weight:700"><span id="gifFlashDurVal">3</span> 秒</span>
+        <input type="range" id="gifFlashDur" min="1" max="60" value="30" style="width:130px">
+        <span style="font-size:11.5px;color:var(--ink);font-weight:700"><span id="gifFlashDurVal">30</span> 秒</span>
         <span class="hint" style="margin-top:0;flex:1;min-width:140px">末尾快闪持续时间。<b>越长 GIF 文件越大</b>。</span>
       </div>
       <div class="erow" style="align-items:flex-start">
         <span class="elab" style="margin-top:3px">循环方式</span>
         <div style="flex:1;min-width:240px">
-          <label class="gif-type-opt"><input type="checkbox" id="gifLoopInf" checked><span><b>无限循环</b>——GIF 一直循环播放（贴 PPT 当装饰最常用）。</span></label>
-          <label class="gif-type-opt"><input type="checkbox" id="gifLoopOnce"><span><b>只播一次</b>——播完停在最后一帧不再重复（配合「含完成闪烁」当一次性提醒）。</span></label>
+          <label class="gif-type-opt"><input type="checkbox" id="gifLoopInf"><span><b>无限循环</b>——GIF 一直循环播放（贴 PPT 当装饰最常用）。</span></label>
+          <label class="gif-type-opt"><input type="checkbox" id="gifLoopOnce" checked><span><b>只播一次</b>——播完停在最后一帧不再重复（配合「含完成闪烁」当一次性提醒）。</span></label>
         </div>
       </div>
 
@@ -620,7 +622,8 @@
           <div class="usesub">二、用小窗计时器</div>
           <ol class="usesteps">
             <li>在本工具调好样式后点「<b>小窗启动器</b>」，下载一个 <code>.bat</code> 文件（会按当前配置自动命名，如「5分钟·橙·条状·小窗.bat」，链接已填好，无需编辑）。</li>
-            <li><b>双击该 .bat</b>，会用 Edge / Chrome 的「应用模式」弹出一个干净小窗（无地址栏、无书签栏），自动开始计时。首次双击若有安全提示，点「仍要运行」。</li>
+            <li><b>首次使用先「解除锁定」</b>：从网上下载的 .bat 会被 Windows 标记为「来自其他电脑」而拦截。<b>右键这个 .bat → 属性 → 在「常规」标签最下方勾选「解除锁定（Unblock）」→ 确定</b>。（只需做一次；若属性里没有这一项，说明系统未拦截，可跳过。）</li>
+            <li><b>双击该 .bat</b>，会用 Edge / Chrome 的「应用模式」弹出一个干净小窗（无地址栏、无书签栏），自动开始计时。首次双击若仍有安全提示，点「更多信息 → 仍要运行」。</li>
             <li>拖小窗<b>顶部标题条</b>移动位置、拖<b>边角</b>缩放大小，摆到屏幕角落。</li>
             <li><b>点中这个小窗</b> → 按 PowerToys 置顶快捷键（如 <b>Win+Ctrl+T</b>）→ 出现彩色边框即<b>钉住</b>，它会一直浮在最前面，包括盖在 PPT 之上。</li>
             <li>之后正常放映 PPT，小窗始终浮在角落。再按一次快捷键可取消置顶。</li>
@@ -634,13 +637,6 @@
         <div class="usetxt">
           <b>下载一个独立计时器网页，全屏单独播放（跨系统通用、无需联网、无需任何插件）。</b>
           ① 点「计时器」下载 HTML。② 双击用浏览器打开 → 按 <b>F11</b>（Mac 用浏览器全屏）进入全屏 → 点「开始计时」。③ 演讲到该环节时，从 PPT 切出来全屏播放，结束会闪烁提醒并响提示音；之后用 <b>Alt+Tab</b>（Mac 用 <b>⌘+Tab</b>）切回 PPT。也可放副屏供自己控场。
-        </div>
-      </div>
-      <div class="userow" id="useLink" style="display:none">
-        <span class="usetag tag-dl">🔗 复制嵌入链接</span>
-        <div class="usetxt">
-          <b>仅复制这个计时器的网址（已含全部配置，翻页即自动计时）。</b>给进阶用户用：你可以把它粘到浏览器直接打开预览，或粘到支持嵌入网页的工具里。
-          <span class="usenote">日常用不到这个——把计时器放进 PPT，推荐直接用上方「<b>小窗启动器</b>」（下载即用、浮在 PPT 上）；或用「<b>计时器</b>」全屏播放。链接见下方框，点一下可全选复制。</span>
         </div>
       </div>
     </div>
@@ -2034,7 +2030,7 @@ const S = {
   barSeg:4, barDivOn:true, barDivStyle:"solid", barSegMode:"even", barSegments:[], barMerges:[], barSegW:[],
   elemOn:true, icon:"heart", elemCnt:5, elemSz:32, dimOff:true, elemFollow:true, elemColor:"#E2682C",
   alertOn:true, alertDur:60, soundOn:true, soundType:"4", soundRepeat:true, soundGap:2,
-  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifFlashDur:3, gifLoop:true, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:false, segBg:[], tightCanvas:true
+  scale:2, transBg:true, gifDur:8, gifFps:15, gifBg:"#FFFFFF", gifFlash:true, gifFlashDur:30, gifLoop:false, gifScale:2, gifFrom:0, gifTo:100, gifRealtime:true, segBg:[], tightCanvas:true
 };
 const VW=900, VH=580, CX=VW/2, CY=VH/2;
 const $=id=>document.getElementById(id);
@@ -2047,6 +2043,25 @@ function tintC(hex,opacity){const c=hexToRgb(hex);let q=rgbToHsl(c[0],c[1],c[2])
 function autoHue(i,n){const c=hexToRgb(S.fill);let q=rgbToHsl(c[0],c[1],c[2]);const hh=(q[0]+(360/n)*i)%360;return hslToCss(hh,Math.max(35,q[1]*(S.sat/100)),Math.min(62,Math.max(42,q[2])),1);}
 function lum(hex){const c=hexToRgb(hex);return (0.299*c[0]+0.587*c[1]+0.114*c[2])/255;}
 function textOn(hex){return lum(hex)>0.6?"#211C16":"#ffffff";}
+// 通用文字描边光晕：让文字在深色(计时器黑底)和浅色背景上都清晰。
+// 文字偏暗 -> 包一圈白光晕；文字偏亮 -> 包一圈深光晕。size 为描边宽度。
+function lumAny(col){
+  try{
+    if(!col) return 0.5;
+    col=String(col).trim();
+    if(col[0]==="#") return lum(col);
+    var m=col.match(/-?\d+\.?\d*/g);
+    if(/^rgb/i.test(col)&&m&&m.length>=3) return (0.299*+m[0]+0.587*+m[1]+0.114*+m[2])/255;
+    if(/^hsl/i.test(col)&&m&&m.length>=3) return (+m[2])/100; // HSL 第三个是亮度%
+    return 0.5;
+  }catch(e){ return 0.5; }
+}
+function halo(fillCol,size){
+  var w=size||3;
+  var light = lumAny(fillCol) > 0.55;
+  var col = light ? "rgba(20,16,12,0.55)" : "rgba(255,255,255,0.92)";
+  return ' stroke="'+col+'" stroke-width="'+w+'" paint-order="stroke" stroke-linejoin="round"';
+}
 // Per-segment label color. If the user set an explicit text color (seg.tcolor),
 // always use it. Otherwise fall back to the auto rule: lit segments use a
 // contrast color over their fill; unlit segments use the (dark) stroke color.
@@ -2259,14 +2274,14 @@ function renderBar(){
       let tx,ty,extra="";
       if(horiz){ tx=x+w*(a+b)/2; ty=CY; extra=' dominant-baseline="central"'; }
       else { tx=CX; ty=y+h*(vUp?(1-(a+b)/2):((a+b)/2)); extra=' dominant-baseline="central"'; }
-      segTexts+='<text x="'+tx+'" y="'+ty+'" text-anchor="middle"'+extra+' font-family="DM Sans" font-size="'+segFS(fontSize)+'" font-weight="700" fill="'+fill+'">'+escapeXml(txt)+'</text>';
+      segTexts+='<text x="'+tx+'" y="'+ty+'" text-anchor="middle"'+extra+' font-family="DM Sans" font-size="'+segFS(fontSize)+'" font-weight="700" fill="'+fill+'"'+halo(fill,2.5)+'>'+escapeXml(txt)+'</text>';
     }
   }
   const pct=Math.round(S.prog)+"%";
   const labelTxt = S.showCountdown ? countdownStr() : (S.showPct? pct : "");
   const labelSize = S.showCountdown ? (S.cdSize||26) : (S.pctSize||26);
-  let label=(!S.showPct && !S.showCountdown)? '' : (horiz? '<text x="'+(x+w+16+amp)+'" y="'+CY+'" font-family="Fraunces,serif" font-size="'+labelSize+'" font-weight="600" fill="'+tint(S.stroke,1)+'" dominant-baseline="central">'+labelTxt+'</text>'
-                 : '<text x="'+CX+'" y="'+(y-22-amp)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+labelSize+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+labelTxt+'</text>');
+  let label=(!S.showPct && !S.showCountdown)? '' : (horiz? '<text x="'+(x+w+16+amp)+'" y="'+CY+'" font-family="Fraunces,serif" font-size="'+labelSize+'" font-weight="600" fill="'+tint(S.stroke,1)+'" stroke="rgba(255,255,255,0.92)" stroke-width="'+Math.max(2.5,labelSize*0.14)+'" paint-order="stroke" stroke-linejoin="round" dominant-baseline="central">'+labelTxt+'</text>'
+                 : '<text x="'+CX+'" y="'+(y-22-amp)+'" text-anchor="middle" font-family="Fraunces,serif" font-size="'+labelSize+'" font-weight="600" fill="'+tint(S.stroke,1)+'" stroke="rgba(255,255,255,0.92)" stroke-width="'+Math.max(2.5,labelSize*0.14)+'" paint-order="stroke" stroke-linejoin="round">'+labelTxt+'</text>');
   const barGid="barg";
   const barFeather=Math.max(4, (horiz?h:w)*0.10);
   const fillLayer = useSegFill
@@ -2316,15 +2331,15 @@ function renderRing(){
     }
     const txt=segText(i).trim();
     if(txt){const aMid=(a0+a1)/2, rMid=solid? rO*0.62 : (rO+rI)/2; const L=polar(cx,cy,rMid,aMid);
-      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(15)+'" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,1)+'">'+escapeXml(txt)+'</text>';}
+      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(15)+'" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,1)+'"'+halo(segLabelFill(S.segments[i],base,frac,1),2.5)+'>'+escapeXml(txt)+'</text>';}
   }
   const ct=(S.centerText||"").trim();
   if(!solid){
     // donut: hub fills the hole, shows label + %
     out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(rI-2)+'" fill="'+tint(S.track,0.5)+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
-    if(ct){out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-8):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+ctrFS(Math.max(14,rI*0.26))+'" font-weight="600" fill="'+tint(S.stroke,1)+'">'+escapeXml(ct)+'</text>';
-      if(showProgLabel()) out+='<text x="'+cx+'" y="'+(cy+rI*0.34)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(18,rI*0.38)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+progLabelText()+'</text>';}
-    else if(showProgLabel()) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,rI*0.5)+'" font-weight="700" fill="'+tint(S.fill,1)+'">'+progLabelText()+'</text>';
+    if(ct){out+='<text x="'+cx+'" y="'+(showProgLabel()?(cy-8):cy)+'" text-anchor="middle" '+(showProgLabel()?'':'dominant-baseline="central" ')+'font-family="Fraunces,serif" font-size="'+ctrFS(Math.max(14,rI*0.26))+'" font-weight="600" fill="'+tint(S.stroke,1)+'"'+halo(tint(S.stroke,1),3)+'>'+escapeXml(ct)+'</text>';
+      if(showProgLabel()) out+='<text x="'+cx+'" y="'+(cy+rI*0.34)+'" text-anchor="middle" font-family="DM Sans" font-size="'+Math.max(18,rI*0.38)+'" font-weight="700" fill="'+tint(S.fill,1)+'"'+halo(tint(S.fill,1),3)+'>'+progLabelText()+'</text>';}
+    else if(showProgLabel()) out+='<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,rI*0.5)+'" font-weight="700" fill="'+tint(S.fill,1)+'"'+halo(tint(S.fill,1),3)+'>'+progLabelText()+'</text>';
   } else if(S.pieCenterNum && showProgLabel()){
     // solid pie: NO center circle — the % (and optional label) float directly
     // on the pie so 孔径=0 truly means "no center circle".
@@ -2409,7 +2424,7 @@ function renderPetal(){
     }
     const txt=segText(i).trim();
     if(txt){const L=polar(cx,cy,(rBase+rTip)*0.52,aMid);
-      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(12,rTip*0.075))+'" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,0.5)+'">'+escapeXml(txt)+'</text>';}
+      out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(12,rTip*0.075))+'" font-weight="700" fill="'+segLabelFill(S.segments[i],base,frac,0.5)+'"'+halo(segLabelFill(S.segments[i],base,frac,0.5),2.5)+'>'+escapeXml(txt)+'</text>';}
   }
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+core+'" fill="'+tint(S.fill,Math.min(1,S.op/100))+'" stroke="'+tint(S.stroke,1)+'" stroke-width="'+Math.max(1,S.bw)+'"/>';
   const ct=(S.coreText||"").trim();
@@ -2553,7 +2568,7 @@ function renderPinwheel(){
   for(const b of B){
     const txt=pwText(b.i).trim(); if(!txt) continue;
     const L=polar(cx,cy,R*0.58,b.ang + 20);
-    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.08))+'" font-weight="700" fill="'+segLabelFill(S.pwSegments[b.i],b.base,b.frac,0.5)+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.08))+'" font-weight="700" fill="'+segLabelFill(S.pwSegments[b.i],b.base,b.frac,0.5)+'"'+halo(segLabelFill(S.pwSegments[b.i],b.base,b.frac,0.5),2.5)+'>'+escapeXml(txt)+'</text>';
   }
 
   // CENTER hub pin, drawn last over the blade roots and the pole top.
@@ -2656,7 +2671,7 @@ function renderHeart(){
   for(const q of parts){
     const txt=heartText(q.i).trim(); if(!txt) continue;
     const lx=cx + (q.i===0? -R*0.42 : R*0.42), ly=cy-R*0.05;
-    out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.085))+'" font-weight="700" fill="'+segLabelFill(S.heartSegments[q.i],q.base,q.frac,0.5)+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.085))+'" font-weight="700" fill="'+segLabelFill(S.heartSegments[q.i],q.base,q.frac,0.5)+'"'+halo(segLabelFill(S.heartSegments[q.i],q.base,q.frac,0.5),2.5)+'>'+escapeXml(txt)+'</text>';
   }
   // center percentage only — NO circle, NO status text. A thin stroke keeps the number
   // legible across the two-colour halves.
@@ -2732,7 +2747,7 @@ function renderClover(){
   for(const b of B){
     const txt=cloverText(b.i).trim(); if(!txt) continue;
     const L=polar(cx,cy,R*0.50,b.ang);
-    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.08))+'" font-weight="700" fill="'+segLabelFill(S.cloverSegments[b.i],b.base,b.frac,0.5)+'">'+escapeXml(txt)+'</text>';
+    out+='<text x="'+L[0]+'" y="'+L[1]+'" text-anchor="middle" dominant-baseline="central" font-family="DM Sans" font-size="'+segFS(Math.max(11,R*0.08))+'" font-weight="700" fill="'+segLabelFill(S.cloverSegments[b.i],b.base,b.frac,0.5)+'"'+halo(segLabelFill(S.cloverSegments[b.i],b.base,b.frac,0.5),2.5)+'>'+escapeXml(txt)+'</text>';
   }
   // center small dark dot (caps the four roots; the finalized "medium dot")
   out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(R*0.12)+'" fill="'+tint(S.stroke,1)+'"/>';
@@ -2740,7 +2755,7 @@ function renderClover(){
   if(showProgLabel()){
     const pctTxt=progLabelText();
     const px=cx + R*0.42, py=cy + R*1.02;
-    out+='<text x="'+px+'" y="'+py+'" text-anchor="start" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,R*0.22)+'" font-weight="700" fill="'+tint(S.stroke,1)+'">'+pctTxt+'</text>';
+    out+='<text x="'+px+'" y="'+py+'" text-anchor="start" dominant-baseline="central" font-family="Fraunces,serif" font-size="'+Math.max(22,R*0.22)+'" font-weight="700" fill="'+tint(S.stroke,1)+'"'+halo(tint(S.stroke,1),3.5)+'>'+pctTxt+'</text>';
   }
   if(S.elemOn) out+=renderMilestones(getCloverMilestonePositions(cx,cy,R));
   return out;
@@ -2810,7 +2825,8 @@ function exportDims(scale){
 function buildTimerHTML(opts){
   opts=opts||{};
   const embed=!!opts.embed, auto=!!opts.auto;
-  const fns=[hexToRgb,rgbToHsl,hslToCss,tint,tintC,autoHue,lum,textOn,polar,clamp,escapeXml,
+  const fns=[hexToRgb,rgbToHsl,hslToCss,tint,tintC,autoHue,lum,textOn,lumAny,halo,polar,clamp,escapeXml,
+             clockStr,remainingSec,countdownStr,showProgLabel,progLabelText,curSegScale,curCenterScale,segFS,ctrFS,
              iconSVG,elemFill,defs,fillGlowDef,roundRectPath,fancyBarPath,renderBar,
              sectorPath,segColor,segText,renderRing,petalPath,renderPetal,
              activeProg,isActiveAt,getBarMilestonePositions,getRingMilestonePositions,getFlowerMilestonePositions,renderMilestones,
@@ -2818,6 +2834,7 @@ function buildTimerHTML(opts){
              heartColor,heartText,heartLocal,renderHeart,getHeartMilestonePositions,
              cloverColor,cloverText,cloverLeaf,renderClover,getCloverMilestonePositions,
              chimeNote,chimePlay,
+             segLabelFill,barBoundaries,barGroupOf,segProportions,currentSegInfo,ensureBarSegW,ensureSegDurs,
              buildInner]
              .map(function(f){return f.toString();}).join("\n");
   const engine="let S;const VW="+VW+",VH="+VH+",CX="+CX+",CY="+CY+";const ICONS="+JSON.stringify(ICONS)+";"+fns+
@@ -2826,19 +2843,22 @@ function buildTimerHTML(opts){
   // embed default: transparent background + no top HUD/keyboard-hint chrome (clean overlay for PPT)
   const bodyClass=embed?' class="clear"':'';
   const startBlock=auto?'':('<div id="start"><h1>'+(embed?'演示计时器':'实时演示计时器')+'</h1><button class="go">▶ 开始计时</button>'+(embed?'':'<p>从点击此刻起按真实时间持续运行，<b style="color:#fff">不受 PPT 翻页影响</b>。建议放副屏，或让窗口「置顶 / 画中画」浮在幻灯片上。到点后闪烁提醒。</p>')+'</div>');
-  const hudBlock=embed?'':('<div class="hud"><div><div class="num" id="pct">0%</div><div class="cap">进度</div></div><div><div class="num" id="cd">'+fmtTime(total)+'</div><div class="cap">剩余</div></div></div>');
-  const hintBlock=embed?'':'<div id="hint">空格 暂停/继续 · R 重置 · F 全屏 · B 背景(深/浅/透明) · H 提示</div>';
+  const hudBlock='';
+  const hintBlock=embed?'':('<div id="tfoot"><button id="bgbtn" type="button">🎨 切换背景（深 / 浅 / 透明）</button><div id="hint">空格 暂停/继续 · R 重置 · F 全屏 · B 背景 · H 提示</div></div>');
   return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+(embed?'演示计时器':'实时演示计时器')+'</title>'+
 '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=DM+Sans:wght@500;700&display=swap" rel="stylesheet">'+
 '<style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;font-family:"DM Sans",system-ui,sans-serif}'+
-'body{background:'+(embed?'transparent':'#0f0d0a')+';display:flex;align-items:'+(embed?'flex-start':'center')+';justify-content:center;overflow:hidden;transition:background .25s}'+
+'body{background:'+(embed?'transparent':'#0f0d0a')+';display:flex;flex-direction:column;align-items:'+(embed?'flex-start':'center')+';justify-content:center;overflow:hidden;transition:background .25s}'+
 'body.lite{background:#F4EFE2}body.clear{background:transparent}'+
-'#svg{width:min(92vw,1150px);max-height:'+(embed?'100vh':'80vh')+';'+(embed?'margin-top:0':'')+'}#svg svg{width:100%;height:100%;display:block}'+
+'#svg{width:min(92vw,1150px);max-height:'+(embed?'100vh':'72vh')+';'+(embed?'margin-top:0':'')+'}#svg svg{width:100%;height:100%;display:block}'+
 '.hud{position:fixed;top:22px;left:0;right:0;display:flex;justify-content:center;gap:34px;color:#fff;mix-blend-mode:difference;font-variant-numeric:tabular-nums;pointer-events:none}'+
 '.hud .num{font-family:"Fraunces",serif;font-weight:900;font-size:42px;line-height:1;text-align:center}.hud .cap{font-size:11px;letter-spacing:3px;opacity:.7;margin-top:4px;text-transform:uppercase;text-align:center}'+
 '#start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:rgba(8,7,5,'+(embed?'.45':'.8')+');backdrop-filter:blur(3px);z-index:9;cursor:pointer}'+
 '#start h1{color:#fff;font-family:"Fraunces",serif;font-weight:900;font-size:34px}#start .go{border:0;background:#E2682C;color:#fff;font-weight:700;font-size:19px;padding:18px 46px;border-radius:16px;cursor:pointer;box-shadow:0 14px 40px -12px #e2682c}#start p{color:#cbbfa6;font-size:13px;max-width:460px;text-align:center;line-height:1.7}'+
-'#hint{position:fixed;bottom:20px;left:0;right:0;text-align:center;color:#9b9988;font-size:12px;transition:opacity .5s}'+
+'#tfoot{flex:none;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}'+
+'#bgbtn{border:1px solid #E2682C;background:transparent;color:#E2682C;font-family:"DM Sans";font-weight:700;font-size:12.5px;padding:7px 16px;border-radius:999px;cursor:pointer;transition:.15s}'+
+'#bgbtn:hover{background:#E2682C;color:#fff}'+
+'#hint{color:#9b9988;font-size:12px;transition:opacity .5s}'+
 '#svg.flash{animation:fl .5s steps(1) infinite}@keyframes fl{50%{opacity:.2;filter:drop-shadow(0 0 26px #E2682C)}}'+
 '</style></head><body'+bodyClass+'>'+
 startBlock+
@@ -2869,14 +2889,22 @@ hudBlock+
 'if(done&&ALERTDUR>0&&Date.now()-doneTs>ALERTDUR*1000)host.classList.remove("flash");}'+
 'requestAnimationFrame(loop);}requestAnimationFrame(loop);'+
 'function begin(){running=true;startTs=Date.now();pausedMs=0;paused=false;done=false;host.classList.remove("flash");chimeStop();}'+
-'var st=document.getElementById("start");if(st){st.addEventListener("click",function(){this.style.display="none";begin();});}'+
+'var st=document.getElementById("start");'+
+'function startGo(e){if(e){e.preventDefault();e.stopPropagation();}if(st)st.style.display="none";begin();}'+
+'if(st){st.addEventListener("click",startGo);st.addEventListener("touchend",startGo,{passive:false});'+
+'var goBtn=st.querySelector(".go");if(goBtn){goBtn.addEventListener("click",startGo);goBtn.addEventListener("touchend",startGo,{passive:false});}}'+
+// 兜底：未开始时，点/触屏页面任意处都能开始（防止个别浏览器按钮命中失效）
+'document.addEventListener("click",function(e){if(!running&&!AUTO)startGo(e);});'+
+'document.addEventListener("touchend",function(e){if(!running&&!AUTO)startGo(e);},{passive:false});'+
 'if(AUTO){begin();}'+
 'var hint=document.getElementById("hint");if(hint)setTimeout(function(){if(running)hint.style.opacity=0;},6500);'+
+'function cycleBg(){var b=document.body;if(b.classList.contains("lite")){b.classList.remove("lite");b.classList.add("clear");}else if(b.classList.contains("clear")){b.classList.remove("clear");}else b.classList.add("lite");}'+
+'var bgbtn=document.getElementById("bgbtn");if(bgbtn){bgbtn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();cycleBg();});}'+
 'document.addEventListener("keydown",function(e){var k=e.key.toLowerCase();'+
 'if(k===" "||e.code==="Space"){e.preventDefault();if(!running)return;paused=!paused;if(paused)pauseStart=Date.now();else pausedMs+=Date.now()-pauseStart;}'+
 'else if(k==="r"){begin();draw(0);}'+
 'else if(k==="f"){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}'+
-'else if(k==="b"){if(document.body.classList.contains("lite")){document.body.classList.remove("lite");document.body.classList.add("clear");}else if(document.body.classList.contains("clear")){document.body.classList.remove("clear");}else document.body.classList.add("lite");}'+
+'else if(k==="b"){cycleBg();}'+
 'else if(k==="h"){if(hint)hint.style.opacity=(hint.style.opacity==="0"?1:0);}});})();'+ct+
 '</body></html>';
 }
@@ -3084,7 +3112,12 @@ var PaletteRegistry=(function(){
   sync();
 })();
 // milestone element color uses the same color-block palette as the segments
-(function(){var host=$("elemPalette");if(host){host.appendChild(buildPalette(S.elemColor,function(col){S.elemColor=col;render();}));}})();
+(function(){var host=$("elemPalette");if(host){host.appendChild(buildPalette(S.elemColor,function(col){
+  S.elemColor=col;
+  // 用户手动选了元素颜色 -> 自动关闭「跟随填充色」，否则选的颜色会被跟随逻辑覆盖
+  if(S.elemFollow){ S.elemFollow=false; var cb=$("elemFollow"); if(cb) cb.checked=false; }
+  render();
+}));}})();
 
 chipGroup("growSeg","grow","grow");
 chipGroup("orientSeg","or","orient",function(){ var r=$("vdirRow"); if(r) r.style.display=(S.orient==="v"?"":"none"); });
@@ -3125,7 +3158,7 @@ function updateElemCntUI(){
 }
 $("elemOn").addEventListener("change",function(e){S.elemOn=e.target.checked;$("elemBlock").style.display=e.target.checked?"":"none";render();});
 $("dimOff").addEventListener("change",function(e){S.dimOff=e.target.checked;render();});
-$("elemFollow").addEventListener("change",function(e){S.elemFollow=e.target.checked;$("elemColorRow").style.opacity=e.target.checked?.45:1;$("elemColorRow").style.pointerEvents=e.target.checked?"none":"auto";render();});
+$("elemFollow").addEventListener("change",function(e){S.elemFollow=e.target.checked;render();});
 $("pieCenterNum").addEventListener("change",function(e){S.pieCenterNum=e.target.checked;render();});
 function syncPctCdRows(){
   var cdRow=$("cdSizeRow"); if(cdRow) cdRow.style.display=S.showCountdown?"":"none";
@@ -3230,15 +3263,15 @@ function defaultCloverSegments(){const arr=[];
 function mountFixedSegEditor(hostSel,segs,labelText,placeholder){
   const host=document.querySelector(hostSel);
   host.innerHTML='<label class="lab">'+labelText+'</label>';
-  host.appendChild(buildFontScaleControls(S.shape,true));
+  host.appendChild(buildFontScaleControls(S.shape, S.shape==="pinwheel"));
   const listWrap=document.createElement("div"); listWrap.className="seg-list"; listWrap.id="fxSegList"; host.appendChild(listWrap);
   const list=$("fxSegList");
   segs.forEach(function(sg,i){const row=document.createElement("div");row.className="sec-item";
     row.innerHTML='<span class="idx">'+(i+1)+'</span>';
     const t=document.createElement("input");t.type="text";t.value=sg.text;t.placeholder=pad2(i);
     t.addEventListener("input",function(){segs[i].text=t.value;render();});
-    const tpal=buildPalette(sg.tcolor||"",function(col){segs[i].tcolor=col||null;render();},{caption:"文字",allowAuto:true});
-    const pal=buildPalette(sg.color,function(col){segs[i].color=col;render();},{caption:"填充"});
+    const tpal=buildPalette(sg.tcolor||"",function(col){segs[i].tcolor=col||null;render();},{caption:"文字",allowAuto:true,textIcon:true});
+    const pal=buildPalette(sg.color,function(col){segs[i].color=col;render();},{caption:"填充颜色"});
     row.appendChild(t);row.appendChild(tpal);row.appendChild(pal);list.appendChild(row);});
 }
 // ====== 条状分区：每段文字/填充 + 合并组 ======
@@ -3361,7 +3394,7 @@ function mountBarSegEditor(){
         var gtLab=document.createElement("span"); gtLab.style.cssText="font-size:11.5px;font-weight:700;color:var(--accent);flex:none"; gtLab.textContent="共用文字";
         var gt=document.createElement("input"); gt.type="text"; gt.value=grp.text||""; gt.placeholder="第 "+grp.s+"–"+grp.e+" 段共用文字"; gt.style.cssText="flex:1;min-width:90px";
         (function(gg,el){el.addEventListener("input",function(){gg.text=el.value;render();});})(grp,gt);
-        var gtpal=buildPalette(grp.tcolor||"",(function(gg){return function(col){gg.tcolor=col||null;render();};})(grp),{caption:"文字",allowAuto:true});
+        var gtpal=buildPalette(grp.tcolor||"",(function(gg){return function(col){gg.tcolor=col||null;render();};})(grp),{caption:"文字",allowAuto:true,textIcon:true});
         gtpal.style.flex="none";
         gtRow.appendChild(gtLab); gtRow.appendChild(gt); gtRow.appendChild(gtpal);
         body.appendChild(gtRow);
@@ -3384,7 +3417,7 @@ function mountBarSegEditor(){
           }
           var bidx=document.createElement("span"); bidx.className="idx"; bidx.textContent=(k+1); brow.appendChild(bidx);
           var bname=document.createElement("span"); bname.style.cssText="flex:1;font-size:11.5px;color:var(--ink-soft)"; bname.textContent="第 "+(k+1)+" 段填充";
-          var bpal=buildPalette(S.barSegments[k].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(k),{caption:"填充"});
+          var bpal=buildPalette(S.barSegments[k].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(k),{caption:"填充颜色"});
           brow.appendChild(bname); brow.appendChild(bpal); body.appendChild(brow);
         }
         // 4) 绿色「✓ 确定成组」/「✎ 重选」(一键两态) + 红色「解散该组」
@@ -3434,8 +3467,8 @@ function mountBarSegEditor(){
     var idxEl=document.createElement("span"); idxEl.className="idx"; idxEl.textContent=idx1; row.appendChild(idxEl);
     var t=document.createElement("input"); t.type="text"; t.value=S.barSegments[i].text; t.placeholder=pad2(i);
     (function(ii,el){el.addEventListener("input",function(){S.barSegments[ii].text=el.value;render();});})(i,t);
-    var tpal=buildPalette(S.barSegments[i].tcolor||"",(function(ii){return function(col){S.barSegments[ii].tcolor=col||null;render();};})(i),{caption:"文字",allowAuto:true});
-    var pal=buildPalette(S.barSegments[i].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(i),{caption:"填充"});
+    var tpal=buildPalette(S.barSegments[i].tcolor||"",(function(ii){return function(col){S.barSegments[ii].tcolor=col||null;render();};})(i),{caption:"文字",allowAuto:true,textIcon:true});
+    var pal=buildPalette(S.barSegments[i].color,(function(ii){return function(col){S.barSegments[ii].color=col;render();};})(i),{caption:"填充颜色"});
     row.appendChild(t); row.appendChild(tpal); row.appendChild(pal);
     list.appendChild(row);
     // 勾选≥2相邻段后，在最后一段下方：无组在编辑→出现橙色「合并」按钮；有组在编辑→出现就近提示（不弹窗）
@@ -3595,6 +3628,7 @@ function buildPalette(current,onPick,opts){
   const allowAuto=!!opts.allowAuto;
   const autoLabel=opts.autoLabel||"自动";
   const autoBtnText=opts.autoBtnText||"自动（随进度黑/白）";
+  const textIcon=!!opts.textIcon;   // 文字色板：图标用 PPT 风格「A + 下方色线」
   // "auto" = no explicit color set (falls back to smart black/white). cur stays "" then.
   let cur=current?String(current).toLowerCase():"";
   const wrap=document.createElement("div");wrap.className="palette";
@@ -3603,8 +3637,16 @@ function buildPalette(current,onPick,opts){
   const cap=document.createElement("span");cap.className="pal-cap";
   const car=document.createElement("span");car.className="pal-caret";car.textContent="▾";
   function paintTrig(){
-    if(!cur){ dot.style.background="conic-gradient(#211C16 0 25%,#fff 0 50%,#211C16 0 75%,#fff 0)"; cap.textContent=allowAuto?(caption+"·"+autoLabel):caption; }
-    else { dot.style.background=cur; cap.textContent=caption; }
+    if(textIcon){
+      // PPT 风格文字色图标：深色「A」+ 下方一根色线（线色=当前文字色；自动时为红色）
+      var lineCol = cur ? cur : "#FF0000";
+      dot.style.background="transparent"; dot.style.boxShadow="none";
+      dot.innerHTML='<span style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;line-height:1">'
+        +'<span style="font-family:Fraunces,serif;font-weight:900;font-size:12px;color:var(--ink);margin-bottom:1px">A</span>'
+        +'<span style="display:block;width:14px;height:4px;border-radius:1px;background:'+lineCol+'"></span></span>';
+      cap.textContent="文字颜色";
+    } else if(!cur){ dot.innerHTML=""; dot.style.background="conic-gradient(#211C16 0 25%,#fff 0 50%,#211C16 0 75%,#fff 0)"; cap.textContent=allowAuto?(caption+"·"+autoLabel):caption; }
+    else { dot.innerHTML=""; dot.style.background=cur; cap.textContent=caption; }
   }
   paintTrig();
   trig.appendChild(dot);trig.appendChild(cap);trig.appendChild(car);
@@ -3753,15 +3795,15 @@ function mountSegEditor(){
     '<label class="lab" style="margin-top:11px">分区间隙 <span class="val">'+S.gap+'°</span></label><input type="range" min="0" max="10" value="'+S.gap+'" id="gapR">'+
     '<div class="subhead" style="margin-top:13px">各分区 · 文字 / 填充</div><div class="seg-list" id="segList"></div>';
   $("segCntR").addEventListener("input",function(e){S.segCnt=+e.target.value;mountSegEditor();mountSegDurEditor();render();});
-  $("gapR").addEventListener("input",function(e){S.gap=+e.target.value;e.target.previousElementSibling.querySelector(".val").textContent=e.target.value+"°";render();});
+  $("gapR").addEventListener("input",function(e){S.gap=+e.target.value;var lb=e.target.previousElementSibling;var v=lb&&lb.querySelector?lb.querySelector(".val"):null;if(v)v.textContent=e.target.value+"°";render();});
   host.querySelector(".seg-list").parentNode.insertBefore(buildFontScaleControls(S.shape,true), host.querySelector(".seg-list"));
   const list=$("segList");
   S.segments.forEach(function(sg,i){const row=document.createElement("div");row.className="sec-item";
     row.innerHTML='<span class="idx">'+(i+1)+'</span>';
     const t=document.createElement("input");t.type="text";t.value=sg.text;t.placeholder=pad2(i);
     t.addEventListener("input",function(){S.segments[i].text=t.value;render();});
-    const tpal=buildPalette(sg.tcolor||"",function(col){S.segments[i].tcolor=col||null;render();},{caption:"文字",allowAuto:true});
-    const pal=buildPalette(sg.color,function(col){S.segments[i].color=col;render();},{caption:"填充"});
+    const tpal=buildPalette(sg.tcolor||"",function(col){S.segments[i].tcolor=col||null;render();},{caption:"文字",allowAuto:true,textIcon:true});
+    const pal=buildPalette(sg.color,function(col){S.segments[i].color=col;render();},{caption:"填充颜色"});
     row.appendChild(t);row.appendChild(tpal);row.appendChild(pal);list.appendChild(row);});
 }
 
@@ -3933,7 +3975,7 @@ $("dlTimer").addEventListener("click",function(){
   dl(timerBlob(),"presentation-timer.html");
   var el=$("useTimer");el.style.display=(el.style.display==="none"?"flex":"none");
 });
-$("copyEmbed").addEventListener("click",function(){
+(function(){ var ce=$("copyEmbed"); if(ce) ce.addEventListener("click",function(){
   // auto=1: starts counting the moment the slide shows it.
   const url=buildEmbedURL(true);
   const fileMode=location.protocol==="file:";
@@ -3945,7 +3987,7 @@ $("copyEmbed").addEventListener("click",function(){
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(url).then(ok,fail);
   } else { fail(); }
-});
+}); })();
 // Download a one-click .bat that opens THIS timer config in browser "app mode"
 // (no address/bookmark bars) as a clean small window — URL is pre-filled, no editing needed.
 // Build a descriptive .bat filename from the current config: 时长 + 颜色 + 形态.
@@ -4203,7 +4245,7 @@ function clockStr(sec){
 // 整体剩余时间（秒）：预览 / 单个完整 GIF / 计时器用。批量每段导出时用 _cdOverrideSec 覆盖为本段剩余。
 var _cdOverrideSec=null;
 function remainingSec(){
-  if(_cdOverrideSec!=null) return Math.max(0,_cdOverrideSec);
+  if(typeof _cdOverrideSec!=="undefined" && _cdOverrideSec!=null) return Math.max(0,_cdOverrideSec);
   var total=S.totalSec||0;
   var prog=Math.max(0,Math.min(100,S.prog||0))/100;
   return Math.max(0,(1-prog)*total);
@@ -4460,11 +4502,13 @@ $("busyCancel").addEventListener("click",function(){gifCancel=true;});
   buildIconGrid();
   S.segments=defaultSegments(6);
   updateElemCntUI();
-  readTime();render();
-  if(typeof setProg==="function") setProg(S.prog);
+  readTime();
+  // 先把分段数据全部建好，再首次渲染，否则首屏条状会退回单色、无分段文字
   if(typeof ensureBarSegments==="function"){ ensureBarSegments(); }
-  if(typeof mountBarSegEditor==="function"){ mountBarSegEditor(); }
+  if(typeof clampBarMerges==="function"){ clampBarMerges(); }
   if(typeof ensureBarSegW==="function"){ ensureBarSegW(); }
+  if(typeof ensureSegDurs==="function"){ ensureSegDurs(); }
+  if(typeof mountBarSegEditor==="function"){ mountBarSegEditor(); }
   if(typeof mountBarWidthEditor==="function"){ mountBarWidthEditor(); }
   var bwE=$("barWidthEditor"); if(bwE) bwE.style.display=(S.shape==="bar"&&S.barSegMode==="custom"?"":"none");
   var bsg=$("barSegGroup"); if(bsg) bsg.style.display=(S.shape==="bar"?"":"none");
@@ -4473,6 +4517,9 @@ $("busyCancel").addEventListener("click",function(){gifCancel=true;});
   if(typeof applyGifMode==="function") applyGifMode();
   if(typeof applyGifLoop==="function") applyGifLoop();
   if(typeof syncPctCdRows==="function") syncPctCdRows();
+  // 数据与面板就绪后再渲染预览，保证首屏即为彩色分段 + 文字
+  render();
+  if(typeof setProg==="function") setProg(S.prog);
 })();
 
 // 把每个 .group 变成可折叠：大标题整行可点 + 醒目箭头；默认折叠非必备板块
@@ -4494,8 +4541,45 @@ function setupCollapsibleGroups(){
     h2.addEventListener("click",function(){
       var col=g.classList.toggle("collapsed");
       arrow.textContent=col?"▸":"▾";
+      if(typeof refreshToggleAllBtn==="function") refreshToggleAllBtn();
     });
   });
+  setupToggleAllPanels(groups);
+}
+var _toggleAllBtn=null;
+var _allPanelsOpen=false;   // 显式记录"全部展开/收起"状态，避免读 DOM 判断出错
+function anyGroupOpen(){
+  var gs=document.querySelectorAll(".panel .group");
+  for(var i=0;i<gs.length;i++){ if(!gs[i].classList.contains("collapsed")) return true; }
+  return false;
+}
+function refreshToggleAllBtn(){
+  if(!_toggleAllBtn) return;
+  // 以实际 DOM 为准刷新文案（单独折叠某组后也能正确反映）
+  _allPanelsOpen=anyGroupOpen();
+  _toggleAllBtn.textContent=_allPanelsOpen?"收起所有面板 ⌃":"展开所有面板 ⌄";
+}
+function setupToggleAllPanels(groups){
+  if(_toggleAllBtn) return;
+  var panel=document.querySelector(".panel"); if(!panel) return;
+  var wrap=document.createElement("div");
+  wrap.style.cssText="display:flex;justify-content:flex-end;margin:14px 2px 4px";
+  var btn=document.createElement("button"); btn.type="button";
+  btn.style.cssText="border:0;background:var(--accent);color:#fff;font-weight:700;font-size:12.5px;padding:9px 18px;border-radius:999px;cursor:pointer;box-shadow:0 4px 14px -4px rgba(226,104,44,.6)";
+  btn.textContent="展开所有面板 ⌄";
+  _toggleAllBtn=btn;
+  btn.onclick=function(){
+    var willOpen = !anyGroupOpen();
+    var gs=document.querySelectorAll(".panel .group");
+    for(var i=0;i<gs.length;i++){
+      var g=gs[i], ar=g.querySelector(".gco-arrow");
+      if(willOpen){ g.classList.remove("collapsed"); if(ar) ar.textContent="▾"; }
+      else { g.classList.add("collapsed"); if(ar) ar.textContent="▸"; }
+    }
+    btn.textContent=willOpen?"收起所有面板 ⌃":"展开所有面板 ⌄";
+  };
+  wrap.appendChild(btn); panel.appendChild(wrap);
+  refreshToggleAllBtn();
 }
 
 </script>
